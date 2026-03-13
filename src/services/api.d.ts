@@ -1,0 +1,20 @@
+declare module '@/services/api' {
+    export const authAPI: any;
+    export const courseAPI: any;
+    export const moduleAPI: any;
+    export const lessonAPI: any;
+    export const enrollmentAPI: any;
+    export const progressAPI: any;
+    export const quizAPI: any;
+    export const certificateAPI: any;
+    export const qaAPI: any;
+    export const noteAPI: any;
+    export const leaderboardAPI: any;
+    export const documentAPI: any;
+    export const reportAPI: any;
+    export const userAPI: any;
+    export const profileAPI: any;
+    export const userGroupAPI: any;
+    export const courseGroupAPI: any;
+    export const rbacAPI: any;
+}
