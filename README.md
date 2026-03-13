@@ -17,6 +17,5 @@ _Frontend sẽ chạy tại: http://localhost:3000_
 
 ```zsh
 export PATH="$HOME/.dotnet:$HOME/.local/node/bin:$PATH"
-```
-
 lsof -ti:5100 | xargs kill -9
+```
