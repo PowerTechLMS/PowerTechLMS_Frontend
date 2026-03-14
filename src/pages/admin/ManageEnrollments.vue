@@ -197,50 +197,53 @@
 
 							<div class="glass-input-group mb-4">
 								<label
-									>Mã ID Nhân sự (Học viên)
+									>Chọn Nhân sự (Học viên)
 									<span class="text-danger">*</span></label
 								>
-								<div class="input-ico-wrap">
-									<User :size="18" class="ico" />
-									<input
-										v-model.number="assignForm.userId"
-										type="number"
-										class="luxe-input-ico shadow-sm"
-										placeholder="Nhập mã nhân viên..."
-									/>
+								<div class="input-ico-wrap luxe-select-no-ico-wrap">
+									<v-select
+										v-model="assignForm.userId"
+										:options="userOptions"
+										:reduce="(user) => user.id"
+										label="fullName"
+										placeholder="Tìm tên hoặc email nhân viên..."
+										class="luxe-v-select"
+									>
+										<template #option="option">
+											<div>
+												<div class="fw-700 fs-13">{{ option.fullName }}</div>
+												<div class="text-secondary fs-11">
+													{{ option.email }}
+												</div>
+											</div>
+										</template>
+									</v-select>
 								</div>
 							</div>
 
 							<div class="glass-input-group mb-4">
 								<label
-									>Mã ID Khóa học (Giáo trình)
+									>Chọn Khóa học (Giáo trình)
 									<span class="text-danger">*</span></label
 								>
-								<div class="input-ico-wrap">
-									<BookOpen :size="18" class="ico" />
-									<input
-										v-model.number="assignForm.courseId"
-										type="number"
-										class="luxe-input-ico shadow-sm"
-										placeholder="VD: 15"
-									/>
-								</div>
-							</div>
-
-							<div class="glass-input-group mb-4">
-								<label
-									>Hạn chót hoàn thành học tập
-									<span class="text-secondary fs-12 fw-normal"
-										>(Tùy chọn)</span
-									></label
-								>
-								<div class="input-ico-wrap">
-									<Calendar :size="18" class="ico" />
-									<input
-										v-model="assignForm.deadline"
-										type="date"
-										class="luxe-input-ico shadow-sm"
-									/>
+								<div class="input-ico-wrap luxe-select-no-ico-wrap">
+									<v-select
+										v-model="assignForm.courseId"
+										:options="courseOptions"
+										:reduce="(course) => course.id"
+										label="title"
+										placeholder="Chọn khóa học..."
+										class="luxe-v-select"
+									>
+										<template #option="option">
+											<div>
+												<div class="fw-700 fs-13">{{ option.title }}</div>
+												<div class="text-secondary fs-11">
+													Cấp độ: {{ option.level }}
+												</div>
+											</div>
+										</template>
+									</v-select>
 								</div>
 							</div>
 
@@ -282,7 +285,9 @@
 
 <script setup>
 import { ref, reactive, onMounted } from "vue";
-import { enrollmentAPI } from "@/services/api";
+import { enrollmentAPI, userAPI, courseAPI } from "@/services/api";
+import vSelect from "vue-select";
+import "vue-select/dist/vue-select.css";
 import {
 	BookOpen,
 	BookUp,
@@ -301,6 +306,11 @@ import {
 const activeTab = ref("pending"); // pending | assign
 const pendingList = ref([]);
 const loadingPending = ref(false);
+
+// Assignment Data
+const userOptions = ref([]);
+const courseOptions = ref([]);
+const loadingOptions = ref(false);
 
 const assigning = ref(false);
 const assignSuccess = ref(false);
@@ -337,6 +347,25 @@ async function handleApprove(id, isApproved) {
 	}
 }
 
+async function loadAssignmentData() {
+	loadingOptions.value = true;
+	try {
+		// Fetch users (active ones)
+		const userRes = await userAPI.getAll({ pageSize: 1000 });
+		userOptions.value = userRes.data.items.filter((u) => u.isActive);
+
+		// Fetch courses (published ones)
+		const courseRes = await courseAPI.getAll({
+			pageSize: 1000,
+			isPublished: true,
+		});
+		courseOptions.value = courseRes.data.items;
+	} catch (e) {
+		console.error("Lỗi tải dữ liệu phân công", e);
+	}
+	loadingOptions.value = false;
+}
+
 async function adminAssign() {
 	if (!assignForm.userId || !assignForm.courseId) return;
 	assigning.value = true;
@@ -345,7 +374,7 @@ async function adminAssign() {
 		await enrollmentAPI.adminEnroll({
 			userId: assignForm.userId,
 			courseId: assignForm.courseId,
-			deadline: assignForm.deadline || null,
+			deadline: null, // Bỏ hạn chót
 			isMandatory: assignForm.isMandatory,
 		});
 		assignSuccess.value = true;
@@ -365,6 +394,7 @@ async function adminAssign() {
 
 onMounted(() => {
 	loadPending();
+	loadAssignmentData();
 });
 </script>
 
@@ -881,6 +911,62 @@ onMounted(() => {
 	border-radius: 16px;
 	border: 1px solid rgba(16, 185, 129, 0.2);
 	color: #10b981;
+}
+
+/* Vue Select Customization */
+.luxe-select-no-ico-wrap :deep(.vs__dropdown-toggle) {
+	background: white;
+	border: 1px solid #e2e8f0;
+	border-radius: 16px;
+	padding: 10px 10px 10px 16px;
+	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+	min-height: 58px;
+	transition: all 0.3s ease;
+}
+
+.luxe-select-no-ico-wrap :deep(.vs--open .vs__dropdown-toggle) {
+	border-color: #6366f1;
+	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.luxe-select-no-ico-wrap :deep(.vs__search::placeholder),
+.luxe-select-no-ico-wrap :deep(.vs__dropdown-toggle),
+.luxe-select-no-ico-wrap :deep(.vs__selected) {
+	font-size: 15px;
+	font-weight: 600;
+	color: #1e293b;
+}
+
+.luxe-select-no-ico-wrap :deep(.vs__actions) {
+	padding: 4px 12px 0 3px;
+}
+
+.luxe-select-no-ico-wrap :deep(.vs__dropdown-menu) {
+	border-radius: 16px;
+	border: 1px solid #e2e8f0;
+	box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+	padding: 8px;
+	z-index: 1000;
+	margin-top: 8px;
+}
+
+.luxe-select-no-ico-wrap :deep(.vs__dropdown-option) {
+	border-radius: 10px;
+	padding: 10px 12px;
+	margin-bottom: 4px;
+	color: #475569;
+}
+
+.luxe-select-no-ico-wrap :deep(.vs__dropdown-option--highlight) {
+	background: #f5f3ff;
+	color: #6366f1;
+}
+
+.fs-13 {
+	font-size: 13px;
+}
+.fs-11 {
+	font-size: 11px;
 }
 
 .fade-slide-enter-active,
