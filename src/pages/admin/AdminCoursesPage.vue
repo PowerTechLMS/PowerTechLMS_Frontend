@@ -315,9 +315,9 @@ onMounted(() => {
 							><Eye :size="18"
 						/></RouterLink>
 						<RouterLink
-							:to="`/admin/courses/edit/${course.id}`"
+							:to="`/admin/courses/${course.id}/certificate`"
 							class="act-btn"
-							title="Quản lý Chứng chỉ"
+							title="Thiết kế Chứng chỉ"
 							><Award :size="18"
 						/></RouterLink>
 						<RouterLink

@@ -494,40 +494,8 @@
 															v-if="lesson.type === 'Video'"
 															class="video-setup-area"
 														>
-															<div class="mode-pills shadow-sm mb-3">
-																<button
-																	type="button"
-																	class="mode-pill"
-																	:class="{
-																		active: lesson.videoType === 'url',
-																	}"
-																	@click="lesson.videoType = 'url'"
-																>
-																	DÁN LINK
-																</button>
-																<button
-																	type="button"
-																	class="mode-pill"
-																	:class="{
-																		active: lesson.videoType === 'upload',
-																	}"
-																	@click="lesson.videoType = 'upload'"
-																>
-																	TẢI LÊN FILE
-																</button>
-															</div>
 															<div class="input-glow-container">
-																<input
-																	v-if="lesson.videoType === 'url'"
-																	v-model="lesson.videoUrl"
-																	type="url"
-																	class="premium-input-v2-sm"
-																	placeholder="https://youtube.com/..."
-																/>
-																<div
-																	v-else
-																	class="upload-lesson-video glass-effect"
-																>
+																<div class="upload-lesson-video glass-effect">
 																	<input
 																		type="file"
 																		accept="video/*"
@@ -542,9 +510,44 @@
 																		/><span class="small fw-bold">{{
 																			lesson.videoFile
 																				? lesson.videoFile.name
-																				: "Chọn tệp video"
+																				: "Chọn tệp video để tải lên (hỗ trợ .mp4, .mkv...)"
 																		}}</span></label
 																	>
+																</div>
+
+																<!-- PROGRESS BAR -->
+																<div
+																	v-if="
+																		lesson.uploadProgress > 0 &&
+																		lesson.uploadProgress < 100
+																	"
+																	class="upload-progress-wrapper mt-2"
+																>
+																	<div
+																		class="progress-info mb-1 d-flex justify-content-between"
+																	>
+																		<span class="small text-muted"
+																			>Đang tải lên...</span
+																		>
+																		<span class="small fw-bold text-primary"
+																			>{{ lesson.uploadProgress }}%</span
+																		>
+																	</div>
+																	<div class="premium-progress-bar">
+																		<div
+																			class="progress-fill"
+																			:style="{
+																				width: lesson.uploadProgress + '%',
+																			}"
+																		></div>
+																	</div>
+																</div>
+																<div
+																	v-if="lesson.uploadProgress === 100"
+																	class="upload-success-msg mt-2 text-success small fw-bold"
+																>
+																	<CheckCircle :size="14" /> Tải lên hoàn tất,
+																	đang chờ xử lý...
 																</div>
 															</div>
 														</div>
@@ -1059,13 +1062,14 @@ const addLesson = (mIdx: number) => {
 		title: "",
 		type: "Video",
 		content: "",
-		videoType: "url",
+		videoType: "upload",
 		videoUrl: "",
 		videoFile: null,
 		isFreePreview: false,
 		attachments: [],
 		hasQuiz: false,
 		quiz: createEmptyQuiz("Bài tập củng cố"),
+		uploadProgress: 0, // [MỚI] Tiến độ tải lên (%)
 	});
 };
 const removeLesson = (mIdx: number, lIdx: number) =>
@@ -1199,6 +1203,7 @@ const submitCourse = async () => {
 					isFreePreview: les.isFreePreview,
 					sortOrder: 0,
 					videoDurationSeconds: 0,
+					videoStatus: "Ready",
 				};
 				const resLes = await lessonAPI.create(newModuleId, lessonPayload);
 				const newLessonId = resLes.data.id;
@@ -1208,9 +1213,31 @@ const submitCourse = async () => {
 					les.videoType === "upload" &&
 					les.videoFile
 				) {
-					const videoForm = new FormData();
-					videoForm.append("file", les.videoFile);
-					await lessonAPI.uploadVideo(newModuleId, newLessonId, videoForm);
+					// TRIỂN KHAI CHUNKED UPLOAD
+					const file = les.videoFile;
+					const chunkSize = 2 * 1024 * 1024; // 2MB
+					const totalChunks = Math.ceil(file.size / chunkSize);
+
+					for (let i = 0; i < totalChunks; i++) {
+						const start = i * chunkSize;
+						const end = Math.min(file.size, start + chunkSize);
+						const chunk = file.slice(start, end);
+
+						const chunkFormData = new FormData();
+						chunkFormData.append("file", chunk);
+						chunkFormData.append("chunkIndex", i.toString());
+						chunkFormData.append("totalChunks", totalChunks.toString());
+						chunkFormData.append("fileName", file.name);
+
+						await lessonAPI.uploadVideoChunk(
+							newModuleId,
+							newLessonId,
+							chunkFormData,
+						);
+
+						// Cập nhật progress
+						les.uploadProgress = Math.round(((i + 1) / totalChunks) * 100);
+					}
 				}
 
 				for (const att of les.attachments) {
@@ -1429,7 +1456,29 @@ const submitCourse = async () => {
 }
 .step-text {
 	font-size: 13px;
+	font-size: 13px;
 	font-weight: 800;
+}
+
+/* PROGRESS BAR STYLES */
+.premium-progress-bar {
+	width: 100%;
+	height: 6px;
+	background: rgba(0, 0, 0, 0.05);
+	border-radius: 10px;
+	overflow: hidden;
+}
+.progress-fill {
+	height: 100%;
+	background: linear-gradient(90deg, #6366f1, #a855f7);
+	box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+	transition: width 0.3s ease;
+}
+.upload-success-msg {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	color: #10b981;
 }
 .step-arrow {
 	font-size: 16px;

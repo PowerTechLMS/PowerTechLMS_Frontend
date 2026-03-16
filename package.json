@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@microsoft/signalr": "^10.0.0",
     "@vuepic/vue-datepicker": "^10.0.0",
     "@vueup/vue-quill": "^1.2.0",
     "axios": "^1.7.0",
@@ -16,6 +17,7 @@
     "chart.js": "^4.4.0",
     "datatables.net": "^2.3.7",
     "datatables.net-vue3": "^3.0.4",
+    "hls.js": "^1.6.15",
     "lightgallery": "^2.9.0",
     "lucide-vue-next": "^0.576.0",
     "pinia": "^2.1.0",

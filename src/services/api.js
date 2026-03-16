@@ -2,6 +2,7 @@ import axios from "axios";
 
 const api = axios.create({
 	baseURL: "/api",
+	timeout: 600000, // 10 minutes for large uploads
 });
 
 api.interceptors.request.use((config) => {
@@ -65,6 +66,11 @@ export const lessonAPI = {
 		api.post(`/modules/${moduleId}/lessons/${lessonId}/attachments`, formData),
 	uploadVideo: (moduleId, lessonId, formData) =>
 		api.post(`/modules/${moduleId}/lessons/${lessonId}/video`, formData),
+	uploadVideoChunk: (moduleId, lessonId, formData, timeout = 0) =>
+		api.post(`/modules/${moduleId}/lessons/${lessonId}/video-chunk`, formData, {
+			headers: { "Content-Type": "multipart/form-data" },
+			...(timeout > 0 ? { timeout } : {}),
+		}),
 	deleteAttachment: (moduleId, id) =>
 		api.delete(`/modules/${moduleId}/lessons/attachments/${id}`),
 	getAttachmentUrl: (moduleId, id) =>
