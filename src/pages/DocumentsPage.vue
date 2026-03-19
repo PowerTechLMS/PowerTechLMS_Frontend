@@ -33,6 +33,11 @@ const predefinedTags = {
   roles: { label: 'Đối tượng & Phòng ban', colorClass: 'tag-warning', icon: 'Users', items: ['Sales', 'Engineering', 'Human-Resources', 'Customer-Success', 'Intern', 'Senior', 'C-Suite'] }
 };
 
+// @ts-ignore
+import { useAuthStore } from "@/stores/auth";
+
+const authStore = useAuthStore();
+
 // --- 2. DATA FETCHING (SERVER-SIDE) ---
 const fetchDocs = async () => {
   loading.value = true;
@@ -44,6 +49,11 @@ const fetchDocs = async () => {
     
     if (searchQuery.value) params.search = searchQuery.value;
     if (selectedTag.value) params.tag = selectedTag.value;
+
+    // [MỚI]: Nếu là Giảng viên, chỉ xem tài liệu của mình (Giống màn hình Admin)
+    if (authStore.isInstructor && !authStore.isAdmin) {
+      params.manage = true;
+    }
 
     const { data } = await documentAPI.getAll(params);
     documents.value = data.items || [];

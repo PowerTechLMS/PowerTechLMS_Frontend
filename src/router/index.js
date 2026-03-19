@@ -68,6 +68,18 @@ const routes = [
 				meta: { title: `Chứng chỉ của tôi – ${APP_NAME}` },
 			},
 			{
+				path: "learning-paths",
+				name: "LearningPaths",
+				component: () => import("@/pages/LearningPaths.vue"),
+				meta: { title: `Lộ trình học tập – ${APP_NAME}` },
+			},
+			{
+				path: "learning-paths/:id",
+				name: "LearningPathDetail",
+				component: () => import("@/pages/LearningPathDetail.vue"),
+				meta: { title: `Chi tiết lộ trình – ${APP_NAME}` },
+			},
+			{
 				path: "leaderboard",
 				name: "Leaderboard",
 				component: () => import("@/pages/LeaderboardPage.vue"),
@@ -136,7 +148,11 @@ const routes = [
 				path: "admin/certificates",
 				name: "AdminCertificates",
 				component: () => import("@/pages/admin/CertificatesList.vue"),
-				meta: { roles: ["Admin"], title: `Quản lý Chứng chỉ – ${APP_NAME}` },
+				meta: { 
+					roles: ["Admin", "Instructor"], 
+					permissions: ["certificate.view", "certificate.manage"],
+					title: `Quản lý Chứng chỉ – ${APP_NAME}` 
+				},
 			},
 			{
 				path: "admin/enrollments",
@@ -161,7 +177,7 @@ const routes = [
 				name: "QuizAnalysis",
 				component: () => import("@/pages/admin/QuizAnalysisPage.vue"),
 				meta: {
-					permissions: ["report.view"],
+					permissions: ["report.view", "quiz.manage"],
 					title: `Phân tích Đề thi – ${APP_NAME}`,
 				},
 			},
@@ -287,7 +303,8 @@ const routes = [
 				name: "AdminDocuments",
 				component: () => import("@/pages/admin/DocumentsList.vue"),
 				meta: {
-					permissions: ["user.manage"],
+					roles: ["Admin", "Instructor"],
+					permissions: ["user.manage", "doc.view", "doc.upload", "doc.delete"],
 					title: `Kho Tài Liệu – ${APP_NAME}`,
 				},
 			},
@@ -296,7 +313,8 @@ const routes = [
 				name: "DocumentAdd",
 				component: () => import("@/pages/admin/DocumentAdd.vue"),
 				meta: {
-					permissions: ["user.manage"],
+					roles: ["Admin", "Instructor"],
+					permissions: ["user.manage", "doc.upload"],
 					title: `Thêm Tài Liệu – ${APP_NAME}`,
 				},
 			},
@@ -305,7 +323,8 @@ const routes = [
 				name: "DocumentEdit",
 				component: () => import("@/pages/admin/DocumentEdit.vue"),
 				meta: {
-					permissions: ["user.manage"],
+					roles: ["Admin", "Instructor"],
+					permissions: ["user.manage", "doc.upload", "doc.delete"],
 					title: `Chỉnh sửa Tài Liệu – ${APP_NAME}`,
 				},
 			},
@@ -343,17 +362,23 @@ router.beforeEach((to, from, next) => {
 		return next("/dashboard");
 	}
 
-	// 3. Kiểm tra roles (legacy)
-	if (to.meta.roles && !to.meta.roles.includes(auth.user?.role)) {
-		return next("/dashboard");
-	}
+	// 3 & 4. Kiểm tra Quyền truy cập (Roles & Permissions)
+	if (to.meta.roles || to.meta.permissions) {
+		let canAccess = false;
+		
+		// Kiểm tra role (ưu tiên nếu có meta.roles)
+		if (to.meta.roles && to.meta.roles.some(r => auth.hasRole(r))) {
+			canAccess = true;
+		}
+		
+		// Kiểm tra permission (ghi đè hoặc bổ sung nếu có meta.permissions)
+		if (to.meta.permissions && auth.hasAnyPermission(...to.meta.permissions)) {
+			canAccess = true;
+		}
 
-	// 4. Kiểm tra permissions (RBAC)
-	if (
-		to.meta.permissions &&
-		!to.meta.permissions.some((p) => auth.hasPermission(p))
-	) {
-		return next("/dashboard");
+		if (!canAccess) {
+			return next("/dashboard");
+		}
 	}
 
 	next();

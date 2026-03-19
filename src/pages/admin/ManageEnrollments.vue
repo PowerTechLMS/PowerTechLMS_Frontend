@@ -103,21 +103,21 @@
 											<div class="user-request-cell">
 												<div class="avatar-glass shadow-sm">
 													<img
-														v-if="item.userAvatar"
-														:src="item.userAvatar"
-														:alt="item.userName"
+														v-if="item.avatarUrl"
+														:src="item.avatarUrl"
+														:alt="item.fullName"
 														class="avatar-img"
 													/>
 													<span v-else>{{
-														item.userName?.charAt(0)?.toUpperCase() || "U"
+														item.fullName?.charAt(0)?.toUpperCase() || "U"
 													}}</span>
 												</div>
 												<div class="user-info">
 													<div class="user-name fw-700 text-dark">
-														{{ item.userName || "Người dùng ẩn" }}
+														{{ item.fullName || "Người dùng ẩn" }}
 													</div>
 													<div class="user-id text-secondary fs-12">
-														Mã NV: {{ item.userId }}
+														{{ item.departmentName || "Phòng ban ẩn" }} • Mã NV: {{ item.userId }}
 													</div>
 												</div>
 											</div>

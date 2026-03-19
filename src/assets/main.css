@@ -134,6 +134,7 @@
 }
 
 /* Light Theme */
+/* Light Theme */
 [data-theme="light"] {
   --bg-primary: #f8fafc;
   --bg-secondary: #f1f5f9;
@@ -153,11 +154,92 @@
   --gradient-sidebar: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
   --sidebar-bg-active: rgba(99, 102, 241, 0.06);
   --sidebar-text-active: #4f46e5;
+}
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
-  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
+/* ===== GLOBAL DARK MODE FIXES (TRUNG HOÀ HỆ THỐNG) ===== */
+[data-theme="dark"] {
+  /* Giảm độ chói của các thành phần nền trắng hard-coded */
+  --bg-primary: #0f1021;
+  --bg-secondary: #16182d;
+  --bg-tertiary: #1e213a;
+  --bg-card: #16182d;
+  --bg-card-hover: #1e213a;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+
+  /* Force override common hard-coded light styles in components */
+  color-scheme: dark;
+}
+
+[data-theme="dark"] body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Đè bẹp các class hard-coded trắng/đen gây chìm chữ */
+[data-theme="dark"] .card, 
+[data-theme="dark"] .stat-glass-card,
+[data-theme="dark"] .course-glass-card,
+[data-theme="dark"] .side-panel,
+[data-theme="dark"] .toolbar-glass-container,
+[data-theme="dark"] .search-glass-box,
+[data-theme="dark"] .filter-tabs-glass,
+[data-theme="dark"] .bg-white,
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .course-card,
+[data-theme="dark"] .quiz-item,
+[data-theme="dark"] .msg-card,
+[data-theme="dark"] .side-widget,
+[data-theme="dark"] .bento-item,
+[data-theme="dark"] .cert-item-mini,
+[data-theme="dark"] .lesson-item {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .tab-btn.active,
+[data-theme="dark"] .search-input,
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Xử lý chữ bị "chìm" do dùng mã màu slate/dark-grey hard-coded */
+[data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3, 
+[data-theme="dark"] h4, [data-theme="dark"] h5, [data-theme="dark"] h6,
+[data-theme="dark"] .title-gradient,
+[data-theme="dark"] .course-title-card,
+[data-theme="dark"] .nav-text,
+[data-theme="dark"] .p-val,
+[data-theme="dark"] strong {
+  color: var(--text-primary) !important;
+  -webkit-text-fill-color: var(--text-primary) !important; /* Fix title-gradient */
+}
+
+[data-theme="dark"] p, 
+[data-theme="dark"] span:not(.badge), 
+[data-theme="dark"] .desc-text,
+[data-theme="dark"] .text-secondary,
+[data-theme="dark"] .i-name,
+[data-theme="dark"] .s-lbl {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .meta-pill-item, 
+[data-theme="dark"] .card-action-bar-tri {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .dropdown-divider, 
+[data-theme="dark"] .border-top {
+  border-color: var(--border-color) !important;
 }
 
 /* ===== Reset & Base ===== */

@@ -9,12 +9,40 @@ export const useAuthStore = defineStore('auth', () => {
     const isAuthenticated = computed(() => !!token.value)
     const isAdmin = computed(() => hasRole('Admin'))
     const isInstructor = computed(() => hasRole('Instructor') || hasRole('Admin'))
+    
+    // Bổ sung: Kiểm tra xem user có quyền quản lý bất kỳ cái gì không
+    const canManage = computed(() => {
+        return isAdmin.value || isInstructor.value || hasAnyPermission(
+            'course.view', 'course.create', 'course.edit', 'user.manage', 
+            'role.manage', 'group.manage', 'report.view', 'enrollment.approve', 'certificate.view', 'certificate.manage'
+        )
+    })
 
     function hasRole(roleName) {
         if (!user.value) return false
         const roles = user.value.roles || user.value.Roles || []
         const primaryRole = user.value.role || user.value.Role
-        return roles.includes(roleName) || primaryRole === roleName
+        
+        const normalizedRoles = roles.map(r => r?.toLowerCase())
+        const normalizedPrimary = primaryRole?.toLowerCase()
+        const target = roleName.toLowerCase()
+        
+        // Kiểm tra case-insensitive và các biến thể ngôn ngữ
+        if (target === 'admin' || target === 'quản trị viên') {
+            return normalizedRoles.includes('admin') || 
+                   normalizedRoles.includes('quản trị viên') ||
+                   normalizedPrimary === 'admin' || 
+                   normalizedPrimary === 'quản trị viên'
+        }
+        
+        if (target === 'instructor' || target === 'giảng viên') {
+            return normalizedRoles.includes('instructor') || 
+                   normalizedRoles.includes('giảng viên') || 
+                   normalizedPrimary === 'instructor' ||
+                   normalizedPrimary === 'giảng viên'
+        }
+        
+        return normalizedRoles.includes(target) || normalizedPrimary === target
     }
 
     function hasPermission(permCode) {
@@ -24,6 +52,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     function hasAnyPermission(...codes) {
+        if (!user.value) return false
         return codes.some(c => hasPermission(c))
     }
 
@@ -97,7 +126,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     return {
-        user, token, isAuthenticated, isAdmin, isInstructor,
+        user, token, isAuthenticated, isAdmin, isInstructor, canManage,
         initAuth, login, register, logout, hasRole, hasPermission, hasAnyPermission,
         updateProfileData, avatarUpdateTime, triggerAvatarRefresh
     }

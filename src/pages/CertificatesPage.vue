@@ -110,8 +110,7 @@ const fetchCertificates = async () => {
   try {
     const { data } = await certificateAPI.getMy()
     certs.value = [...data];
-    // Nếu gọi thủ công (nút làm mới), báo thành công
-    if (!loading.value) toast.success('Dữ liệu đã được đồng bộ mới nhất')
+    if (certs.value.length > 0) toast.success('Đã cập nhật danh sách chứng chỉ!')
   } catch (err) {
     console.error('Failed to fetch certificates:', err)
     toast.error('Không thể kết nối máy chủ để lấy dữ liệu.')

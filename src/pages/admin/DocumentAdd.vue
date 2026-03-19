@@ -5,6 +5,7 @@ import { documentAPI } from "@/services/api";
 import { toast } from "vue3-toastify";
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
+import { X, Plus, Filter, Tag, CheckCircle2 } from 'lucide-vue-next';
 
 const router = useRouter();
 
@@ -21,6 +22,41 @@ const documentForm = ref({
 
 const isSubmitting = ref(false);
 const fileInfo = ref<{ name: string; size: string; ext: string } | null>(null);
+
+// --- 2. TAGGING SYSTEM ---
+const predefinedTags = {
+  skills: { label: 'Kỹ năng & Chuyên môn', colorClass: 'tag-primary', items: ['JavaScript', 'ASP.NET Core', 'Financial-Analysis', 'ISO-9001', 'Leadership', 'Conflict-Resolution'] },
+  compliance: { label: 'Tuân thủ & Pháp lý', colorClass: 'tag-danger', items: ['PCCC', 'HSE', 'Data-Privacy', 'GDPR', 'Cyber-Security', 'Code-of-Conduct'] },
+  roles: { label: 'Đối tượng', colorClass: 'tag-warning', items: ['Sales', 'Engineering', 'Human-Resources', 'Customer-Success', 'Intern', 'Senior', 'C-Suite'] },
+  format: { label: 'Loại hình', colorClass: 'tag-success', items: ['Video', 'E-learning-SCORM', 'Quiz', 'PDF-Guide', 'Micro-Learning', 'Presentation'] }
+};
+
+const selectedTagsArray = ref<string[]>([]);
+const customTagInput = ref("");
+
+const toggleTag = (tag: string) => {
+  const index = selectedTagsArray.value.indexOf(tag);
+  if (index > -1) {
+    selectedTagsArray.value.splice(index, 1);
+  } else {
+    selectedTagsArray.value.push(tag);
+  }
+  documentForm.value.Tags = selectedTagsArray.value.join(',');
+};
+
+const addCustomTag = () => {
+    const tag = customTagInput.value.trim().replace(/\s+/g, '-');
+    if (tag && !selectedTagsArray.value.includes(tag)) {
+        selectedTagsArray.value.push(tag);
+        documentForm.value.Tags = selectedTagsArray.value.join(',');
+    }
+    customTagInput.value = "";
+};
+
+const removeTag = (tag: string) => {
+    selectedTagsArray.value = selectedTagsArray.value.filter(t => t !== tag);
+    documentForm.value.Tags = selectedTagsArray.value.join(',');
+};
 
 // --- 2. HANDLERS ---
 const onFileChange = (event: Event) => {
@@ -112,9 +148,43 @@ const getExtBg = (ext: string) => {
                 <textarea v-model="documentForm.Description" class="form-control" rows="3"></textarea>
               </div>
               <div class="form-group mb-0">
-                <label class="form-label fw-bold text-dark fs-13">Thẻ phân loại (Tags)</label>
-                <input v-model="documentForm.Tags" type="text" class="form-control" placeholder="VD: HR, TechSplit..." />
-                <small class="text-muted fs-12 mt-1 d-block">Dùng dấu phẩy để phân cách nhiều tag.</small>
+                <label class="form-label fw-bold text-dark fs-13 text-uppercase mb-3 d-flex align-items-center gap-2">
+                  <Filter :size="16" class="text-primary"/> Thẻ phân loại (Tags)
+                </label>
+                
+                <!-- Display selected tags as chips -->
+                <div class="selected-tags-display mb-3 p-3 rounded-3" :class="{ 'has-tags': selectedTagsArray.length > 0 }">
+                   <div v-if="selectedTagsArray.length === 0" class="text-muted fs-12 fst-italic">Vui lòng chọn các thẻ phía dưới...</div>
+                   <div v-else class="d-flex flex-wrap gap-2">
+                      <span v-for="tag in selectedTagsArray" :key="tag" class="tag-chip">
+                         #{{ tag }} <button type="button" class="btn-remove-tag" @click="removeTag(tag)"><X :size="12" /></button>
+                      </span>
+                   </div>
+                </div>
+
+                <!-- Custom Tag Input -->
+                <div class="input-group mb-4 shadow-sm rounded-3 overflow-hidden border">
+                   <span class="input-group-text bg-white border-0"><Tag :size="16" class="text-muted" /></span>
+                   <input type="text" class="form-control border-0 fs-13" placeholder="Nhập thẻ khác và nhấn Enter..." v-model="customTagInput" @keydown.enter.prevent="addCustomTag">
+                   <button type="button" class="btn btn-outline-primary border-0 fs-12 fw-bold" @click="addCustomTag">THÊM</button>
+                </div>
+
+                <!-- Tag Dictionary -->
+                <div class="tag-library p-3 rounded-4 bg-light-soft border-0 custom-scrollbar" style="max-height: 300px; overflow-y:auto;">
+                   <div class="mb-4" v-for="(group, key) in predefinedTags" :key="key">
+                      <div class="mb-2 fs-10 fw-bold text-uppercase text-muted letter-spacing-1">{{ group.label }}</div>
+                      <div class="d-flex flex-wrap gap-2">
+                         <span v-for="tag in group.items" :key="tag" 
+                            class="suggested-pill" 
+                            :class="[group.colorClass, { 'active': selectedTagsArray.includes(tag) }]" 
+                            @click="toggleTag(tag)"
+                          >
+                            <CheckCircle2 v-if="selectedTagsArray.includes(tag)" :size="12" class="me-1" />
+                            {{ tag }}
+                         </span>
+                      </div>
+                   </div>
+                </div>
               </div>
             </div>
           </div>
@@ -192,4 +262,77 @@ const getExtBg = (ext: string) => {
 .fs-13 { font-size: 0.8125rem; }
 .fs-12 { font-size: 0.75rem; }
 .doc-action-bar { z-index: 10; }
+
+/* Tagging UI Styles */
+.bg-light-soft { background-color: #f9fbff; }
+.letter-spacing-1 { letter-spacing: 0.05em; }
+
+.selected-tags-display { 
+  background: white; 
+  border: 1px solid #eef2f7; 
+  min-height: 50px; 
+  transition: all 0.2s;
+}
+.selected-tags-display.has-tags {
+  background: #f0f7ff;
+  border-color: #cbdcf7;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #1a56db;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(26, 86, 219, 0.2);
+}
+
+.btn-remove-tag {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s;
+}
+.btn-remove-tag:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.suggested-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  background: white;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s;
+}
+.suggested-pill:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+/* Tag Categories Colors */
+.tag-primary.active { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
+.tag-danger.active { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+.tag-warning.active { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+.tag-success.active { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
 </style>

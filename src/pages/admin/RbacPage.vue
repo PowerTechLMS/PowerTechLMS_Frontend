@@ -508,15 +508,17 @@ async function fetchUsers() {
 }
 
 async function selectUser(u) {
-	const userId = u.id || u.Id;
+	const userId = u.id || u.Id || u.userId || u.UserId;
 	if (!userId) return showToast("ID người dùng không hợp lệ", true);
 	try {
 		const { data } = await rbacAPI.getUserRoles(userId);
-		assignedUser.value = { ...data, id: userId };
+		// Đồng bộ hóa tất cả các biến thể ID về .id để component dễ sử dụng
+		assignedUser.value = { ...data, id: userId, userId: userId };
 		selectedRoleIds.value = roles.value
-			.filter((r) => data.roles.includes(r.name))
+			.filter((r) => (data.roles || data.Roles || []).includes(r.name))
 			.map((r) => r.id);
 	} catch (e) {
+		console.error("RBAC load error:", e);
 		showToast("Lỗi tải thông tin quyền của người dùng", true);
 	}
 }
@@ -573,6 +575,7 @@ function getCatColor(cat) {
 			Report: "#ef4444",
 			System: "#8b5cf6",
 			Group: "#ec4899",
+			Certificate: "#0ea5e9", // Màu xanh dương cho chứng chỉ
 		}[cat] || "#9ca3af"
 	);
 }
@@ -645,11 +648,15 @@ async function saveUserRoles() {
 	if (!assignedUser.value) return;
 	savingRoles.value = true;
 	try {
+		const userId = assignedUser.value.id || assignedUser.value.userId || assignedUser.value.UserId;
+		if (!userId) throw new Error("userId is undefined");
+		
 		const { data } = await rbacAPI.updateUserRoles(
-			assignedUser.value.id,
+			userId,
 			selectedRoleIds.value,
 		);
-		assignedUser.value = data;
+		// Duy trì id để không bị undefined ở lần lưu sau
+		assignedUser.value = { ...data, id: userId, userId: userId };
 		showToast("Lưu phân quyền thành công!");
 	} catch (e) {
 		showToast("Lỗi cập nhật", true);

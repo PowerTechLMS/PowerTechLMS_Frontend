@@ -21,7 +21,7 @@
               </defs>
             </svg>
           </div>
-          <span class="logo-text" v-if="!sidebarCollapsed">EDUPOWER</span>
+          <span class="logo-text" v-if="!sidebarCollapsed">POWERTECH LMS</span>
         </div>
         <button class="btn-icon btn-ghost toggle-btn desktop-only" @click="sidebarCollapsed = !sidebarCollapsed">
           <ChevronLeft v-if="!sidebarCollapsed" :size="18" />
@@ -45,42 +45,43 @@
               </RouterLink>
             </li>
 
-            <li :class="{ 'mm-active': openGroups.learning }">
-              <a class="doc-has-arrow" href="javascript:void(0);" @click.prevent="toggleGroup('learning')">
+            <li class="nav-label">HỌC TẬP</li>
+
+            <li>
+              <RouterLink to="/my-courses" :class="{ active: $route.path === '/my-courses' }" @click="mobileMenuOpen = false">
                 <BookOpen :size="20" class="nav-icon" />
-                <span class="nav-text">Học tập</span>
-              </a>
-              <ul class="doc-collapse" :class="{ 'doc-in': openGroups.learning }">
-                <li>
-                  <RouterLink to="/courses" :class="{ active: $route.path === '/courses' }" @click="mobileMenuOpen = false">
-                    Khám phá khóa học
-                  </RouterLink>
-                </li>
-                <li>
-                  <RouterLink to="/my-courses" :class="{ active: $route.path.startsWith('/my-courses') }" @click="mobileMenuOpen = false">
-                    Khóa học của tôi
-                  </RouterLink>
-                </li>
-              </ul>
+                <span class="nav-text">Khóa học của tôi</span>
+              </RouterLink>
             </li>
 
-            <li :class="{ 'mm-active': openGroups.resources }">
-              <a class="doc-has-arrow" href="javascript:void(0);" @click.prevent="toggleGroup('resources')">
+            <li>
+              <RouterLink to="/learning-paths" :class="{ active: $route.path === '/learning-paths' }" @click="mobileMenuOpen = false">
+                <Route :size="20" class="nav-icon" />
+                <span class="nav-text">Lộ trình học tập</span>
+              </RouterLink>
+            </li>
+
+            <li class="nav-label">KHÁM PHÁ & TÀI NGUYÊN</li>
+
+            <li>
+              <RouterLink to="/courses" :class="{ active: $route.path === '/courses' }" @click="mobileMenuOpen = false">
                 <Library :size="20" class="nav-icon" />
-                <span class="nav-text">Tài nguyên</span>
-              </a>
-              <ul class="doc-collapse" :class="{ 'doc-in': openGroups.resources }">
-                <li>
-                  <RouterLink to="/documents" :class="{ active: $route.path.startsWith('/documents') }" @click="mobileMenuOpen = false">
-                    Thư viện chung
-                  </RouterLink>
-                </li>
-                <li>
-                  <RouterLink to="/certificates" :class="{ active: $route.path.startsWith('/certificates') }" @click="mobileMenuOpen = false">
-                    Chứng chỉ đã cấp
-                  </RouterLink>
-                </li>
-              </ul>
+                <span class="nav-text">Thư viện khóa học</span>
+              </RouterLink>
+            </li>
+
+            <li>
+              <RouterLink to="/documents" :class="{ active: $route.path === '/documents' }" @click="mobileMenuOpen = false">
+                <FolderOpen :size="20" class="nav-icon" />
+                <span class="nav-text">Tài liệu nội bộ</span>
+              </RouterLink>
+            </li>
+
+            <li>
+              <RouterLink to="/certificates" :class="{ active: $route.path === '/certificates' }" @click="mobileMenuOpen = false">
+                <Award :size="20" class="nav-icon" />
+                <span class="nav-text">Chứng chỉ của tôi</span>
+              </RouterLink>
             </li>
 
             <li>
@@ -90,17 +91,17 @@
               </RouterLink>
             </li>
 
-            <template v-if="authStore.isAdmin || authStore.isInstructor">
+            <template v-if="authStore.canManage">
               <li class="nav-label nav-label-admin">QUẢN LÝ</li>
 
-              <li class="admin-group-header" v-if="!sidebarCollapsed">
+              <li class="admin-group-header" v-if="!sidebarCollapsed && (authStore.isAdmin || authStore.isInstructor || authStore.hasAnyPermission('course.view', 'group.manage', 'enrollment.view', 'quiz.manage'))">
                 <span class="admin-group-pill pill-training">
                   <GraduationCap :size="12" /> Đào tạo
                 </span>
               </li>
-              <li v-if="!sidebarCollapsed" class="admin-group-divider" />
+              <li v-if="!sidebarCollapsed && (authStore.isAdmin || authStore.isInstructor || authStore.hasAnyPermission('course.view', 'group.manage', 'enrollment.view', 'quiz.manage'))" class="admin-group-divider" />
 
-              <li v-if="authStore.isInstructor || authStore.isAdmin">
+              <li v-if="authStore.isAdmin || authStore.isInstructor || authStore.hasPermission('course.view')">
                 <RouterLink to="/admin/courses"
                   class="admin-nav-item"
                   :class="{ active: $route.path === '/admin/courses' }"
@@ -110,7 +111,7 @@
                 </RouterLink>
               </li>
               
-              <li v-if="authStore.hasPermission('group.manage')">
+              <li v-if="authStore.isAdmin || authStore.hasPermission('group.manage')">
                 <RouterLink to="/admin/coursegroup"
                   class="admin-nav-item"
                   :class="{ active: $route.path.startsWith('/admin/learning-paths') }"
@@ -120,7 +121,7 @@
                 </RouterLink>
               </li>
 
-              <li v-if="authStore.isInstructor">
+              <li v-if="authStore.isAdmin || authStore.isInstructor || authStore.hasPermission('enrollment.view')">
                 <RouterLink to="/admin/enrollments"
                   class="admin-nav-item"
                   :class="{ active: $route.path === '/admin/enrollments' }"
@@ -129,7 +130,7 @@
                   <span class="nav-text">Quản lý ghi danh</span>
                 </RouterLink>
               </li>
-              <li>
+              <li v-if="authStore.isAdmin || authStore.isInstructor || authStore.hasPermission('quiz.manage')">
                 <RouterLink to="/admin/quiz-analysis"
                   class="admin-nav-item"
                   :class="{ active: $route.path === '/admin/quiz-analysis' }"
@@ -139,14 +140,14 @@
                 </RouterLink>
               </li>
 
-              <li class="admin-group-header" v-if="!sidebarCollapsed">
+              <li class="admin-group-header" v-if="!sidebarCollapsed && (authStore.isAdmin || authStore.hasAnyPermission('user.manage', 'doc.view', 'doc.upload', 'doc.delete', 'certificate.view', 'certificate.manage'))">
                 <span class="admin-group-pill pill-org">
                   <Layout :size="12" /> Tổ chức
                 </span>
               </li>
-              <li v-if="!sidebarCollapsed" class="admin-group-divider" />
+              <li v-if="!sidebarCollapsed && (authStore.isAdmin || authStore.hasAnyPermission('user.manage', 'doc.view', 'doc.upload', 'doc.delete', 'certificate.view', 'certificate.manage'))" class="admin-group-divider" />
 
-              <li v-if="authStore.hasPermission('user.manage')">
+              <li v-if="authStore.isAdmin || authStore.hasPermission('user.manage')">
                 <RouterLink to="/admin/departments"
                   class="admin-nav-item"
                   :class="{ active: $route.path.startsWith('/admin/departments') }"
@@ -155,7 +156,7 @@
                   <span class="nav-text">Danh sách Phòng ban</span>
                 </RouterLink>
               </li>
-              <li v-if="authStore.hasPermission('user.manage')">
+              <li v-if="authStore.isAdmin || authStore.hasPermission('user.manage')">
                 <RouterLink to="/admin/staff"
                   class="admin-nav-item"
                   :class="{ active: $route.path.startsWith('/admin/staff') }"
@@ -164,7 +165,7 @@
                   <span class="nav-text">Quản trị Nhân sự</span>
                 </RouterLink>
               </li>
-              <li v-if="authStore.hasPermission('user.manage')">
+              <li v-if="authStore.isAdmin || authStore.hasAnyPermission('user.manage', 'doc.view', 'doc.upload', 'doc.delete')">
                 <RouterLink to="/admin/documents"
                   class="admin-nav-item"
                   :class="{ active: $route.path.startsWith('/admin/documents') }"
@@ -173,7 +174,7 @@
                   <span class="nav-text">Kho Tài liệu nội bộ</span>
                 </RouterLink>
               </li>
-              <li v-if="authStore.isAdmin">
+              <li v-if="authStore.isAdmin || authStore.hasAnyPermission('certificate.view', 'certificate.manage')">
                 <RouterLink to="/admin/certificates"
                   class="admin-nav-item"
                   :class="{ active: $route.path === '/admin/certificates' }"
@@ -183,14 +184,14 @@
                 </RouterLink>
               </li>
 
-              <li class="admin-group-header" v-if="!sidebarCollapsed">
+              <li class="admin-group-header" v-if="!sidebarCollapsed && (authStore.isAdmin || authStore.hasAnyPermission('report.view', 'role.manage'))">
                 <span class="admin-group-pill pill-system">
                   <Shield :size="12" /> Hệ thống
                 </span>
               </li>
-              <li v-if="!sidebarCollapsed" class="admin-group-divider" />
+              <li v-if="!sidebarCollapsed && (authStore.isAdmin || authStore.hasAnyPermission('report.view', 'role.manage'))" class="admin-group-divider" />
 
-              <li v-if="authStore.isAdmin">
+              <li v-if="authStore.isAdmin || authStore.hasPermission('report.view')">
                 <RouterLink to="/admin/reports"
                   class="admin-nav-item"
                   :class="{ active: $route.path === '/admin/reports' }"
@@ -199,7 +200,7 @@
                   <span class="nav-text">Báo cáo &amp; Nhắc nhở</span>
                 </RouterLink>
               </li>
-              <li v-if="authStore.hasPermission('role.manage')">
+              <li v-if="authStore.isAdmin || authStore.hasPermission('role.manage')">
                 <RouterLink to="/admin/rbac"
                   class="admin-nav-item"
                   :class="{ active: $route.path === '/admin/rbac' }"
@@ -237,7 +238,7 @@
               </linearGradient>
             </defs>
           </svg>
-          <span class="mobile-logo-text">EDUPOWER</span>
+          <span class="mobile-logo-text">POWERTECH LMS</span>
         </div>
 
         <div class="header-actions">
@@ -248,6 +249,8 @@
             <Sun v-if="isDark" :size="20" />
             <Moon v-else :size="20" />
           </button>
+
+          <NotificationDropdown v-if="authStore.isAuthenticated" />
 
           <div class="user-menu" @click="showUserMenu = !showUserMenu" ref="userMenuRef">
             <div v-if="avatarUrl" class="user-avatar" :style="{ backgroundImage: `url('${avatarUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center', color: 'transparent' }"></div>
@@ -289,12 +292,13 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import NotificationDropdown from '@/components/NotificationDropdown.vue'
 import {
   LayoutDashboard, BookOpen, GraduationCap, Trophy, Library,
   Layout, Shield, Menu, X, Search, Sun, Moon,
   ChevronDown, LogOut, User, ChevronLeft, ChevronRight,
   FilePlus, Users, BarChart3, Building2, UserCog, FolderOpen,
-  Award, PieChart, KeyRound, Route // Thêm Icon Route
+  Award, PieChart, KeyRound, Route, ShieldCheck, Calendar // Thêm Icon
 } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
@@ -356,7 +360,9 @@ const avatarUrl = computed(() => {
 
 function toggleTheme() {
   isDark.value = !isDark.value
-  document.documentElement.setAttribute('data-theme', isDark.value ? 'dark' : 'light')
+  const theme = isDark.value ? 'dark' : 'light'
+  document.documentElement.setAttribute('data-theme', theme)
+  localStorage.setItem('lms_theme', theme)
 }
 
 function doLogout() {
@@ -374,8 +380,14 @@ function handleResize() {
 }
 
 onMounted(() => {
-  syncSidebarGroups()
+  const savedTheme = localStorage.getItem('lms_theme')
+  if (savedTheme) {
+    isDark.value = (savedTheme === 'dark')
+  } else {
+    isDark.value = window.matchMedia('(prefers-color-scheme: dark)').matches
+  }
   document.documentElement.setAttribute('data-theme', isDark.value ? 'dark' : 'light')
+  syncSidebarGroups()
   document.addEventListener('click', handleClickOutside)
   window.addEventListener('resize', handleResize)
 })

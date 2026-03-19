@@ -4,6 +4,11 @@ import { useRouter } from "vue-router";
 // @ts-ignore
 import { documentAPI } from "@/services/api";
 import { toast } from "vue3-toastify";
+import axios from "axios";
+// @ts-ignore
+import * as mammoth from "mammoth";
+// @ts-ignore
+import * as XLSX from "xlsx";
 import { 
   Search, FileText, FilePieChart, FileImage, 
   Clock, History, Download, LayoutGrid, List, Filter,
@@ -23,6 +28,13 @@ const targetDoc = ref<any | null>(null);
 const versionHistory = ref<any[]>([]);
 const loadingVersions = ref(false);
 
+const isPreviewModalOpen = ref(false);
+const previewUrl = ref("");
+const previewTitle = ref("");
+const previewExt = ref("");
+const previewHtml = ref("");
+const isRendering = ref(false);
+
 const searchQuery = ref("");
 const selectedFormat = ref("all");
 const viewMode = ref<'grid' | 'list'>('grid');
@@ -33,7 +45,12 @@ const fetchDocs = async () => {
   try {
     // Thêm timestamp để ép trình duyệt bỏ qua cache, luôn lấy data mới nhất
     const timestamp = new Date().getTime();
-    const { data } = await documentAPI.getAll({ page: 1, pageSize: 100, _t: timestamp });
+    const { data } = await documentAPI.getAll({ 
+      page: 1, 
+      pageSize: 100, 
+      _t: timestamp,
+      manage: true // Bật chế độ quản lý để GV chỉ thấy tài liệu của mình
+    });
     documents.value = data.items || data || [];
   } catch (error) {
     toast.error("Không thể tải danh sách tài liệu.");
@@ -77,10 +94,60 @@ const stats = computed(() => {
 });
 
 // --- 4. HANDLERS ---
-const viewDocument = (docId: number) => {
-  const url = documentAPI.getDownloadUrl(docId);
-  window.open(url, '_blank');
+const viewDocument = async (docId: number) => {
+  const doc = documents.value.find(d => d.id === docId);
+  if (!doc) return;
+  
+  const ext = doc.fileName?.split('.').pop()?.toLowerCase() || '';
+  const url = documentAPI.getPreviewUrl(docId);
+  
+  previewTitle.value = doc.title;
+  previewExt.value = ext;
+  previewUrl.value = url;
+  previewHtml.value = "";
+  isPreviewModalOpen.value = true;
+
+  if (ext === 'pdf') {
+     // PDF sẽ dùng iframe trực tiếp
+     return;
+  }
+
+  // Xử lý Word / Excel
+  if (['docx', 'doc', 'xlsx', 'xls'].includes(ext)) {
+     isRendering.value = true;
+     try {
+        const token = localStorage.getItem("lms_token");
+        const response = await axios.get(url, { 
+           responseType: 'arraybuffer',
+           headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (ext === 'docx' || ext === 'doc') {
+           const result = await mammoth.convertToHtml({ arrayBuffer: response.data });
+           previewHtml.value = result.value || "<p class='text-center p-5'>Không có nội dung hiển thị.</p>";
+        } else {
+           const workbook = XLSX.read(new Uint8Array(response.data), { type: 'array' });
+           const firstSheetName = workbook.SheetNames[0];
+           const worksheet = workbook.Sheets[firstSheetName];
+           previewHtml.value = XLSX.utils.sheet_to_html(worksheet);
+        }
+     } catch (error) {
+        console.error("LỖI PREVIEW:", error);
+        toast.error("Không thể tạo bản xem trước cho tệp này.");
+        previewHtml.value = "<div class='text-center p-5'><p class='text-danger fw-bold'>Lỗi render tài liệu.</p></div>";
+     } finally {
+        isRendering.value = false;
+     }
+  }
 };
+
+const closePreview = () => {
+    isPreviewModalOpen.value = false;
+    previewUrl.value = "";
+    previewTitle.value = "";
+    previewHtml.value = "";
+    isRendering.value = false;
+}
 
 // ĐÃ SỬA: Dùng Vue State để mở Modal, không dùng Bootstrap JS nữa
 const openVersionHistory = async (doc: any) => {
@@ -380,6 +447,36 @@ const getFileIcon = (fileName: string) => {
        </div>
     </teleport>
 
+    <!-- Document Preview Modal -->
+    <teleport to="body">
+       <div v-if="isPreviewModalOpen" class="preview-overlay" @click="closePreview">
+          <div class="preview-container glass-modal" @click.stop>
+             <div class="preview-header">
+                <div class="d-flex align-items-center gap-3">
+                   <div class="preview-icon"><FileText :size="20" /></div>
+                   <h6 class="mb-0 fw-bold">{{ previewTitle }}</h6>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                   <a :href="previewUrl.replace('preview=true', 'preview=false')" target="_blank" class="btn-download-sm" title="Tải xuống">
+                      <Download :size="16" />
+                   </a>
+                   <button class="btn-close-preview" @click="closePreview">
+                      <X :size="20" />
+                   </button>
+                </div>
+             </div>
+             <div class="preview-body">
+                <div v-if="isRendering" class="rendering-state">
+                   <div class="premium-spinner border-primary"></div>
+                   <p class="mt-3 fw-bold text-primary">Đang kết xuất bản xem trước...</p>
+                </div>
+                <iframe v-else-if="previewExt === 'pdf'" :src="previewUrl" class="preview-iframe"></iframe>
+                <div v-else class="preview-html-container scroll-glass" v-html="previewHtml"></div>
+             </div>
+          </div>
+       </div>
+    </teleport>
+
   </div>
 </template>
 
@@ -524,6 +621,147 @@ const getFileIcon = (fileName: string) => {
 .v-date-ui { font-size: 11px; color: var(--text-tertiary); }
 .btn-download-glass { background: rgba(0,0,0,0.03); border: none; padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; color: var(--text-secondary); transition: all 0.2s; cursor: pointer; }
 .btn-download-glass:hover { background: var(--primary-500); color: white; }
+
+/* Preview Modal Styles */
+.preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(10px);
+  z-index: 2100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+  padding: 24px;
+}
+.preview-container {
+  width: 100%;
+  max-width: 1200px;
+  height: 90vh;
+  background: #f8fafc;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+}
+.preview-header {
+  height: 64px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+.preview-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--primary-50);
+  color: var(--primary-600);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.preview-body {
+  flex: 1;
+  background: #f1f5f9; /* Nền xám nhạt để hiện rõ "giấy" tài liệu */
+  overflow: hidden;
+  position: relative;
+}
+.preview-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: white;
+}
+.btn-close-preview {
+  background: rgba(0,0,0,0.05);
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.btn-close-preview:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger-600);
+}
+.btn-download-sm {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-50);
+  color: var(--primary-600);
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.btn-download-sm:hover {
+  background: var(--primary-100);
+  transform: translateY(-2px);
+}
+
+.rendering-state {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: white;
+}
+
+.preview-html-container {
+  height: 100%;
+  overflow-y: scroll; /* Force hiện scrollbar */
+  background: white;
+  padding: 60px 80px;
+  max-width: 1000px;
+  margin: 0 auto;
+  user-select: none;
+  pointer-events: auto;
+  box-shadow: 0 0 50px rgba(0,0,0,0.1); /* Hiệu ứng đổ bóng tờ giấy */
+}
+
+/* Kiểu dáng riêng cho scrollbar trong preview để dễ nhìn */
+.preview-html-container::-webkit-scrollbar { width: 10px; }
+.preview-html-container::-webkit-scrollbar-track { background: #f1f5f9; }
+.preview-html-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 2px solid #f1f5f9; }
+.preview-html-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Biến table excel thành đẹp hơn */
+.preview-html-container :deep(table) {
+  min-width: 100%; /* Đảm bảo table chiếm hết chiều rộng giấy */
+  border-collapse: collapse;
+  margin-bottom: 30px;
+  font-size: 13px;
+  border: 1px solid #e2e8f0;
+}
+.preview-html-container :deep(th), .preview-html-container :deep(td) {
+  border: 1px solid #e2e8f0;
+  padding: 10px 14px;
+  text-align: left;
+}
+.preview-html-container :deep(tr:nth-child(even)) {
+  background: #f8fafc;
+}
+.preview-html-container :deep(thead) {
+  background: #f1f5f9;
+  font-weight: bold;
+}
+
+/* Word styles */
+.preview-html-container :deep(h1) { font-size: 26px; font-weight: 800; margin-bottom: 24px; color: #1e293b; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; }
+.preview-html-container :deep(p) { line-height: 1.8; margin-bottom: 16px; color: #334155; font-size: 15px; }
+.preview-html-container :deep(img) { max-width: 100%; height: auto; border-radius: 8px; margin: 20px 0; }
 
 /* States */
 .premium-spinner { width: 44px; height: 44px; border: 4px solid var(--primary-50); border-top-color: var(--primary-500); border-radius: 50%; animation: spin 1s linear infinite; }

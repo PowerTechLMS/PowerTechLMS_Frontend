@@ -176,7 +176,7 @@ async function handleSubmit() {
     } else {
       await authStore.login(form.email, form.password)
     }
-    router.push('/')
+router.push('/dashboard')
   } catch (e) {
     error.value = e.response?.data?.message || 'Đã xảy ra lỗi. Vui lòng thử lại.'
   } finally {

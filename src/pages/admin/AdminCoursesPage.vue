@@ -43,6 +43,7 @@ const fetchCourses = async () => {
 			page: 1,
 			pageSize: 50,
 			search: searchQuery.value || null,
+			manage: true, // Bật chế độ quản lý để GV chỉ thấy khoá của mình
 		};
 
 		// Truyền filter xuống Backend (Dựa theo biến isPublished = true/false)

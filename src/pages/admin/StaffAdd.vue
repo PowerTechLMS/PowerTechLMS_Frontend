@@ -15,8 +15,11 @@ import {
 	Save,
 	Loader2,
 	CheckCircle2,
+	Layout,
 } from "lucide-vue-next";
 import { toast } from "vue3-toastify";
+import { onMounted } from "vue";
+import { userGroupAPI } from "@/services/api";
 
 const router = useRouter();
 const submitting = ref(false);
@@ -27,9 +30,21 @@ const userForm = ref({
 	password: "",
 	confirmPassword: "",
 	role: "Employee",
+	groupId: null as number | null,
 	avatarFile: null as File | null,
 	avatarPreview: "",
 	isActive: true,
+});
+
+const departments = ref<any[]>([]);
+
+onMounted(async () => {
+	try {
+		const res = await userGroupAPI.getAll();
+		departments.value = res.data.items || res.data;
+	} catch (error) {
+		console.error("Lỗi tải phòng ban", error);
+	}
 });
 
 const showPassword = ref(false);
@@ -71,14 +86,18 @@ const submitForm = async () => {
 			payload.append("Password", userForm.value.password);
 			payload.append("Role", userForm.value.role);
 			payload.append("IsActive", String(userForm.value.isActive));
+			if (userForm.value.groupId) {
+				payload.append("GroupId", String(userForm.value.groupId));
+			}
 			payload.append("AvatarFile", userForm.value.avatarFile);
 		} else {
 			payload = {
-				FullName: userForm.value.fullName,
-				Email: userForm.value.email,
-				Password: userForm.value.password,
-				Role: userForm.value.role,
-				IsActive: userForm.value.isActive,
+				fullName: userForm.value.fullName,
+				email: userForm.value.email,
+				password: userForm.value.password,
+				role: userForm.value.role,
+				isActive: userForm.value.isActive,
+				groupId: userForm.value.groupId,
 			};
 		}
 
@@ -275,6 +294,24 @@ const submitForm = async () => {
 								accept="image/*"
 								@change="handleAvatarChange"
 							/>
+						</div>
+						
+						<!-- Department Selection -->
+						<div class="form-group mb-4">
+							<label class="dp-label">Phòng ban / Bộ phận</label>
+							<div class="dp-input-wrapper with-icon">
+								<Layout :size="18" class="dp-input-icon" />
+								<select v-model="userForm.groupId" class="dp-input">
+									<option :value="null">-- Chọn phòng ban (Tùy chọn) --</option>
+									<option v-for="dept in departments" :key="dept.id" :value="dept.id">
+										{{ dept.name }}
+									</option>
+								</select>
+								<div class="dp-input-focus"></div>
+							</div>
+							<p class="fs-12 text-tertiary mt-2">
+								Nhân sự sẽ tự động nhận các lộ trình học tập thuộc phòng ban này.
+							</p>
 						</div>
 
 						<!-- Status Toggle (Moved up since Role is removed) -->

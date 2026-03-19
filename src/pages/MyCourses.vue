@@ -163,7 +163,7 @@
 							<span
 								class="badge-glass"
 								:class="e.isMandatory ? 'danger' : 'primary'"
-								>{{ e.isMandatory ? "Bắt buộc" : "Tự nguyện" }}</span
+								>{{ e.isMandatory ? "Bắt buộc" : "Tự chọn" }}</span
 							>
 							<span v-if="e.courseLevel === 1" class="badge-glass warning"
 								>Cấp 1: Người mới</span
@@ -291,6 +291,7 @@ const featuredEnrollment = computed(() => {
 	return (
 		enrollments.value.find(
 			(e) =>
+				e.status === "Approved" && 
 				Math.round(e.progressPercent) > 0 &&
 				Math.round(e.progressPercent) < 100,
 		) || null
@@ -328,7 +329,7 @@ function updateActivePillPosition() {
 onMounted(async () => {
 	try {
 		const { data } = await enrollmentAPI.getMy();
-		enrollments.value = data;
+		enrollments.value = data.filter(e => e.status === "Approved" || e.status === "Completed");
 		setTimeout(updateActivePillPosition, 100);
 	} catch (e) {
 		console.error(e);
@@ -347,24 +348,24 @@ onMounted(async () => {
 
 /* Glass Basics */
 .glass {
-	background: rgba(255, 255, 255, 0.7);
+	background: var(--bg-card);
 	backdrop-filter: blur(16px);
 	-webkit-backdrop-filter: blur(16px);
-	border: 1px solid rgba(255, 255, 255, 0.5);
+	border: 1px solid var(--border-color);
 }
 
 .glass-hover {
-	background: rgba(255, 255, 255, 0.6);
+	background: var(--bg-card);
 	backdrop-filter: blur(12px);
-	border: 1px solid rgba(255, 255, 255, 0.8);
+	border: 1px solid var(--border-color);
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-hover:hover {
-	background: rgba(255, 255, 255, 0.9);
+	background: var(--bg-card-hover);
 	transform: translateY(-4px);
-	border-color: #818cf8;
-	box-shadow: 0 15px 30px rgba(79, 70, 229, 0.1);
+	border-color: var(--primary);
+	box-shadow: var(--shadow-lg);
 }
 
 /* Badges */
@@ -380,22 +381,22 @@ onMounted(async () => {
 }
 .badge-glass.primary {
 	background: rgba(99, 102, 241, 0.15);
-	color: #4f46e5;
+	color: var(--primary-400);
 	border-color: rgba(99, 102, 241, 0.3);
 }
 .badge-glass.success {
 	background: rgba(34, 197, 94, 0.15);
-	color: #15803d;
+	color: var(--success-400);
 	border-color: rgba(34, 197, 94, 0.3);
 }
 .badge-glass.warning {
 	background: rgba(245, 158, 11, 0.15);
-	color: #b45309;
+	color: var(--warning-400);
 	border-color: rgba(245, 158, 11, 0.3);
 }
 .badge-glass.danger {
 	background: rgba(239, 68, 68, 0.15);
-	color: #b91c1c;
+	color: var(--danger-400);
 	border-color: rgba(239, 68, 68, 0.3);
 }
 
@@ -413,7 +414,7 @@ onMounted(async () => {
 	height: 64px;
 	border-radius: 20px;
 	background: rgba(79, 70, 229, 0.1);
-	color: #4f46e5;
+	color: var(--primary);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -425,10 +426,17 @@ onMounted(async () => {
 .title-gradient {
 	font-size: 2.8rem;
 	font-weight: 900;
-	background: linear-gradient(90deg, #1e293b, #4f46e5);
+	background: var(--gradient-primary);
 	background-clip: text;
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
+}
+
+/* Fix dark title manually for scoped style */
+[data-theme='dark'] .title-gradient {
+  background: none !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+  color: var(--text-primary) !important;
 }
 .header-decoration-bg {
 	position: absolute;
@@ -454,6 +462,8 @@ onMounted(async () => {
 }
 .stat-card {
 	padding: 1.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
 	border-radius: 24px;
 	display: flex;
 	align-items: center;
@@ -468,17 +478,17 @@ onMounted(async () => {
 	justify-content: center;
 	border-width: 1px;
 	border-style: solid;
-	box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.5);
 }
 .stat-value {
 	font-size: 2rem;
 	font-weight: 900;
 	line-height: 1;
 	margin-bottom: 4px;
+  color: var(--text-primary);
 }
 .stat-label {
 	font-size: 0.9rem;
-	color: #64748b;
+	color: var(--text-secondary);
 	letter-spacing: 0.5px;
 }
 
@@ -496,6 +506,7 @@ onMounted(async () => {
 	font-size: 1.5rem;
 	letter-spacing: -0.5px;
 	margin: 0;
+  color: var(--text-primary);
 }
 
 .featured-card {
@@ -503,12 +514,14 @@ onMounted(async () => {
 	grid-template-columns: 380px 1fr;
 	border-radius: 28px;
 	overflow: hidden;
-	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+	box-shadow: var(--shadow-md);
 	cursor: pointer;
 }
 .featured-card:hover {
-	border-color: #818cf8;
-	box-shadow: 0 15px 40px rgba(79, 70, 229, 0.12);
+	border-color: var(--primary);
+	box-shadow: var(--shadow-lg);
 }
 
 .featured-image {
@@ -530,7 +543,7 @@ onMounted(async () => {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	background: rgba(255, 255, 255, 0.4);
+	background: transparent;
 }
 .featured-meta {
 	display: flex;
@@ -552,6 +565,7 @@ onMounted(async () => {
 	font-weight: 800;
 	margin-bottom: 2rem;
 	line-height: 1.3;
+  color: var(--text-primary);
 }
 
 .featured-progress-wrap {
@@ -568,13 +582,12 @@ onMounted(async () => {
 	background: rgba(79, 70, 229, 0.1);
 	border-radius: 20px;
 	overflow: hidden;
-	border: 1px solid rgba(255, 255, 255, 0.6);
+	border: 1px solid var(--border-color);
 }
 .progress-fill-glow {
 	height: 100%;
-	background: linear-gradient(90deg, #6366f1, #a855f7);
+	background: var(--gradient-primary);
 	border-radius: 20px;
-	box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
 }
 
 .btn-neon {
@@ -623,12 +636,12 @@ onMounted(async () => {
 	top: 0;
 	left: 0;
 	height: 100%;
-	background: #6366f1;
+	background: var(--primary);
 	border-radius: 20px;
 	transition:
 		transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
 		width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-	box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+	box-shadow: var(--shadow-glow);
 	z-index: 1;
 }
 .pill-btn {
@@ -638,7 +651,7 @@ onMounted(async () => {
 	font-weight: 600;
 	border: none;
 	background: transparent;
-	color: #64748b;
+	color: var(--text-secondary);
 	cursor: pointer;
 	position: relative;
 	z-index: 2;
@@ -659,6 +672,8 @@ onMounted(async () => {
 }
 
 .enrollment-row {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
 	display: flex;
 	align-items: center;
 	padding: 1.25rem 1.75rem;
@@ -666,6 +681,11 @@ onMounted(async () => {
 	gap: 1.5rem;
 	cursor: pointer;
 	animation: slideInUp 0.5s ease backwards var(--delay);
+}
+.enrollment-row:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--primary);
+  transform: translateX(4px);
 }
 
 .icon-box-soft {
@@ -701,7 +721,7 @@ onMounted(async () => {
 	font-weight: 800;
 	font-size: 1.15rem;
 	margin-bottom: 0.5rem;
-	color: #1e293b;
+	color: var(--text-primary);
 }
 .course-meta-small {
 	display: flex;
@@ -722,6 +742,7 @@ onMounted(async () => {
 .percent-label {
 	font-size: 1rem;
 	font-weight: 800;
+  color: var(--text-primary);
 }
 .progress-mini {
 	height: 8px;
@@ -744,8 +765,8 @@ onMounted(async () => {
 	height: 40px;
 	border-radius: 12px;
 	border: none;
-	background: rgba(241, 245, 249, 0.8);
-	color: #64748b;
+	background: var(--bg-tertiary);
+	color: var(--text-secondary);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -762,8 +783,7 @@ onMounted(async () => {
 	padding: 6rem 2rem;
 	text-align: center;
 	border-radius: 28px;
-	border: 1px solid rgba(255, 255, 255, 0.8);
-	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.02);
+	border: 1px solid var(--border-color);
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -775,17 +795,12 @@ onMounted(async () => {
 	width: 100px;
 	height: 100px;
 	border-radius: 50%;
-	background: radial-gradient(
-		circle,
-		rgba(99, 102, 241, 0.1) 0%,
-		transparent 70%
-	);
-	border: 1px solid rgba(99, 102, 241, 0.15);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	margin: 0 auto 1.5rem;
-	background-color: white;
 }
 
 /* Skeletons */

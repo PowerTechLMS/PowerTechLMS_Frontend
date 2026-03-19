@@ -91,7 +91,8 @@ export const enrollmentAPI = {
 
 // Progress
 export const progressAPI = {
-	complete: (lessonId) => api.post("/progress/complete", { lessonId }),
+	complete: (lessonId, isQuizPassed = false) =>
+		api.post("/progress/complete", { lessonId: Number(lessonId), isQuizPassed }),
 	updateVideoPosition: (lessonId, positionSeconds, watchedPercent) =>
 		api.put("/progress/video-position", {
 			lessonId,
@@ -168,8 +169,11 @@ export const documentAPI = {
 	getVersions: (id) => api.get(`/documents/${id}/versions`),
 	delete: (id) => api.delete(`/documents/${id}`),
 	getDownloadUrl: (id) => `/api/documents/${id}/download`,
+	getPreviewUrl: (id) => `/api/documents/${id}/download?preview=true`,
 	getVersionDownloadUrl: (versionId) =>
 		`/api/documents/versions/${versionId}/download`,
+	getVersionPreviewUrl: (versionId) =>
+		`/api/documents/versions/${versionId}/download?preview=true`,
 };
 
 // Reports
@@ -227,6 +231,7 @@ export const userGroupAPI = {
 // Course Groups (Khung lộ trình đào tạo)
 export const courseGroupAPI = {
 	getAll: (params) => api.get("/coursegroups", { params }),
+	getMy: () => api.get("/coursegroups/my"),
 	getById: (id) => api.get(`/coursegroups/${id}`),
 	create: (data) => api.post("/coursegroups", data),
 	update: (id, data) => api.put(`/coursegroups/${id}`, data),
@@ -259,5 +264,13 @@ export const rbacAPI = {
 // --- DASHBOARD API ---
 export const dashboardAPI = {
 	getLearnerData: () => api.get("/dashboard/learner"),
+	getSummary: () => api.get("/dashboard/learner"),
 };
+
+// --- NOTIFICATIONS API ---
+export const notificationAPI = {
+	getAll: (params) => api.get("/notifications", { params }),
+	markAsRead: (id) => api.post(`/notifications/${id}/read`),
+};
+
 export default api;

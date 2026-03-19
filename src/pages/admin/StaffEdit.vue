@@ -21,8 +21,10 @@ import {
 	Pencil,
 	AlertCircle,
 	Users,
+	Layout,
 } from "lucide-vue-next";
 import { toast } from "vue3-toastify";
+import { userGroupAPI } from "@/services/api";
 
 const router = useRouter();
 const route = useRoute();
@@ -39,10 +41,13 @@ const userForm = ref({
 	password: "",
 	confirmPassword: "",
 	role: "Employee",
+	groupId: null as number | null,
 	avatarFile: null as File | null,
 	avatarPreview: "",
 	isActive: true,
 });
+
+const departments = ref<any[]>([]);
 
 const defaultAvatar =
 	"https://ui-avatars.com/api/?background=random&color=fff&name=";
@@ -56,6 +61,7 @@ const fetchUserData = async () => {
 		userForm.value.email = data.email;
 		userForm.value.role = data.role;
 		userForm.value.isActive = data.isActive;
+		userForm.value.groupId = data.groupId || null;
 
 		if (data.avatar) {
 			userForm.value.avatarPreview = data.avatar.startsWith("http")
@@ -70,7 +76,15 @@ const fetchUserData = async () => {
 	}
 };
 
-onMounted(fetchUserData);
+onMounted(async () => {
+	fetchUserData();
+	try {
+		const res = await userGroupAPI.getAll();
+		departments.value = res.data.items || res.data;
+	} catch (error) {
+		console.error("Lỗi tải phòng ban", error);
+	}
+});
 
 const handleAvatarChange = (event: Event) => {
 	const target = event.target as HTMLInputElement;
@@ -111,15 +125,21 @@ const submitForm = async () => {
 				payload.append("Password", userForm.value.password);
 			payload.append("Role", userForm.value.role);
 			payload.append("IsActive", String(userForm.value.isActive));
+			if (userForm.value.groupId) {
+				payload.append("GroupId", String(userForm.value.groupId));
+			} else {
+				payload.append("GroupId", "");
+			}
 			payload.append("AvatarFile", userForm.value.avatarFile);
 		} else {
 			payload = {
-				FullName: userForm.value.fullName,
-				Email: userForm.value.email,
-				Role: userForm.value.role,
-				IsActive: userForm.value.isActive,
+				fullName: userForm.value.fullName,
+				email: userForm.value.email,
+				role: userForm.value.role,
+				isActive: userForm.value.isActive,
+				groupId: userForm.value.groupId,
 			};
-			if (userForm.value.password) payload.Password = userForm.value.password;
+			if (userForm.value.password) payload.password = userForm.value.password;
 		}
 
 		await userAPI.update(userId, payload);
@@ -341,6 +361,32 @@ const submitForm = async () => {
 								</div>
 							</div>
 
+							<!-- Department Selection -->
+							<div class="form-group-premium mb-4">
+								<label class="label-premium">Phòng ban / Bộ phận</label>
+								<div class="input-glass-wrap with-icon">
+									<Layout
+										:size="18"
+										class="input-icon"
+										style="width: 18px; height: 18px"
+									/>
+									<select v-model="userForm.groupId" class="input-glass-ui">
+										<option :value="null">-- Không thuộc bộ phận nào --</option>
+										<option
+											v-for="dept in departments"
+											:key="dept.id"
+											:value="dept.id"
+										>
+											{{ dept.name }}
+										</option>
+									</select>
+									<div class="input-focus-glow"></div>
+								</div>
+								<p class="fs-11 text-tertiary mt-2">
+									Chuyển đổi phòng ban sẽ áp dụng lộ trình học tập mới của phòng đó.
+								</p>
+							</div>
+
 							<!-- Status Box (Moved up since Role is removed) -->
 							<div
 								class="premium-status-box mt-auto"
@@ -494,6 +540,7 @@ const submitForm = async () => {
 		var(--text-secondary)
 	);
 	-webkit-background-clip: text;
+	background-clip: text;
 	-webkit-text-fill-color: transparent;
 	margin: 0 0 4px 0;
 }

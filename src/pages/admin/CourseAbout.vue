@@ -11,6 +11,9 @@
             <div class="badge-glass warning" v-if="courseData?.categoryName">
               <Bookmark :size="12" class="me-1" /> {{ courseData.categoryName }}
             </div>
+            <div v-if="courseData?.level" class="badge-glass info">
+              <Layers :size="12" class="me-1" /> {{ getLevelLabel(courseData.level) }}
+            </div>
           </div>
           <h1 class="title-gradient h4 mb-0">Thông Tin Khóa Học</h1>
         </div>
@@ -66,6 +69,37 @@
                 <div class="section-tag mb-2">MÔ TẢ KHÓA HỌC</div>
                 <p class="preview-desc text-secondary">{{ courseData.description || 'Chưa có mô tả chi tiết cho khóa học này.' }}</p>
               </div>
+
+              <div class="course-meta-grid-premium mt-4 mb-5">
+                <div class="meta-item-glass">
+                  <div class="m-icon red"><Calendar :size="18" /></div>
+                  <div class="m-data">
+                    <span class="m-label">ĐĂNG KÝ TỪ</span>
+                    <span class="m-value">{{ formatDate(courseData.enrollStartDate) }}</span>
+                  </div>
+                </div>
+                <div class="meta-item-glass">
+                  <div class="m-icon red"><Calendar :size="18" /></div>
+                  <div class="m-data">
+                    <span class="m-label">HẠN ĐĂNG KÝ</span>
+                    <span class="m-value">{{ formatDate(courseData.enrollEndDate) }}</span>
+                  </div>
+                </div>
+                <div class="meta-item-glass">
+                  <div class="m-icon purple"><Clock :size="18" /></div>
+                  <div class="m-data">
+                    <span class="m-label">HẠN HOÀN THÀNH</span>
+                    <span class="m-value">{{ courseData.completionDeadlineDays ? `${courseData.completionDeadlineDays} ngày sau ĐK` : formatDate(courseData.completionEndDate) }}</span>
+                  </div>
+                </div>
+                <div class="meta-item-glass">
+                  <div class="m-icon green"><Award :size="18" /></div>
+                  <div class="m-data">
+                    <span class="m-label">ĐIỂM ĐẠT</span>
+                    <span class="m-value text-success">{{ courseData.passScore }}%</span>
+                  </div>
+                </div>
+              </div>
               
               <div class="sylllabus-section mt-5">
                 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -104,7 +138,7 @@
                                   <Paperclip :size="12" /> {{ lesson.documents.length }} Tài liệu
                                 </span>
                                 <span v-if="lesson.hasQuiz" class="doc-tag bg-warning-light text-warning-dark">
-                                  <HelpCircle :size="12" /> Bài tập củng cố
+                                  <HelpCircle :size="12" /> Bài tập: {{ lesson.quizQuestionCount }} câu | {{ lesson.quizPassScore }}%
                                 </span>
                               </div>
                             </div>
@@ -119,12 +153,19 @@
                     </div>
                   </div>
 
-                  <div v-if="courseData.finalQuizId" class="module-glass-card mt-4 border-success">
+                  <div v-if="courseData.finalQuiz" class="module-glass-card mt-4 border-success expanded">
                     <div class="module-header p-4 bg-success-light">
                       <div class="d-flex justify-content-between align-items-center w-100">
                         <div class="d-flex align-items-center gap-3">
                           <div class="module-number bg-success text-white"><Trophy :size="16" /></div>
-                          <h5 class="mb-0 fw-bold text-success">Bài thi cuối khóa lấy chứng chỉ</h5>
+                          <div>
+                            <h5 class="mb-0 fw-bold text-success">{{ courseData.finalQuiz.title || 'Bài thi cuối khóa lấy chứng chỉ' }}</h5>
+                            <div class="d-flex gap-3 mt-1">
+                              <span class="text-muted fs-12"><FileText :size="12" /> {{ courseData.finalQuiz.questionCount }} câu bốc thi</span>
+                              <span class="text-muted fs-12"><Clock :size="12" /> {{ courseData.finalQuiz.timeLimitMinutes }} phút</span>
+                              <span class="text-success fs-12 fw-bold"><Award :size="12" /> Đạt: {{ courseData.finalQuiz.passScore }}%</span>
+                            </div>
+                          </div>
                         </div>
                         <span class="badge-glass success sm">Bắt buộc</span>
                       </div>
@@ -161,9 +202,13 @@
                   <div class="info-label"><Layout :size="16" /> Tổng bài học</div>
                   <div class="info-value">{{ totalLessonsCount }} Bài</div>
                 </div>
-                <div class="info-row" v-if="courseData.finalQuizId">
+                <div class="info-row" v-if="courseData.finalQuiz">
                   <div class="info-label"><Trophy :size="16" /> Đánh giá</div>
-                  <div class="info-value text-success">Có bài thi Final</div>
+                  <div class="info-value text-success">Bài thi Final ({{ courseData.finalQuiz.passScore }}%)</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label"><Layers :size="16" /> Cấp độ</div>
+                  <div class="info-value">{{ getLevelLabel(courseData.level) }}</div>
                 </div>
                 <div class="info-row">
                   <div class="info-label"><Users :size="16" /> Học viên</div>
@@ -216,12 +261,13 @@
 import { ref, computed, onMounted } from "vue";
 import { RouterLink, useRouter, useRoute } from "vue-router";
 // @ts-ignore
-import { courseAPI, enrollmentAPI } from '@/services/api';
+import { courseAPI, enrollmentAPI, quizAPI } from '@/services/api';
 import { toast } from 'vue3-toastify';
 import { 
   ChevronRight, ChevronUp, ChevronDown, PlayCircle, FileText, 
   Paperclip, Clock, GraduationCap, Users, User, Image as ImageIcon,
-  CheckCircle, Globe, Layout, Info, X, HelpCircle, Trophy, Bookmark
+  CheckCircle, Globe, Layout, Info, X, HelpCircle, Trophy, Bookmark,
+  Calendar, Award, Layers
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -237,7 +283,8 @@ const courseData = ref<any>(null);
 interface DocumentFile { id: number; fileName: string; }
 interface Lesson {
   id: number; title: string; type: "Video" | "Text"; durationSeconds: number;
-  isFreePreview: boolean; videoUrl: string; documents: DocumentFile[]; hasQuiz: boolean;
+  isFreePreview: boolean; videoUrl: string; documents: DocumentFile[]; 
+  hasQuiz: boolean; quizQuestionCount?: number; quizPassScore?: number;
 }
 interface Module { id: number; title: string; lessons: Lesson[]; }
 
@@ -245,10 +292,26 @@ const syllabus = ref<Module[]>([]);
 
 // Format duration
 const formatDuration = (seconds: number) => {
-  if (!seconds || seconds === 0) return "--:--";
+  if (!seconds || seconds === 0) return "00:00";
   const m = Math.floor(seconds / 60).toString().padStart(2, '0');
   const s = (seconds % 60).toString().padStart(2, '0');
   return `${m}:${s}`;
+};
+
+const formatDate = (dateString: string) => {
+  if (!dateString) return "Không giới hạn";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "Không giới hạn";
+  return date.toLocaleDateString("vi-VN");
+};
+
+const getLevelLabel = (level: number) => {
+  switch (level) {
+    case 1: return "Cấp 1: Người mới";
+    case 2: return "Cấp 2: Phòng ban";
+    case 3: return "Cấp 3: Tự chọn";
+    default: return "Cấp 3: Tự chọn";
+  }
 };
 
 // URL Helpers
@@ -303,25 +366,54 @@ onMounted(async () => {
 
     // Map modules/lessons
     if (courseData.value.modules && courseData.value.modules.length > 0) {
-      syllabus.value = courseData.value.modules.map((m: any) => ({
-        id: m.id,
-        title: m.title,
-        lessons: (m.lessons || []).map((l: any) => {
-          return {
+      const loadedModules = [];
+      for (const m of courseData.value.modules) {
+        const loadedLessons = [];
+        for (const l of m.lessons || []) {
+          let quizDetails = { questionCount: 0, passScore: 0 };
+          if (l.quizId) {
+            try {
+              const qRes = await quizAPI.getById(l.quizId);
+              quizDetails.questionCount = qRes.data.questions?.length || 0;
+              quizDetails.passScore = qRes.data.passScore || 0;
+            } catch (e) {
+              console.error("Error fetching lesson quiz:", e);
+            }
+          }
+
+          loadedLessons.push({
             id: l.id,
             title: l.title,
             type: l.type || "Video",
-            durationSeconds: l.videoDurationSeconds || 0, 
+            durationSeconds: l.type === "Video" ? (l.videoDurationSeconds || 0) : (l.readingDurationSeconds || 0),
             isFreePreview: l.isFreePreview || false,
             videoUrl: l.videoUrl || "",
-            documents: (l.attachments || []).map((d: any) => ({ 
+            documents: (l.attachments || []).map((d: any) => ({
               id: d.id,
               fileName: d.fileName || d.title || "Tài liệu"
             })),
-            hasQuiz: !!l.quizId 
-          };
-        })
-      }));
+            hasQuiz: !!l.quizId,
+            quizQuestionCount: quizDetails.questionCount,
+            quizPassScore: quizDetails.passScore
+          });
+        }
+        loadedModules.push({
+          id: m.id,
+          title: m.title,
+          lessons: loadedLessons
+        });
+      }
+      syllabus.value = loadedModules;
+    }
+
+    // Map Final Quiz
+    if (courseData.value.finalQuizId) {
+      try {
+        const resQuiz = await quizAPI.getById(courseData.value.finalQuizId);
+        courseData.value.finalQuiz = resQuiz.data;
+      } catch (e) {
+        console.error("Error fetching final quiz:", e);
+      }
     }
   } catch (error: any) {
     console.error("Lỗi tải dữ liệu khóa học:", error);
@@ -396,6 +488,7 @@ const isModuleExpanded = (moduleId: number, index: number) => {
   text-transform: uppercase;
 }
 .badge-glass.primary { background: rgba(99, 102, 241, 0.1); color: #4f46e5; }
+.badge-glass.info { background: rgba(14, 165, 233, 0.1); color: #0ea5e9; }
 .badge-glass.success { background: rgba(16, 185, 129, 0.1); color: #059669; }
 .badge-glass.warning { background: rgba(245, 158, 11, 0.1); color: #b45309; }
 .badge-glass.dark { background: rgba(0, 0, 0, 0.6); color: white; }
@@ -412,6 +505,47 @@ const isModuleExpanded = (moduleId: number, index: number) => {
 }
 .badge-neon.success { background: #10b981; color: white; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
 .badge-neon.success:hover { transform: scale(1.05); box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4); }
+
+/* New Meta Grid */
+.course-meta-grid-premium {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+.meta-item-glass {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+.m-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.m-icon.red { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.m-icon.purple { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+.m-icon.green { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+
+.m-label {
+  display: block;
+  font-size: 9px;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+}
+.m-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+}
 
 .page-header-premium {
   padding: 1.5rem 0; display: flex; justify-content: space-between; align-items: center;

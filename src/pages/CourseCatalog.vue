@@ -420,17 +420,26 @@ const getCardGradient = (idx) => cardGradients[idx % cardGradients.length];
 // ── Original logic — untouched ────────────────────────────────────
 let debounceTimer = null;
 
+// @ts-ignore
+import { useAuthStore } from "@/stores/auth";
+
+const authStore = useAuthStore();
+
 async function fetchCourses() {
 	loading.value = true;
 	try {
-		const { data } = await courseAPI.getAll({
+        const params = {
 			page: page.value,
 			pageSize: 12,
 			search: search.value || undefined,
 			categoryId: activeCategory.value || undefined,
 			isPublished: true,
-			level: 3, // [MỚI] Chỉ hiển thị khoá tự chọn/kỹ năng trong mục Khám phá
-		});
+			level: 3, 
+		};
+
+        // ĐÃ XÓA: Không truyền manage=true cho Giảng viên nữa để họ thấy được toàn bộ thư viện
+
+		const { data } = await courseAPI.getAll(params);
 		courses.value = data.items;
 		totalPages.value = Math.ceil(data.totalCount / 12);
 
@@ -467,6 +476,9 @@ async function fetchUserProgress() {
 }
 
 function isLocked(course) {
+	// Giáo viên và Admin được xem tất cả, không bị khóa level
+	if (authStore.isInstructor || authStore.isAdmin) return false;
+
 	if (course.level !== 2) return false;
 	if (!isLoggedIn.value) return true;
 

@@ -27,21 +27,31 @@
 				<div class="hero-content-wrapper container">
 					<div class="hero-main-info animate-slide-up">
 						<div class="d-flex gap-2 mb-3">
+							<div v-if="course.categoryName" class="badge-glass primary fw-bold">
+								{{ course.categoryName }}
+							</div>
 							<div v-if="course.level === 1" class="badge-glass danger fw-bold">
-								KHÓA HỌC BẮT BUỘC (CẤP 1)
+								BẮT BUỘC (LEVEL 1)
 							</div>
 							<div
 								v-else-if="course.level === 2"
 								class="badge-glass success fw-bold"
 							>
-								KHÓA HỌC CHUYÊN NGÀNH (CẤP 2)
+								CHUYÊN NGÀNH (LEVEL 2)
 							</div>
-							<div v-else class="badge-glass primary fw-bold">
-								KHÓA HỌC CHỌN LỌC
+							<div
+								v-else-if="course.level === 3"
+								class="badge-glass indigo fw-bold"
+							>
+								TỰ CHỌN (LEVEL 3)
 							</div>
 						</div>
 						<h1 class="hero-title title-gradient">{{ course.title }}</h1>
-						<p class="hero-desc">{{ course.description }}</p>
+						<div v-if="course.description" class="hero-desc-wrapper">
+							<p class="hero-desc">
+								{{ course.description }}
+							</p>
+						</div>
 
 						<!-- [MỚI] Cảnh báo tiền đề -->
 						<div
@@ -61,17 +71,19 @@
 						<div class="hero-meta-grid">
 							<div class="meta-item-glass">
 								<User :size="16" class="text-primary" />
-								<span
-									>Bởi <strong>{{ course.createdByName }}</strong></span
-								>
+								<span>👤 <strong>{{ course.createdByName }}</strong></span>
 							</div>
 							<div class="meta-item-glass">
 								<BookOpen :size="16" class="text-success" />
-								<span>{{ totalLessons }} bài học</span>
+								<span>📚 {{ totalLessons }} Bài học</span>
+							</div>
+							<div class="meta-item-glass" v-if="totalDuration > 0">
+								<Clock :size="16" class="text-info" />
+								<span>⏱ {{ Math.ceil(totalDuration / 60) }} Phút</span>
 							</div>
 							<div class="meta-item-glass">
 								<Users :size="16" class="text-warning" />
-								<span>{{ course.enrollmentCount }} học viên</span>
+								<span>👥 {{ course.enrollmentCount }} Học viên</span>
 							</div>
 						</div>
 
@@ -166,55 +178,94 @@
 												<CheckCircle2
 													v-if="isLessonCompleted(lesson.id)"
 													:size="20"
-													class="text-success-emerald"
+													class="text-success"
 												/>
-												<Video v-else-if="lesson.type === 'Video'" :size="18" />
-												<FileText v-else :size="18" />
+												<div v-else class="type-icon-box">
+													<Video v-if="lesson.type === 'Video'" :size="18" />
+													<FileText v-else-if="lesson.type === 'Document'" :size="18" />
+													<ClipboardList v-else-if="lesson.type === 'Quiz'" :size="18" />
+													<FileText v-else :size="18" />
+												</div>
 											</div>
 
 											<div class="lesson-content-main">
-												<span class="lesson-title-text">{{
-													lesson.title
-												}}</span>
+												<div class="lesson-title-row">
+													<span class="lesson-title-text">
+														<span class="play-indicator">▶</span>
+														Bài học: {{ lesson.title }}
+													</span>
+													<span v-if="isLessonCompleted(lesson.id)" class="completed-tag">✓ Đã hoàn thành</span>
+												</div>
 												<div class="lesson-tags-wrap">
+													<span class="type-tag">
+														<template v-if="lesson.type === 'Video'">🎥 Video</template>
+														<template v-else-if="lesson.type === 'Document'">📄 Tài liệu</template>
+														<template v-else-if="lesson.type === 'Quiz'">📝 Quiz</template>
+														<template v-else>📄 Bài học</template>
+													</span>
 													<span
 														class="badge-glass primary sm"
 														v-if="lesson.isFreePreview"
 														>Xem thử</span
 													>
 													<span
-														v-if="
-															lesson.type === 'Video' &&
-															lesson.videoDurationSeconds
-														"
+														v-if="lesson.videoDurationSeconds > 0"
 														class="duration-tag"
 													>
 														<Clock :size="12" class="me-1" />
-														{{
-															Math.floor(lesson.videoDurationSeconds / 60)
-														}}:{{
-															String(lesson.videoDurationSeconds % 60).padStart(
-																2,
-																"0",
-															)
-														}}
+														⏱ {{ Math.floor(lesson.videoDurationSeconds / 60) }} phút
 													</span>
 												</div>
 											</div>
 
 											<div class="lesson-action-indicator">
 												<Lock
-													v-if="
-														!canAccessLesson(lesson) && !lesson.isFreePreview
-													"
+													v-if="!canAccessLesson(lesson) && !lesson.isFreePreview"
 													:size="16"
 													class="text-tertiary"
 												/>
-												<ArrowRight v-else :size="16" class="hover-arrow" />
+												<div v-else class="play-btn-circle">
+													<Play :size="14" fill="currentColor" />
+												</div>
 											</div>
 										</div>
 									</div>
 								</Transition>
+							</div>
+
+							<!-- Instructor Info -->
+							<div class="instructor-card-premium glass mt-5 mb-5 p-4">
+								<h3 class="section-title mb-4">GIẢNG VIÊN</h3>
+								<div class="instructor-profile">
+									<div class="instructor-avatar">
+										<img
+											:src="`https://ui-avatars.com/api/?name=${course.createdByName}&background=random`"
+											alt="Avatar"
+										/>
+									</div>
+									<div class="instructor-details">
+										<div class="instructor-name">{{ course.createdByName }}</div>
+										<div class="instructor-dept">Giảng viên / Training Dept</div>
+										<p v-if="course.instructorBio" class="instructor-bio">
+											{{ course.instructorBio }}
+										</p>
+									</div>
+								</div>
+							</div>
+
+							<!-- Social Learning / Discussion -->
+							<div class="discussion-section glass p-4 mb-5">
+								<div class="section-header-premium mb-4">
+									<h3 class="section-title">THẢO LUẬN & HOẠT ĐỘNG</h3>
+									<div class="d-flex gap-3">
+										<span class="badge-glass dark">👤 {{ course.enrollmentCount }} người đang học</span>
+									</div>
+								</div>
+								<div class="discussion-placeholder">
+									<MessageSquare :size="40" class="mb-3 opacity-20" />
+									<p>Hãy chia sẻ kiến thức hoặc đặt câu hỏi để cùng tiến bộ!</p>
+									<button class="btn-glass sm">THAM GIA THẢO LUẬN</button>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -256,7 +307,31 @@
 										<span class="huge-text-gradient" v-if="!isEnrolled"
 											>MIỄN PHÍ</span
 										>
-										<span class="huge-text-gradient" v-else>ĐÃ SỞ HỮU</span>
+										<span class="huge-text-gradient" v-else-if="progress?.isCompleted">HOÀN THÀNH</span>
+										<span class="huge-text-gradient" v-else>ĐANG HỌC</span>
+									</div>
+
+									<!-- New Detailed Progress -->
+									<div v-if="isEnrolled && progress" class="detailed-progress-box mb-4">
+										<div class="d-flex justify-content-between mb-2">
+											<span class="label-premium">TIẾN ĐỘ HỌC TẬP</span>
+											<span class="percent-premium">{{ Math.round(progress.progressPercent) }}%</span>
+										</div>
+										<div class="progress-bar-premium mb-3">
+											<div class="progress-fill-glow" :style="{ width: progress.progressPercent + '%' }"></div>
+										</div>
+										<div class="stats-grid-mini">
+											<div class="stat-item">
+												<span class="stat-val">{{ lessonProgresses.filter(p => p.isCompleted).length }} / {{ totalLessons }}</span>
+												<span class="stat-lbl">Bài học</span>
+											</div>
+											<div class="stat-item text-end">
+												<span class="stat-val">
+													{{ progress.timeSpentMinutes > 0 ? progress.timeSpentMinutes : (progress.progressPercent > 0 ? 'Dưới 1' : '0') }}
+												</span>
+												<span class="stat-lbl">Phút đã học</span>
+											</div>
+										</div>
 									</div>
 
 									<!-- Actions -->
@@ -303,21 +378,27 @@
 											</button>
 										</template>
 
-										<template v-else-if="isAllCompleted && course.quizId">
-											<button
-												class="btn-neon success lg w-100"
-												@click="
-													router.push({
-														path: `/quiz/${course.quizId}`,
-														query: { courseId: route.params.id },
-													})
-												"
-											>
-												<ClipboardList :size="20" /> LÀM BÀI KIỂM TRA
+										<template v-else-if="progress?.isCompleted">
+											<button class="btn-neon lg w-100" @click="startLearning">
+												<RotateCcw :size="20" /> XEM LẠI BÀI HỌC
 											</button>
-											<button class="btn-glass w-100" @click="startLearning">
-												<RotateCcw :size="18" /> XEM LẠI BÀI HỌC
-											</button>
+											<div class="d-flex gap-2">
+												<button
+													v-if="course?.finalQuizId"
+													class="btn-glass flex-fill"
+													@click="
+														router.push({
+															path: `/quiz/${course.finalQuizId}`,
+															query: { courseId: route.params.id },
+														})
+													"
+												>
+													THI LẠI
+												</button>
+												<button class="btn-neon warning flex-fill" @click="router.push('/certificates')">
+													<Medal :size="18" /> XEM CHỨNG CHỈ
+												</button>
+											</div>
 										</template>
 
 										<button
@@ -334,23 +415,29 @@
 										</button>
 									</div>
 
-									<!-- Deadlines -->
-									<div
-										v-if="
-											isEnrolled &&
-											(course.completionDeadlineDays ||
-												course.completionEndDate)
-										"
-										class="deadline-box mt-4"
-									>
-										<div class="deadline-item-glass">
-											<Clock :size="16" />
-											<span v-if="course.completionEndDate"
-												>Hạn: {{ formatDate(course.completionEndDate) }}</span
-											>
-											<span v-else
-												>Hạn: {{ course.completionDeadlineDays }} ngày</span
-											>
+									<!-- Completion Requirements -->
+									<div v-if="isEnrolled" class="completion-requirements mt-4">
+										<h4 class="mini-title mb-3">ĐIỀU KIỆN HOÀN THÀNH</h4>
+										<ul class="req-list">
+											<li :class="{ completed: lessonProgresses.some(p => p.isCompleted) }">
+												<CheckCircle2 :size="14" /> Video & Tài liệu
+											</li>
+											<li v-if="course?.finalQuizId" :class="{ completed: progress.quizPassed }">
+												<CheckCircle2 :size="14" /> Vượt qua bài kiểm tra cuối khóa
+											</li>
+										</ul>
+									</div>
+
+									<!-- Gamification (Optional/Generic) -->
+									<div class="gamification-box mt-4 p-3 glass">
+										<div class="d-flex align-items-center gap-3">
+											<div class="xp-badge">
+												<Trophy :size="20" />
+											</div>
+											<div>
+												<div class="fw-bold text-success">+{{ course.points || 0 }} XP</div>
+												<div class="text-muted small">Củng cố hồ sơ đào tạo</div>
+											</div>
 										</div>
 									</div>
 
@@ -403,6 +490,13 @@ import {
 	Play,
 	Check,
 	Info,
+	ShieldCheck,
+	Layout,
+	MessageSquare,
+	HelpCircle,
+	Trophy,
+	BarChart3,
+	Medal,
 } from "lucide-vue-next";
 
 const route = useRoute();
@@ -432,6 +526,13 @@ const totalLessons = computed(
 	() =>
 		course.value?.modules?.reduce((sum, m) => sum + m.lessons.length, 0) || 0,
 );
+
+const totalDuration = computed(() => {
+	if (!course.value?.modules) return 0;
+	return course.value.modules.reduce((acc, mod) => {
+		return acc + mod.lessons.reduce((lAcc, lesson) => lAcc + (lesson.videoDurationSeconds || 0), 0);
+	}, 0);
+});
 
 const isAllCompleted = computed(() => {
 	const all = course.value?.modules?.flatMap((m) => m.lessons) ?? [];
@@ -503,9 +604,11 @@ async function handleEnroll() {
 		);
 		return;
 	}
+	const cId = parseInt(String(route.params.id));
+	if (isNaN(cId)) return;
 	enrolling.value = true;
 	try {
-		const response = await enrollmentAPI.enroll(parseInt(route.params.id));
+		const response = await enrollmentAPI.enroll(cId);
 		if (response.data && response.data.status === "Pending") {
 			hasPendingEnrollment.value = true;
 			showToast("Đăng ký thành công! Vui lòng chờ phê duyệt.");
@@ -515,6 +618,7 @@ async function handleEnroll() {
 			setTimeout(() => startLearning(), 1000);
 		}
 	} catch (e) {
+		console.error("LỖI GHI DANH:", e.response?.data);
 		showToast(e.response?.data?.message || "Lỗi ghi danh khóa học");
 	} finally {
 		enrolling.value = false;
@@ -570,6 +674,9 @@ onMounted(async () => {
 			if (myEnrollment) {
 				if (myEnrollment.status === "Pending") {
 					hasPendingEnrollment.value = true;
+					isEnrolled.value = false;
+				} else if (myEnrollment.status === "Rejected") {
+					hasPendingEnrollment.value = false;
 					isEnrolled.value = false;
 				} else {
 					isEnrolled.value = true;
@@ -643,9 +750,29 @@ onMounted(async () => {
 	align-items: center;
 }
 .badge-glass.primary {
-	background: rgba(99, 102, 241, 0.1);
-	color: #4f46e5;
-	border: 1px solid rgba(99, 102, 241, 0.2);
+	background: rgba(99, 102, 241, 0.15);
+	color: #6366f1;
+	border: 1px solid rgba(99, 102, 241, 0.3);
+}
+.badge-glass.success {
+	background: rgba(16, 185, 129, 0.15);
+	color: #10b981;
+	border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.badge-glass.danger {
+	background: rgba(239, 68, 68, 0.15);
+	color: #ef4444;
+	border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.badge-glass.warning {
+	background: rgba(245, 158, 11, 0.15);
+	color: #f59e0b;
+	border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.badge-glass.info {
+	background: rgba(6, 182, 212, 0.15);
+	color: #06b6d4;
+	border: 1px solid rgba(6, 182, 212, 0.3);
 }
 .badge-glass.dark {
 	background: rgba(0, 0, 0, 0.5);
@@ -659,7 +786,7 @@ onMounted(async () => {
 	border-radius: 0 0 40px 40px;
 	overflow: hidden;
 	margin-bottom: 2rem;
-	min-height: 450px;
+	min-height: 380px;
 	display: flex;
 	align-items: center;
 	border: none;
@@ -671,7 +798,7 @@ onMounted(async () => {
 	inset: 0;
 	background-size: cover;
 	background-position: center;
-	filter: blur(60px) brightness(0.7);
+	filter: blur(40px) brightness(0.6);
 	transform: scale(1.1);
 	z-index: 1;
 }
@@ -682,8 +809,8 @@ onMounted(async () => {
 	inset: 0;
 	background: linear-gradient(
 		to top,
-		rgba(15, 23, 42, 0.9) 0%,
-		rgba(15, 23, 42, 0.4) 100%
+		rgba(15, 23, 42, 0.8) 0%,
+		rgba(15, 23, 42, 0.3) 100%
 	);
 }
 
@@ -707,17 +834,21 @@ onMounted(async () => {
 	color: white;
 }
 
+.hero-desc-wrapper {
+	max-width: 650px;
+	background: rgba(255, 255, 255, 0.05);
+	padding: 1.5rem;
+	border-radius: 20px;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	margin-bottom: 2.5rem;
+	backdrop-filter: blur(5px);
+}
 .hero-desc {
 	font-size: 1.15rem;
-	color: rgba(255, 255, 255, 0.8);
-	margin-bottom: 2.5rem;
+	color: rgba(255, 255, 255, 0.95);
+	margin-bottom: 0;
 	line-height: 1.6;
 	font-weight: 500;
-	display: -webkit-box;
-	-webkit-line-clamp: 3;
-	line-clamp: 3;
-	-webkit-box-orient: vertical;
-	overflow: hidden;
 }
 
 .hero-meta-grid {
@@ -810,15 +941,16 @@ onMounted(async () => {
 	border-radius: 8px;
 }
 
-/* Lesson Rows */
+/* Lesson Rows Enhanced */
 .lesson-row-premium {
 	display: flex;
 	align-items: center;
-	padding: 1rem 1.5rem;
+	padding: 1.25rem 1.5rem;
 	gap: 1.25rem;
 	cursor: pointer;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.03);
-	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+	transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+	background: rgba(255, 255, 255, 0.4);
 }
 
 .lesson-row-premium:last-child {
@@ -826,67 +958,241 @@ onMounted(async () => {
 }
 .lesson-row-premium:hover {
 	background: white;
-	padding-left: 2rem;
+	transform: translateX(8px);
 }
 
-.lesson-status-icon {
-	width: 36px;
-	height: 36px;
-	border-radius: 10px;
+.type-icon-box {
+	width: 38px;
+	height: 38px;
+	border-radius: 12px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: #f8fafc;
+	background: #f1f5f9;
 	color: #64748b;
+	transition: all 0.3s;
+}
+.lesson-row-premium:hover .type-icon-box {
+	background: #4f46e5;
+	color: white;
 }
 
-.text-success-emerald {
+.lesson-title-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.completed-tag {
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: #10b981;
+	background: rgba(16, 185, 129, 0.1);
+	padding: 2px 8px;
+	border-radius: 6px;
+}
+
+.type-tag {
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: #64748b;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.hover-play {
+	color: #4f46e5;
+	transform: scale(0.9);
+	transition: all 0.2s;
+}
+.lesson-row-premium:hover .hover-play {
+	transform: scale(1.2);
+}
+
+/* Instructor & Discussion */
+.instructor-profile {
+	display: flex;
+	gap: 1.5rem;
+	align-items: center;
+}
+.instructor-avatar img {
+	width: 80px;
+	height: 80px;
+	border-radius: 20px;
+	object-fit: cover;
+	border: 3px solid white;
+	box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+.instructor-name {
+	font-size: 1.25rem;
+	font-weight: 800;
+	color: #1e293b;
+}
+.instructor-dept {
+	color: #4f46e5;
+	font-weight: 700;
+	font-size: 0.9rem;
+	margin-bottom: 0.5rem;
+}
+.instructor-bio {
+	color: #64748b;
+	font-size: 0.95rem;
+	margin: 0;
+	line-height: 1.5;
+}
+
+.discussion-placeholder {
+	text-align: center;
+	padding: 3rem;
+	color: #94a3b8;
+	font-weight: 600;
+}
+
+/* Detailed Progress Sidebar */
+.detailed-progress-box {
+	background: rgba(255, 255, 255, 0.5);
+	padding: 1.25rem;
+	border-radius: 20px;
+	border: 1px solid white;
+}
+.label-premium {
+	font-size: 0.8rem;
+	font-weight: 800;
+	color: #64748b;
+	letter-spacing: 1px;
+}
+.percent-premium {
+	font-weight: 900;
+	color: #4f46e5;
+}
+.progress-bar-premium {
+	height: 10px;
+	background: #e2e8f0;
+	border-radius: 20px;
+	overflow: hidden;
+}
+.stats-grid-mini {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1rem;
+}
+.stat-val {
+	display: block;
+	font-weight: 800;
+	color: #1e293b;
+	font-size: 1.1rem;
+}
+.stat-lbl {
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: #94a3b8;
+}
+
+.mini-title {
+	font-size: 0.9rem;
+	font-weight: 900;
+	color: #1e293b;
+	letter-spacing: 1px;
+}
+.req-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+.req-list li {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: #94a3b8;
+	margin-bottom: 8px;
+}
+.req-list li.completed {
 	color: #10b981;
 }
 
-.lesson-content-main {
-	flex: 1;
+.xp-badge {
+	width: 45px;
+	height: 45px;
+	border-radius: 14px;
+	background: linear-gradient(135deg, #f59e0b, #d97706);
+	color: white;
 	display: flex;
-	flex-direction: column;
-}
-.lesson-title-text {
-	font-size: 0.95rem;
-	font-weight: 600;
-	color: #475569;
-}
-.is-completed .lesson-title-text {
-	color: #94a3b8;
-	text-decoration: none;
-	font-style: italic;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
 }
 
-.lesson-tags-wrap {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	margin-top: 4px;
+.btn-neon.warning {
+	background: linear-gradient(135deg, #f59e0b, #d97706);
+	box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
 }
-.duration-tag {
+
+/* Play Indicator & Button */
+.play-indicator {
+	color: #4f46e5;
 	font-size: 0.8rem;
-	color: #94a3b8;
-	font-weight: 600;
+	margin-right: 4px;
+	opacity: 0.7;
+}
+.play-btn-circle {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	background: #4f46e5;
+	color: white;
 	display: flex;
 	align-items: center;
+	justify-content: center;
+	box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+	transition: all 0.2s;
+}
+.lesson-row-premium:hover .play-btn-circle {
+	transform: scale(1.15);
+	background: #4338ca;
+}
+
+/* Other Courses Instructor */
+.other-item-mini {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 12px;
+	border-radius: 10px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: #475569;
+	margin-bottom: 8px;
+	transition: all 0.2s;
+	cursor: pointer;
+}
+.other-item-mini:hover {
+	background: white;
+	color: #4f46e5;
+	box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.tiny-progress-bar {
+	height: 4px;
+	background: rgba(0,0,0,0.05);
+	border-radius: 10px;
+	overflow: hidden;
+}
+.tiny-fill {
+	height: 100%;
+	background: #10b981;
+}
+
+.fw-600 { font-weight: 600; }
+
+.btn-glass.flex-fill {
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .lesson-action-indicator {
-	opacity: 0;
-	transition: opacity 0.2s;
-}
-.lesson-row-premium:hover .lesson-action-indicator {
-	opacity: 1;
-	color: #4f46e5;
-}
-.is-locked {
-	opacity: 0.5;
-	cursor: not-allowed;
-}
-.is-locked .lesson-action-indicator {
 	opacity: 1;
 }
 

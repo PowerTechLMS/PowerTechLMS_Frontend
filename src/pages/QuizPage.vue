@@ -62,8 +62,9 @@
         <div v-for="(d, i) in result.details" :key="i" class="result-item" :class="d.isCorrect ? 'correct' : 'wrong'">
           <span class="result-q">Câu {{ i + 1 }}: {{ d.questionText }}</span>
           <div class="result-answers">
-            <span>Bạn chọn: <strong>{{ d.selectedAnswer || 'Bỏ trống' }}</strong></span>
-            <span v-if="!d.isCorrect">Đáp án đúng: <strong>{{ d.correctAnswer }}</strong></span>
+            <span>Bạn chọn: <strong>{{ d.selectedAnswer ? getOptionText(d.questionId, d.selectedAnswer) : 'Bỏ trống' }}</strong></span>
+            <span v-if="!d.isCorrect">Đáp án đúng: <strong>{{ getOptionText(d.questionId, d.correctAnswer) }}</strong></span>
+            <span v-if="d.explanation && d.explanation.trim() !== ''" class="result-explanation">Giải thích: <strong>{{ d.explanation }}</strong></span>
           </div>
         </div>
       </div>
@@ -74,14 +75,43 @@
         <button class="btn btn-ghost" @click="$router.back()">Quay lại</button>
       </div>
     </div>
+
+    <!-- Modal Chúc Mừng Hoàn Thành Toàn Khóa Học -->
+    <div
+      class="modal fade show"
+      v-if="showCourseCompletedModal"
+      style="display: block; background: rgba(0,0,0,0.6); z-index: 9999"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+          <div class="modal-body text-center p-5">
+            <div class="mb-4">
+              <PartyPopper :size="80" class="text-success" />
+            </div>
+            <h3 class="text-success fw-bold mt-3 mb-2">Bạn đã hoàn thành khóa học!</h3>
+            <p class="text-muted px-4">
+              Chúc mừng bạn đã vượt qua bài thi cuối cùng. Chứng chỉ của bạn đã được cấp tự động!
+            </p>
+            <div class="mt-4 d-flex justify-content-center gap-3">
+              <button class="btn btn-secondary px-4 fw-bold" @click="showCourseCompletedModal = false">Đóng & Xem kết quả</button>
+              <button class="btn btn-success px-4 fw-bold" @click="router.push('/certificates')">
+                Xem chứng chỉ
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { quizAPI, certificateAPI } from '@/services/api'
+import { quizAPI, certificateAPI, progressAPI } from '@/services/api'
 import { Timer, Pause, PartyPopper, XCircle, Award } from 'lucide-vue-next'
+import { toast } from 'vue3-toastify'
 
 const route = useRoute()
 const router = useRouter()
@@ -92,6 +122,7 @@ const submitted = ref(false)
 const result = ref(null)
 const timeLeft = ref(null)
 const paused = ref(false)
+const showCourseCompletedModal = ref(false)
 let timer = null
 
 // FIX: Thêm kiểm tra length để tránh crash khi quiz.questions chưa có data
@@ -104,6 +135,14 @@ function formatTime(s) {
   if (s == null) return '--:--'
   const m = Math.floor(s / 60)
   return `${m}:${String(s % 60).padStart(2, '0')}`
+}
+
+function getOptionText(questionId, optionKey) {
+  if (!quiz.value || !quiz.value.questions || !optionKey) return optionKey;
+  const q = quiz.value.questions.find(x => x.questionId === questionId);
+  if (!q) return optionKey;
+  const optText = q['option' + optionKey];
+  return optText ? `${optionKey}. ${optText}` : optionKey;
 }
 
 function startTimer() {
@@ -147,6 +186,22 @@ async function submitQuiz(isAuto = false) {
     // TƯ DUY ĐIỂM: Backend đã trả về điểm hệ 10 chuẩn, Frontend chỉ hiển thị
     result.value = data
     submitted.value = true
+
+    if (data.isPassed && route.query.courseId) {
+      try {
+        const { data: cp } = await progressAPI.getCourseProgress(route.query.courseId);
+        if (cp.isCompleted) {
+          // Chỉ hiện modal nếu bài thi vượt qua dẫn tới hoàn thành khóa học
+          showCourseCompletedModal.value = true;
+          try {
+            await certificateAPI.issue(route.query.courseId);
+            toast.success("Chúc mừng! Khóa học đã hoàn thành và chứng chỉ đã được cấp.");
+          } catch (issueErr) {
+            console.error("Lỗi cấp chứng chỉ tự động:", issueErr);
+          }
+        }
+      } catch (err) { }
+    }
   } catch (e) { alert(e.response?.data?.message || 'Lỗi nộp bài') }
 }
 
@@ -166,6 +221,9 @@ onMounted(async () => {
   try {
     const { data } = await quizAPI.start(route.params.quizId)
     quiz.value = data
+    if (data.remainingAttemptsToday !== undefined) {
+      toast.info(`Bắt đầu làm bài. Bạn còn ${data.remainingAttemptsToday} lượt thi trong hôm nay.`);
+    }
 
     if (data.draftAnswers) {
       answers.value = { ...data.draftAnswers }
@@ -183,7 +241,7 @@ onMounted(async () => {
     document.addEventListener('visibilitychange', handleVisibilityChange)
   } catch (e) { 
     console.error(e);
-    alert(e.response?.data?.message || 'Lỗi bắt đầu thi'); 
+    toast.error(e.response?.data?.message || 'Lỗi bắt đầu thi'); 
     router.back() 
   }
 })

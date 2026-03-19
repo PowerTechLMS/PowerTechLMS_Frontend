@@ -1,32 +1,56 @@
-<script setup>
+﻿<script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 // @ts-ignore
 import { dashboardAPI, certificateAPI, leaderboardAPI } from '@/services/api'
 import {
-  BookOpen, Award, Trophy, Zap, Clock, ChevronRight, ChevronDown,
-  PlayCircle, Star, CheckCircle2, ArrowRight, Flame, Bell,
-  CalendarDays, GraduationCap, Lock, Target, Users, MessageCircle,
-  BarChart2, TrendingUp, Circle, AlertCircle, CheckCheck, FileText,
-  Sparkles, BookMarked, ClipboardList, Layers
+  Award,
+  AlertCircle,
+  ArrowRight,
+  BookOpen,
+  CheckCheck,
+  Circle,
+  FileText,
+  GraduationCap,
+  Lock,
+  PlayCircle,
+  Sparkles,
+  Star,
+  Trophy,
+  Sun,
+  Moon,
+  Zap,
+  Target,
+  TrendingUp,
+  Clock,
+  User,
 } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 
-// State Data (Nhận dữ liệu thật từ Backend)
 const loading = ref(true)
 const certificates = ref([])
 const badges = ref([])
-
 const todayTasks = ref([])
-const weekMission = ref({ skills: [] })
+const weekMission = ref({
+  totalTasks: 0, 
+  doneTasks: 0, 
+  xpEarned: 0, 
+  xpTarget: 0,
+  mandatoryDone: 0, 
+  mandatoryTotal: 0, 
+  optionalDone: 0, 
+  optionalTotal: 0, 
+  weekLabel: '',
+  status: '',
+  skills: []
+})
 const myCourses = ref([])
 const inProgressCourses = ref([])
 const testPractice = ref([])
-const learningProfile = ref({ summary: [] })
+const learningProfile = ref({ summary: [], predictedScore: 0, targetScore: 0, dept: '', entryScore: 3.0 })
 const hrMessages = ref([])
 
-/* ── computed ── */
 const greeting = computed(() => {
   const h = new Date().getHours()
   if (h < 12) return 'Chào buổi sáng'
@@ -41,955 +65,734 @@ const avatarUrl = computed(() => {
   return `${base}?t=${authStore.avatarUpdateTime}`
 })
 
-const missionPct = computed(() => {
-  if (!weekMission.value.totalTasks) return 0;
-  return Math.round((weekMission.value.doneTasks / weekMission.value.totalTasks) * 100);
+const activeCourse  = computed(() => inProgressCourses.value[0] || myCourses.value[0] || null)
+const missionPct    = computed(() => weekMission.value.totalTasks   ? Math.round((weekMission.value.doneTasks      / weekMission.value.totalTasks)   * 100) : 0)
+const xpPct         = computed(() => weekMission.value.xpTarget     ? Math.min(100, Math.round((weekMission.value.xpEarned      / weekMission.value.xpTarget)     * 100)) : 0)
+const mandatoryPct  = computed(() => weekMission.value.mandatoryTotal ? Math.min(100, Math.round((weekMission.value.mandatoryDone / weekMission.value.mandatoryTotal) * 100)) : 0)
+const optionalPct   = computed(() => weekMission.value.optionalTotal  ? Math.min(100, Math.round((weekMission.value.optionalDone  / weekMission.value.optionalTotal)  * 100)) : 0)
+const remainingTasks = computed(() => Math.max(0, (weekMission.value.totalTasks || 0) - (weekMission.value.doneTasks || 0)))
+const topSummary    = computed(() => (learningProfile.value.summary || []).slice(0, 3))
+const unreadMessages = computed(() => hrMessages.value.filter(m => m.unread).length)
+const profilePct    = computed(() => learningProfile.value.targetScore
+  ? Math.min(100, Math.round((Number(learningProfile.value.predictedScore || 0) / Number(learningProfile.value.targetScore || 1)) * 100))
+  : 0)
+
+/* ring SVG progress */
+const ringCircumference = 207.3 // 2 * PI * 33
+const ringDashoffset = computed(() => {
+  const pct = activeCourse.value ? Math.round(activeCourse.value.progressPercent || 0) : 0
+  return ringCircumference - (ringCircumference * pct) / 100
 })
 
-/* SVG ring cho tiến độ tuần */
-const R = 42, C = 2 * Math.PI * R
-const missionOffset = computed(() => C - (missionPct.value / 100) * C)
-
-/* ── DATA FETCHING (GỌI API BFF) ── */
 onMounted(async () => {
-  loading.value = true;
+  loading.value = true
   try {
     const [dashRes, cRes, bRes] = await Promise.all([
-      dashboardAPI.getLearnerData(), // API gom tổng hợp
+      dashboardAPI.getLearnerData(),
       certificateAPI.getMy(),
       leaderboardAPI.getMyBadges(),
     ])
-    
-    // Đổ dữ liệu từ API C# vào State của Vue
-    const d = dashRes.data;
-    todayTasks.value = d.todayTasks || [];
-    weekMission.value = d.weekMission || { skills: [] };
-    myCourses.value = d.myCourses || [];
-    inProgressCourses.value = (d.myCourses || []).filter(c => c.progressPercent > 0 && c.progressPercent < 100);
-    testPractice.value = d.testPractice || [];
-    learningProfile.value = d.learningProfile || { summary: [] };
-    hrMessages.value = d.hrMessages || [];
-
-    certificates.value = cRes.data || [];
-    badges.value = (bRes.data || []).filter(b => b.isEarned);
-    
-  } catch (e) { 
-    console.error("Lỗi tải Dashboard:", e);
-  } finally { 
-    loading.value = false;
+    const d = dashRes.data || {}
+    todayTasks.value        = d.todayTasks || []
+    weekMission.value       = { ...weekMission.value, ...(d.weekMission || {}) }
+    myCourses.value         = d.myCourses || []
+    inProgressCourses.value = (d.myCourses || []).filter(c => c.progressPercent > 0 && c.progressPercent < 100)
+    testPractice.value      = d.testPractice || []
+    learningProfile.value   = { ...learningProfile.value, ...(d.learningProfile || { summary: [] }) }
+    hrMessages.value        = d.hrMessages || []
+    certificates.value      = cRes.data || []
+    badges.value            = (bRes.data || []).filter(b => b.isEarned)
+  } catch (e) {
+    console.error('Lỗi tải Dashboard:', e)
+  } finally {
+    loading.value = false
   }
 })
 </script>
 
 <template>
-  <div class="dash" v-if="!loading">
-
-    <div class="greet-row">
-      <div class="greet-avatar-wrap">
-        <div
-          v-if="avatarUrl"
-          class="greet-avatar"
-          :style="`background-image:url('${avatarUrl}')`"
-        ></div>
-        <div v-else class="greet-avatar greet-avatar-init">
-          {{ authStore.user?.fullName?.charAt(0) || 'U' }}
-        </div>
-      </div>
-      <div class="greet-text">
-        <h1 class="greet-title">
-          {{ greeting }},
-          <span class="greet-name">{{ authStore.user?.fullName || 'bạn' }}</span>
-        </h1>
-        <p class="greet-sub">Cùng hệ thống nâng cao năng lực mỗi ngày nhé!</p>
-      </div>
-    </div>
-
-    <div class="body-grid">
-
-      <div class="col-main">
-
-        <div class="card-goals">
-          <div class="goals-bubble">
-            <Sparkles :size="14" />
-            Bắt tay vào làm nhiệm vụ đầu tiên thôi,
-            <strong>{{ authStore.user?.fullName?.split(' ').pop() || 'bạn' }} ơi!</strong>
-          </div>
-          <div class="goals-mascot" aria-hidden="true">🤖</div>
-
-          <div class="goals-inner">
-            <div class="goals-header">
-              <Flame :size="18" class="goals-fire" />
-              <span class="goals-title">Mục tiêu hôm nay</span>
-            </div>
-
-            <div class="task-list">
-              <div v-if="todayTasks.length === 0" class="text-white opacity-75 fs-14 italic">
-                 Hôm nay bạn không có nhiệm vụ cụ thể nào. Hãy tiếp tục học khóa đang dang dở nhé!
-              </div>
-
-              <div
-                v-else
-                v-for="t in todayTasks"
-                :key="t.id"
-                class="task-item"
-                :class="{ done: t.done, locked: t.locked }"
-              >
-                <div class="task-icon">
-                  <CheckCheck v-if="t.done"   :size="18" class="ic-done" />
-                  <Lock       v-else-if="t.locked" :size="15" class="ic-lock" />
-                  <Circle     v-else           :size="18" class="ic-circle" />
-                </div>
-                <div class="task-body">
-                  <p class="task-name">{{ t.title }}</p>
-                  <p class="task-sub">{{ t.sub }}</p>
-                </div>
-                <div class="task-right">
-                  <span class="task-prog" v-if="t.progress">⭐ {{ t.progress }}</span>
-                  <button class="btn-start" v-if="!t.done && !t.locked" @click="$router.push('/my-courses')">
-                    Bắt đầu <ArrowRight :size="14" />
-                  </button>
-                </div>
-              </div>
-            </div>
+  <div class="theme-provider">
+    <div v-if="!loading" class="dash">
+      
+      <!-- Top Section: Greeting & Info -->
+      <section class="top-bar">
+        <div class="greet-box">
+          <div v-if="avatarUrl" class="avatar" :style="`background-image:url('${avatarUrl}')`"></div>
+          <div v-else class="avatar avatar-init">{{ authStore.user?.fullName?.charAt(0) || 'U' }}</div>
+          <div class="greet-text">
+            <h1>{{ greeting }}, <span class="text-primary">{{ authStore.user?.fullName || 'Admin' }}</span></h1>
+            <p>Cùng hệ thống nâng cao năng lực mỗi ngày nhé!</p>
           </div>
         </div>
-
-        <section class="section">
-          <div class="section-hd">
-            <h2 class="section-title">Nhiệm vụ học tập tuần này</h2>
+        <div class="top-actions">
+          <div class="pill pill-glow">
+            <span class="dot"></span>
+            {{ weekMission.weekLabel || 'Tuần hiện tại' }}
           </div>
+        </div>
+      </section>
 
-          <div class="mission-card">
-            <div class="mc-left">
-              <div class="mc-ring-wrap">
-                <svg viewBox="0 0 100 100" class="mc-ring-svg">
-                  <circle cx="50" cy="50" r="42" stroke="rgba(129,140,248,.12)" stroke-width="9" fill="none"/>
-                  <circle
-                    cx="50" cy="50" r="42"
-                    stroke="url(#mgr)"
-                    stroke-width="9"
-                    stroke-linecap="round"
-                    fill="none"
-                    :stroke-dasharray="C"
-                    :stroke-dashoffset="missionOffset"
-                    transform="rotate(-90 50 50)"
-                    class="mc-arc"
-                  />
-                  <defs>
-                    <linearGradient id="mgr" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-                      <stop stop-color="#818cf8"/>
-                      <stop offset="1" stop-color="#a78bfa"/>
-                    </linearGradient>
-                  </defs>
-                </svg>
-                <div class="mc-ring-center">
-                  <span class="mc-pct">{{ missionPct }}%</span>
-                  <span class="mc-pct-lbl">tuần này</span>
-                </div>
-              </div>
-              <div class="mc-week-label">
-                <CalendarDays :size="13" />
-                {{ weekMission.weekLabel }}
-              </div>
-            </div>
-
-            <div class="mc-right">
-              <h3 class="mc-title">Tiến độ nhiệm vụ</h3>
-
-              <div class="mc-row">
-                <span class="mc-row-label">
-                  <Trophy :size="14" class="ic-amber"/> XP tích lũy tuần này
-                </span>
-                <span class="mc-row-val amber-val">{{ weekMission.xpEarned }} / {{ weekMission.xpTarget }} XP</span>
-              </div>
-              <div class="mc-prog-bar">
-                <div class="mc-bar-fill amber-fill" :style="`width:${Math.round((weekMission.xpEarned/weekMission.xpTarget)*100)}%`"></div>
-              </div>
-
-              <div class="mc-row mt-sm">
-                <span class="mc-row-label">
-                  <AlertCircle :size="14" class="ic-red"/> Đào tạo bắt buộc
-                </span>
-                <span class="mc-row-val red-val">{{ weekMission.mandatoryDone }}/{{ weekMission.mandatoryTotal }}</span>
-              </div>
-              <div class="mc-prog-bar">
-                <div class="mc-bar-fill red-fill" :style="`width:${Math.round((weekMission.mandatoryDone/weekMission.mandatoryTotal)*100)}%`"></div>
-              </div>
-              <div class="mc-sub-bullets">
-                <span class="mc-bullet done-bullet">● Hoàn thành: {{ weekMission.mandatoryDone }}/{{ weekMission.mandatoryTotal }} nhiệm vụ</span>
-              </div>
-
-              <div class="mc-row mt-sm">
-                <span class="mc-row-label">
-                  <BookMarked :size="14" class="ic-green"/> Học tập tự chọn
-                </span>
-                <span class="mc-row-val green-val">{{ weekMission.optionalDone }}/{{ weekMission.optionalTotal }}</span>
-              </div>
-              <div class="mc-prog-bar">
-                <div class="mc-bar-fill green-fill" :style="`width:${Math.round((weekMission.optionalDone/weekMission.optionalTotal)*100)}%`"></div>
-              </div>
-
-              <div class="mc-skills">
-                <div v-for="sk in weekMission.skills" :key="sk.name" class="mc-skill-row">
-                  <span class="mc-skill-name">{{ sk.name }}</span>
-                  <div class="mc-skill-track">
-                    <div class="mc-skill-fill" :style="`width:${sk.pct}%;background:${sk.color}`"></div>
-                  </div>
-                  <span class="mc-skill-pct" :style="`color:${sk.color}`">{{ sk.pct }}%</span>
-                </div>
-              </div>
-
-              <div class="mc-status" :class="weekMission.statusType">
-                {{ weekMission.status }}
-              </div>
-
-              <button class="btn-continue" @click="$router.push('/my-courses')">
-                Tiếp tục học <ArrowRight :size="15" />
-              </button>
-            </div>
+      <!-- Banner: Today's Goal -->
+      <section class="goal-banner">
+        <div class="banner-content">
+          <div class="banner-title"><Zap :size="18" class="icon-zap" /> Mục tiêu hôm nay</div>
+          <p v-if="todayTasks.length === 0">Hôm nay bạn không có nhiệm vụ cụ thể nào. Hãy tiếp tục học khóa đang dở nhé!</p>
+          <p v-else>Hôm nay bạn đang có {{ todayTasks.length }} nhiệm vụ chưa hoàn thành. Cùng nỗ lực nhé!</p>
+        </div>
+        <div class="banner-right">
+          <div class="bot-bubble">
+            Bắt tay vào làm nhiệm vụ đầu tiên thôi, <strong>{{ authStore.user?.fullName?.split(' ').pop() || 'Admin' }}</strong> ơi!
           </div>
-        </section>
+          <span class="bot-emoji">🤖</span>
+        </div>
+      </section>
 
-        <section class="section">
-          <div class="section-hd">
-            <h2 class="section-title">Khóa học ưu tiên</h2>
-            <button class="link-more" @click="$router.push('/my-courses')">Xem tất cả</button>
-          </div>
-
-          <div class="course-cards" v-if="myCourses.length">
-            <div
-              v-for="c in myCourses"
-              :key="c.id"
-              class="course-card"
-              @click="$router.push(`/courses/${c.id}`)"
-            >
-              <div class="cc-thumb" :style="`background:linear-gradient(135deg,${c.thumbColor},${c.thumbColor2})`">
-                <GraduationCap :size="28" class="cc-thumb-icon"/>
-                <span class="cc-tag">{{ c.tag }}</span>
-              </div>
-              <div class="cc-body">
-                <p class="cc-title" :title="c.title">{{ c.title }}</p>
-                <div class="cc-prog-row">
-                  <div class="cc-prog-track"><div class="cc-prog-fill" :style="`width:${c.progressPercent}%`"></div></div>
-                  <span class="cc-prog-pct">{{ Math.round(c.progressPercent) }}%</span>
-                </div>
-                <div class="cc-meta-row">
-                  <span class="cc-stat"><BookOpen :size="12"/> {{ c.units }} Bài</span>
-                  <span class="cc-stat"><Trophy :size="12"/> {{ c.cups }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+      <div class="main-layout">
+        <!-- Center Column -->
+        <div class="center-col">
           
-          <div v-else class="text-center py-4 border rounded-3 bg-light">
-             <p class="text-muted mb-0 fs-14">Bạn chưa ghi danh khóa học nào.</p>
-          </div>
-        </section>
-
-        <section class="section">
-          <div class="section-hd">
-            <h2 class="section-title">Kiểm tra & Đánh giá</h2>
-          </div>
-
-          <div class="quiz-list" v-if="testPractice.length">
-            <div v-for="t in testPractice" :key="t.id" class="quiz-item">
-              <div class="qi-cover" :style="`background:${t.cover}`">
-                <FileText :size="22" class="qi-icon"/>
-              </div>
-              <div class="qi-body">
-                <div class="qi-top">
-                  <span class="qi-badge" :class="t.status">{{ t.badge }}</span>
+          <!-- Weekly Progress Card -->
+          <section class="card weekly-card">
+            <h2 class="card-title">Nhiệm vụ học tập tuần này</h2>
+            <div class="mission-layout">
+              <div class="mission-circle-box">
+                <div class="circle-wrap">
+                  <svg viewBox="0 0 84 84">
+                    <circle class="circle-bg" cx="42" cy="42" r="33"/>
+                    <circle class="circle-fill" cx="42" cy="42" r="33" 
+                            :style="`stroke-dashoffset: ${207.3 - (207.3 * missionPct / 100)}; stroke-dasharray: 207.3;`"/>
+                  </svg>
+                  <div class="circle-content">
+                    <span class="pct">{{ missionPct }}%</span>
+                    <span class="lbl">tuần này</span>
+                  </div>
                 </div>
-                <p class="qi-title">{{ t.title }}</p>
-                <p class="qi-sub">{{ t.subtitle }}</p>
+                <div class="date-lbl"><Clock :size="12" /> {{ weekMission.weekLabel }}</div>
               </div>
-              <button class="btn-quiz" @click="$router.push('/my-courses')">
-                Thực hiện <ArrowRight :size="14"/>
-              </button>
-            </div>
-          </div>
 
-          <div v-else class="text-center py-4 border rounded-3 bg-light">
-             <p class="text-muted mb-0 fs-14">Bạn đã hoàn thành mọi bài thi được giao.</p>
-          </div>
-        </section>
+              <div class="mission-details">
+                <div class="detail-group">
+                  <h3>Tiến độ nhiệm vụ</h3>
+                  <div class="stat-line">
+                    <span><Trophy :size="14" /> XP tích lũy tuần này</span>
+                    <strong>{{ weekMission.xpEarned }} / {{ weekMission.xpTarget }} XP</strong>
+                  </div>
+                  <div class="stat-line">
+                    <span><Target :size="14" /> Đào tạo bắt buộc</span>
+                    <strong>{{ weekMission.mandatoryDone }}/{{ weekMission.mandatoryTotal }}</strong>
+                  </div>
+                  <p class="stat-sub">• Hoàn thành: {{ weekMission.mandatoryDone }}/{{ weekMission.mandatoryTotal }} nhiệm vụ</p>
+                  <div class="stat-line">
+                    <span><BookOpen :size="14" /> Học tập tự chọn</span>
+                    <strong>{{ weekMission.optionalDone }}/{{ weekMission.optionalTotal }}</strong>
+                  </div>
+                </div>
 
-      </div><div class="col-rail">
+                <div class="skills-grid">
+                  <div v-for="skill in weekMission.skills" :key="skill.name" class="skill-bar-wrap">
+                    <div class="skill-info">
+                      <span>{{ skill.name }}</span>
+                      <span :style="`color:${skill.color}`">{{ skill.pct }}%</span>
+                    </div>
+                    <div class="bar-track">
+                      <div class="bar-fill" :style="`width:${skill.pct}%; background:${skill.color}`"></div>
+                    </div>
+                  </div>
+                </div>
 
-        <div class="rail-card">
-          <div class="rc-hd">
-            <h3 class="rc-title">Hồ sơ năng lực</h3>
-          </div>
-
-          <p class="rc-label">Phòng ban: {{ learningProfile.dept }}</p>
-          <div class="level-track">
-            <div class="lt-step done">
-              <div class="lt-dot"><CheckCircle2 :size="14"/></div>
-              <span class="lt-lbl">{{ learningProfile.entry }}</span>
-              <span class="lt-score entry-score">{{ learningProfile.entryScore }}</span>
-            </div>
-            <div class="lt-line done"></div>
-            <div class="lt-step current">
-              <div class="lt-dot current-dot"><Circle :size="14"/></div>
-              <span class="lt-lbl">Dự kiến</span>
-              <span class="lt-score current-score">{{ learningProfile.predictedScore }}</span>
-            </div>
-            <div class="lt-line"></div>
-            <div class="lt-step">
-              <div class="lt-dot target-dot"><Target :size="14"/></div>
-              <span class="lt-lbl">Mục tiêu</span>
-              <span class="lt-score target-score">{{ learningProfile.targetScore }}</span>
-            </div>
-          </div>
-
-          <p class="rc-label mt-md">Tóm tắt quá trình học</p>
-          <div class="summary-list">
-            <div v-for="s in learningProfile.summary" :key="s.label" class="sl-row">
-              <span class="sl-label">{{ s.label }}</span>
-              <span class="sl-val" :style="`color:${s.color}`">{{ s.val }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="rail-card">
-          <div class="rc-hd">
-            <h3 class="rc-title">Nhắc nhở Hệ thống</h3>
-            <span class="notif-count">{{ hrMessages.length }}</span>
-          </div>
-
-          <div v-if="hrMessages.length" class="msg-list">
-            <div v-for="m in hrMessages" :key="m.id" class="msg-item" :class="{unread: m.unread}">
-              <div class="msg-from-icon"><AlertCircle :size="14"/></div>
-              <div class="msg-body">
-                <p class="msg-from">{{ m.from }}</p>
-                <p class="msg-text">{{ m.msg }}</p>
-                <p class="msg-time">{{ m.time }}</p>
+                <div class="mission-footer">
+                  <p>{{ weekMission.status }} 💪</p>
+                  <button class="btn-primary" @click="$router.push(activeCourse ? `/courses/${activeCourse.id}` : '/my-courses')">Tiếp tục học →</button>
+                </div>
               </div>
             </div>
-          </div>
-          <p class="rc-empty" v-else>Bạn không có deadline khóa học nào quá hạn.</p>
+          </section>
 
-          <button class="btn-view-detail" @click="$router.push('/my-courses')">
-            Đi tới Khóa học
-          </button>
-        </div>
-
-        <div class="rail-card" v-if="badges.length">
-          <div class="rc-hd">
-            <h3 class="rc-title">Huy hiệu đạt được</h3>
-          </div>
-          <div class="badge-grid">
-            <div v-for="b in badges.slice(0,6)" :key="b.badgeId" class="badge-item" :title="b.badgeName">
-              <div class="badge-circle"><Star :size="16"/></div>
-              <span class="badge-name">{{ b.badgeName?.slice(0,10) }}</span>
+          <!-- Priority Courses -->
+          <section class="section-group">
+            <div class="section-head">
+              <h2 class="card-title">Khóa học ưu tiên</h2>
+              <button class="link-btn" @click="$router.push('/my-courses')">Xem tất cả</button>
             </div>
-          </div>
-        </div>
-
-        <div class="rail-card" v-if="certificates.length">
-          <div class="rc-hd">
-            <h3 class="rc-title">Chứng chỉ mới nhất</h3>
-            <button class="link-more" @click="$router.push('/certificates')">Tất cả</button>
-          </div>
-          <div class="cert-list">
-            <div v-for="c in certificates.slice(0,3)" :key="c.id" class="cert-item">
-              <div class="cert-icon"><Award :size="15"/></div>
-              <div class="cert-info">
-                <p class="cert-name" :title="c.courseTitle">{{ c.courseTitle }}</p>
-                <p class="cert-date">{{ new Date(c.issuedAt).toLocaleDateString('vi-VN') }}</p>
+            <div class="course-grid">
+              <div v-for="c in myCourses.slice(0, 2)" :key="c.id" class="course-card" @click="$router.push(`/courses/${c.id}`)">
+                <div class="course-thumb" :style="`background: linear-gradient(135deg, ${c.thumbColor}, ${c.thumbColor2})`">
+                  <span class="course-badge" :class="c.tag === 'Bắt buộc' ? 'bg-purple' : 'bg-blue'">{{ c.tag }}</span>
+                  <GraduationCap :size="32" color="white" />
+                </div>
+                <div class="course-info">
+                  <h3>{{ c.title }}</h3>
+                  <div class="course-prog">
+                    <div class="mini-bar"><div class="mini-fill" :style="`width:${c.progressPercent}%`"></div></div>
+                    <span>{{ c.progressPercent }}%</span>
+                  </div>
+                  <div class="course-meta">
+                    <span><BookOpen :size="12" /> {{ c.units }} Bài</span>
+                    <span><Trophy :size="12" /> {{ c.cups }}</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          </section>
+
+          <!-- Assessments -->
+          <section class="section-group">
+            <h2 class="card-title">Kiểm tra & Đánh giá</h2>
+            <div class="quiz-list">
+              <div v-for="t in testPractice" :key="t.id" class="quiz-item">
+                <div class="quiz-icon" :style="`background:${t.cover}15; color:${t.cover}`"><FileText :size="24" /></div>
+                <div class="quiz-content">
+                  <span class="badge" :class="t.status">{{ t.badge }}</span>
+                  <h3>{{ t.title }}</h3>
+                  <p>{{ t.subtitle }}</p>
+                </div>
+                <button class="btn-outline" @click="$router.push('/my-courses')">Thực hiện →</button>
+              </div>
+            </div>
+          </section>
         </div>
 
-      </div></div></div>
+        <!-- Sidebar Column -->
+        <aside class="side-col">
+          
+          <!-- Capability Panel -->
+          <section class="card side-panel">
+            <h3 class="side-title">Hồ sơ năng lực</h3>
+            <p class="dept-text uppercase">PHÒNG BAN: {{ learningProfile.dept || 'CHƯA PHÂN BỔ' }}</p>
+            <div class="cap-stats">
+              <div class="cap-item">
+                <div class="cap-icon purple"><User :size="18" /></div>
+                <span class="cap-lbl">Nhân viên</span>
+                <strong class="cap-val">3.0</strong>
+              </div>
+              <div class="cap-item">
+                <div class="cap-icon blue"><TrendingUp :size="18" /></div>
+                <span class="cap-lbl">Dự kiến</span>
+                <strong class="cap-val">{{ learningProfile.predictedScore }}</strong>
+              </div>
+              <div class="cap-item">
+                <div class="cap-icon green"><Target :size="18" /></div>
+                <span class="cap-lbl">Mục tiêu</span>
+                <strong class="cap-val">5.0</strong>
+              </div>
+            </div>
+          </section>
 
-  <div class="dash-loading" v-else>
-    <div class="loader"></div>
-    <p>Đang kết nối kho dữ liệu...</p>
+          <!-- Summary Panel -->
+          <section class="card side-panel">
+            <h3 class="side-title">TÓM TẮT QUÁ TRÌNH HỌC</h3>
+            <div class="summary-list">
+              <div v-for="s in learningProfile.summary" :key="s.label" class="summary-item">
+                <span class="s-lbl">{{ s.label }}</span>
+                <span class="s-val" :style="`color:${s.color}`">{{ s.val }}</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Notification Panel -->
+          <section class="card side-panel">
+            <div class="panel-head">
+              <h3 class="side-title">Nhắc nhở hệ thống</h3>
+              <span class="notif-count">{{ unreadMessages || hrMessages.length }}</span>
+            </div>
+            <p v-if="hrMessages.length === 0" class="panel-muted">Bạn không có thông báo mới.</p>
+            <div v-else class="msg-list">
+              <div v-for="m in hrMessages.slice(0, 3)" :key="m.id" class="msg-card" :class="{ unread: m.unread }">
+                <AlertCircle :size="14" class="msg-icon" />
+                <div class="msg-body">
+                  <p>{{ m.msg }}</p>
+                  <span>{{ m.time }}</span>
+                </div>
+              </div>
+            </div>
+            <button class="btn-soft" @click="$router.push('/my-courses')">Đi tới khóa học</button>
+          </section>
+
+          <!-- Badges Panel -->
+          <section class="card side-panel" v-if="badges.length">
+            <h3 class="side-title">Huy hiệu đạt được</h3>
+            <div class="badge-row">
+              <div v-for="b in badges.slice(0, 3)" :key="b.badgeId" class="badge-box">
+                <div class="b-icon"><Star :size="18" /></div>
+                <span>{{ b.badgeName }}</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Certificates Panel -->
+          <section class="card side-panel" v-if="certificates.length">
+            <div class="panel-head">
+              <h3 class="side-title">Chứng chỉ mới nhất</h3>
+              <button class="link-btn-sm" @click="$router.push('/certificates')">Tất cả</button>
+            </div>
+            <div class="cert-list">
+              <div v-for="c in certificates.slice(0, 3)" :key="c.id" class="cert-item-mini">
+                <Award :size="14" class="c-icon" />
+                <div class="c-info">
+                  <p>{{ c.courseTitle }}</p>
+                  <span>{{ new Date(c.issuedAt).toLocaleDateString('vi-VN') }}</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </div>
+
+    </div>
+    
+    <!-- Loading Animation -->
+    <div v-else class="dash-loading-screen">
+      <div class="spinner"></div>
+      <p>Đang tải dữ liệu học tập...</p>
+    </div>
   </div>
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
-
-/* ── Reset / Root ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --fnt: 'Be Vietnam Pro', system-ui, sans-serif;
-  --in:  #818cf8; --in-l: rgba(129,140,248,.09);
-  --gr:  #10b981; --gr-l: rgba(16,185,129,.09);
-  --am:  #f59e0b; --am-l: rgba(245,158,11,.09);
-  --vi:  #a78bfa; --vi-l: rgba(167,139,250,.09);
-  --rd:  #ef4444; --rd-l: rgba(239,68,68,.09);
-  --bl:  #3b82f6; --bl-l: rgba(59,130,246,.09);
-  --card: var(--bg-card, #ffffff);
-  --border: var(--border-color, #e5e7eb);
-  --t1: var(--text-primary,  #111827);
-  --t2: var(--text-secondary,#6b7280);
-  --t3: var(--text-tertiary, #9ca3af);
-  --bg2: var(--bg-secondary, #f9fafb);
-  --bg3: var(--bg-tertiary,  #f3f4f6);
-  --shadow: 0 1px 4px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04);
+/* ─────────────────────────────────────────────
+   DESIGN SYSTEM & THEMES
+   ───────────────────────────────────────────── */
+.theme-provider {
+  --primary: var(--primary-500);
+  --primary-hover: var(--primary-600);
+  --bg-main: var(--bg-primary);
+  --bg-card: var(--bg-secondary);
+  --text-main: var(--text-primary);
+  --text-sub: var(--text-secondary);
+  --border: var(--border-color);
+  --shadow: var(--shadow-sm);
+  
+  min-height: 100vh;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: 'Inter', sans-serif;
+  transition: all 0.3s ease;
 }
 
 .dash {
-  font-family: var(--fnt);
-  padding: 1.5rem 2rem 3rem;
-  max-width: 1340px;
+  max-width: 1400px;
   margin: 0 auto;
-  animation: fadeIn .35s ease-out;
+  padding: 32px;
 }
 
-/* ════════════════════════════
-   GREETING
-════════════════════════════ */
-.greet-row {
-  display: flex; align-items: center; gap: 1rem;
-  margin-bottom: 1.5rem;
+/* ─────────────────────────────────────────────
+   TOP BAR
+   ───────────────────────────────────────────── */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
 }
-.greet-avatar-wrap { flex-shrink: 0; }
-.greet-avatar {
-  width: 52px; height: 52px;
+
+.greet-box {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  background-size: cover; background-position: center;
-  border: 2.5px solid var(--in);
-  box-shadow: 0 0 0 3px rgba(129,140,248,.15);
-}
-.greet-avatar-init {
-  background: linear-gradient(135deg, #818cf8, #a78bfa) !important;
-  display: flex; align-items: center; justify-content: center;
-  color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
-  font-size: 1.2rem; font-weight: 800;
-  text-shadow: 0 1px 4px rgba(0,0,0,.2);
-}
-.greet-title {
-  font-size: 1.35rem; font-weight: 800;
-  color: var(--text-primary, #111827); letter-spacing: -.02em; line-height: 1.25;
-}
-.greet-name {
-  background: linear-gradient(120deg, #818cf8, #a78bfa);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-}
-.greet-sub { font-size: .875rem; color: var(--text-secondary, #6b7280); margin-top: 3px; }
-
-/* ════════════════════════════
-   BODY GRID
-════════════════════════════ */
-.body-grid {
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 1.5rem;
-  align-items: start;
-}
-@media(max-width:1100px){ .body-grid { grid-template-columns: 1fr; } }
-
-.col-main { display: flex; flex-direction: column; gap: 1.5rem; }
-.col-rail  { display: flex; flex-direction: column; gap: 1.25rem; }
-
-/* ════════════════════════════
-   CARD: MỤC TIÊU HÔM NAY
-════════════════════════════ */
-.card-goals {
-  position: relative;
-  background: linear-gradient(135deg, #4f46e5 0%, #818cf8 50%, #7c3aed 100%);
-  border-radius: 20px;
-  padding: 1.5rem 1.75rem;
-  overflow: hidden;
-  box-shadow: 0 8px 28px rgba(79,70,229,.3);
+  background-size: cover;
+  background-position: center;
+  background-color: var(--primary);
+  border: 3px solid var(--bg-card);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
 }
 
-/* dot pattern overlay */
-.card-goals::before {
-  content: '';
-  position: absolute; inset: 0;
-  background-image: radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px);
-  background-size: 22px 22px;
-  pointer-events: none;
-}
-
-.goals-bubble {
-  position: absolute;
-  top: 1.1rem; right: 6rem;
-  background: rgba(17,24,39,.75);
-  backdrop-filter: blur(8px);
+.avatar-init {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #fff;
-  font-size: 12px; font-weight: 500;
-  padding: 7px 13px;
-  border-radius: 12px;
-  max-width: 260px;
-  line-height: 1.45;
-  border: 1px solid rgba(255,255,255,.12);
-  display: flex; align-items: flex-start; gap: 6px;
-  z-index: 2;
+  font-weight: 700;
+  font-size: 20px;
 }
 
-.goals-mascot {
-  position: absolute;
-  top: .75rem; right: 1.25rem;
-  font-size: 2.8rem;
-  z-index: 2;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,.3));
+.greet-text h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
 }
 
-.goals-inner { position: relative; z-index: 2; }
+.text-primary { color: var(--primary); }
 
-.goals-header {
-  display: flex; align-items: center; gap: .5rem;
-  margin-bottom: 1.1rem;
-}
-.goals-fire { color: #fbbf24; }
-.goals-title {
-  font-size: 1rem; font-weight: 700; color: #fff; letter-spacing: -.01em;
+.greet-text p {
+  color: var(--text-sub);
+  font-size: 14px;
+  margin: 4px 0 0;
 }
 
-.task-list { display: flex; flex-direction: column; gap: .6rem; }
-
-.task-item {
-  display: flex; align-items: center; gap: .875rem;
-  background: rgba(255,255,255,.1);
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: 13px;
-  padding: .875rem 1rem;
-  backdrop-filter: blur(4px);
-  transition: background .18s;
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
-.task-item:hover:not(.locked) { background: rgba(255,255,255,.16); }
-.task-item.done  { opacity: .65; }
-.task-item.locked { opacity: .5; cursor: default; }
 
-.task-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.ic-done   { color: #4ade80; }
-.ic-lock   { color: #94a3b8; }
-.ic-circle { color: rgba(255,255,255,.5); }
-
-.task-body { flex: 1; min-width: 0; }
-.task-name { font-size: .9rem; font-weight: 600; color: #fff; margin-bottom: 2px; }
-.task-sub  { font-size: 12px; color: rgba(255,255,255,.65); }
-
-.task-right { display: flex; align-items: center; gap: .75rem; flex-shrink: 0; }
-.task-prog  { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.8); }
-
-.btn-start {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: .4rem 1.1rem;
-  background: #ffffff !important;
-  color: #6366f1 !important;
-  -webkit-text-fill-color: #6366f1 !important;
-  font-family: var(--fnt); font-size: .8rem; font-weight: 800;
-  border: none; border-radius: 9px; cursor: pointer;
-  transition: all .18s; white-space: nowrap;
-  box-shadow: 0 2px 10px rgba(0,0,0,.2);
-}
-.btn-start:hover { background: #eef2ff !important; transform: scale(1.04); box-shadow: 0 4px 14px rgba(0,0,0,.22); }
-
-/* ════════════════════════════
-   SECTION WRAPPER
-════════════════════════════ */
-.section {}
-.section-hd {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: .875rem;
-}
-.section-title {
-  font-size: 1.05rem; font-weight: 700; color: var(--text-primary, #111827); letter-spacing: -.015em;
-}
-.link-more {
-  font-size: 13px; font-weight: 500; color: var(--in);
-  background: none; border: none; cursor: pointer; font-family: var(--fnt);
-  padding: 0; transition: opacity .15s;
-}
-.link-more:hover { opacity: .75; }
-
-/* ════════════════════════════
-   MISSION CARD (replaces Study Plan)
-════════════════════════════ */
-.mission-card {
-  display: flex; gap: 2rem;
-  background: var(--card);
+.pill {
+  padding: 6px 14px;
+  background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 1.75rem;
-  box-shadow: var(--shadow);
-}
-@media(max-width:700px){ .mission-card { flex-direction: column; gap: 1.25rem; } }
-
-/* Left: ring */
-.mc-left {
-  display: flex; flex-direction: column; align-items: center; gap: .75rem;
-  flex-shrink: 0;
-}
-.mc-ring-wrap {
-  position: relative; width: 110px; height: 110px;
-}
-.mc-ring-svg { width: 100%; height: 100%; }
-.mc-arc { transition: stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1); }
-.mc-ring-center {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-}
-.mc-pct     { font-size: 1.4rem; font-weight: 800; color: var(--t1); line-height: 1; }
-.mc-pct-lbl { font-size: 11px; color: var(--t3); font-weight: 500; margin-top: 2px; }
-.mc-week-label {
-  display: flex; align-items: center; gap: 5px;
-  font-size: 11.5px; font-weight: 500; color: var(--t2);
-  text-align: center;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-/* Right: details */
-.mc-right { flex: 1; min-width: 0; }
-.mc-title {
-  font-size: .95rem; font-weight: 700; color: var(--text-primary, #111827); margin-bottom: .875rem;
+.pill-glow { color: var(--primary); border-color: rgba(99, 102, 241, 0.2); }
+
+.dot {
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
 }
 
-.mc-row {
-  display: flex; align-items: center; justify-content: space-between; gap: .5rem;
-  margin-bottom: .35rem;
-}
-.mc-row.mt-sm { margin-top: .875rem; }
-.mc-row-label {
-  display: flex; align-items: center; gap: 5px;
-  font-size: 12.5px; font-weight: 500; color: var(--t2);
-}
-.mc-row-val { font-size: 12.5px; font-weight: 700; }
-.amber-val { color: var(--am); }
-.red-val   { color: var(--rd); }
-.green-val { color: var(--gr); }
-
-.mc-prog-bar {
-  height: 7px; background: var(--bg3); border-radius: 99px; overflow: hidden; margin-bottom: 4px;
-}
-.mc-bar-fill {
-  height: 100%; border-radius: 99px;
-  transition: width 1.1s cubic-bezier(.4,0,.2,1);
-}
-.amber-fill { background: linear-gradient(90deg,var(--am),#fcd34d); }
-.red-fill   { background: linear-gradient(90deg,var(--rd),#f87171); }
-.green-fill { background: linear-gradient(90deg,var(--gr),#34d399); }
-
-.mc-sub-bullets {
-  display: flex; flex-direction: column; gap: 2px; margin-bottom: .25rem;
-}
-.mc-bullet { font-size: 11.5px; font-weight: 500; }
-.done-bullet { color: var(--gr); }
-.plan-bullet { color: var(--bl); }
-
-/* skill bars */
-.mc-skills { margin-top: .875rem; display: flex; flex-direction: column; gap: .5rem; }
-.mc-skill-row {
-  display: flex; align-items: center; gap: .625rem;
-}
-.mc-skill-name {
-  width: 145px; font-size: 12px; color: var(--t2); font-weight: 500; flex-shrink: 0;
-}
-.mc-skill-track {
-  flex: 1; height: 5px; background: var(--bg3); border-radius: 99px; overflow: hidden;
-}
-.mc-skill-fill {
-  height: 100%; border-radius: 99px; transition: width 1.1s ease-out;
-}
-.mc-skill-pct {
-  width: 34px; text-align: right; font-size: 11.5px; font-weight: 700;
+@keyframes pulse {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.7; }
 }
 
-.mc-status {
-  margin-top: .875rem; margin-bottom: .875rem;
-  font-size: 12.5px; font-weight: 500; color: var(--t2);
-  padding: .5rem .875rem; border-radius: 9px;
-  background: var(--bg2); border-left: 3px solid var(--gr);
+/* ─────────────────────────────────────────────
+   GOAL BANNER
+   ───────────────────────────────────────────── */
+.goal-banner {
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  border-radius: 24px;
+  padding: 24px 32px;
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.3);
 }
-.mc-status.ok   { border-left-color: var(--gr); color: var(--gr); background: var(--gr-l); }
-.mc-status.warn { border-left-color: var(--am); color: #92400e; background: var(--am-l); }
 
-.btn-continue {
-  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-  width: 100%; padding: .7rem;
-  background: linear-gradient(135deg, #818cf8, #a78bfa) !important;
-  color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
-  font-family: var(--fnt); font-size: .9rem; font-weight: 700;
-  border: none; border-radius: 12px; cursor: pointer;
-  box-shadow: 0 3px 14px rgba(129,140,248,.4);
-  transition: all .2s; letter-spacing: -.01em;
-  text-shadow: 0 1px 3px rgba(0,0,0,.15);
+.banner-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 12px;
+  margin-bottom: 8px;
 }
-.btn-continue:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(129,140,248,.5); }
 
-/* icon helpers */
-.ic-amber { color: var(--am); }
-.ic-red   { color: var(--rd); }
-.ic-green { color: var(--gr); }
+.icon-zap { color: #fbbf24; }
 
-/* ════════════════════════════
-   COURSE CARDS
-════════════════════════════ */
-.course-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+.banner-content p {
+  font-size: 16px;
+  margin: 0;
+  opacity: 0.95;
 }
-@media(max-width:900px){ .course-cards { grid-template-columns: repeat(2,1fr); } }
-@media(max-width:560px){ .course-cards { grid-template-columns: 1fr; } }
 
-.course-card {
-  background: var(--card);
-  border: 1px solid var(--border);
+.banner-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.bot-bubble {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 10px 16px;
   border-radius: 16px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: all .2s ease;
+  font-size: 13px;
+  max-width: 260px;
+  line-height: 1.4;
+}
+
+.bot-emoji { font-size: 32px; }
+
+/* ─────────────────────────────────────────────
+   LAYOUT
+   ───────────────────────────────────────────── */
+.main-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 32px;
+}
+
+.card {
+  background: var(--bg-card);
+  border-radius: 24px;
+  padding: 32px;
+  border: 1px solid var(--border);
   box-shadow: var(--shadow);
+  margin-bottom: 24px;
 }
-.course-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 28px rgba(0,0,0,.1);
-  border-color: rgba(129,140,248,.25);
+
+.card-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 24px;
 }
-.cc-thumb {
-  height: 100px; width: 100%;
-  display: flex; align-items: center; justify-content: center;
+
+.section-group { margin-bottom: 40px; }
+.section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+
+/* ─────────────────────────────────────────────
+   WEEKLY PROGRESS
+   ───────────────────────────────────────────── */
+.mission-layout {
+  display: flex;
+  gap: 48px;
+}
+
+.mission-circle-box {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.circle-wrap {
+  width: 150px;
+  height: 150px;
   position: relative;
 }
-.cc-thumb-icon { color: rgba(255,255,255,.85); }
-.cc-tag {
-  position: absolute; top: 8px; left: 8px;
-  font-size: 10.5px; font-weight: 700; color: rgba(255,255,255,.9);
-  background: rgba(0,0,0,.28); padding: 2px 8px; border-radius: 99px;
-  backdrop-filter: blur(4px);
-  text-transform: uppercase; letter-spacing: .05em;
-}
-.cc-body { padding: .875rem; }
-.cc-title {
-  font-size: .85rem; font-weight: 700; color: var(--t1);
-  line-height: 1.35; margin-bottom: .5rem;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-}
-.cc-meta-row {
-  display: flex; align-items: center; gap: .875rem;
-}
-.cc-stat {
-  display: flex; align-items: center; gap: 4px;
-  font-size: 11.5px; font-weight: 600; color: var(--t3);
-}
-.cc-prog-row {
-  display: flex; align-items: center; gap: .5rem; margin-bottom: .375rem;
-}
-.cc-prog-track { flex:1; height: 4px; background: var(--bg3); border-radius: 99px; overflow: hidden; }
-.cc-prog-fill  { height: 100%; background: linear-gradient(90deg,var(--in),var(--vi)); border-radius: 99px; }
-.cc-prog-pct   { font-size: 11px; font-weight: 700; color: var(--in); min-width: 30px; text-align: right; }
 
-/* ════════════════════════════
-   QUIZ / TEST SECTION
-════════════════════════════ */
-.quiz-list { display: flex; flex-direction: column; gap: .75rem; }
+.circle-wrap svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
 
+.circle-bg {
+  fill: none;
+  stroke: var(--bg-main);
+  stroke-width: 8;
+}
+
+.circle-fill {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s ease;
+}
+
+.circle-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.circle-content .pct {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.circle-content .lbl {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  margin-top: 4px;
+}
+
+.date-lbl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-sub);
+  background: var(--bg-main);
+  padding: 4px 12px;
+  border-radius: 99px;
+}
+
+.mission-details { flex: 1; }
+.detail-group h3 { font-size: 15px; margin: 0 0 16px; color: var(--text-main); }
+.stat-line { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 14px; }
+.stat-line span { display: flex; align-items: center; gap: 8px; color: var(--text-sub); }
+.stat-sub { font-size: 12px; color: var(--text-sub); margin: -8px 0 16px 24px; }
+
+.skills-grid { display: flex; flex-direction: column; gap: 12px; margin: 24px 0; }
+.skill-info { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.bar-track { height: 6px; background: var(--bg-main); border-radius: 3px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+
+.mission-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px dotted var(--border);
+}
+
+.mission-footer p { font-size: 14px; color: var(--text-sub); margin: 0; }
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+
+/* ─────────────────────────────────────────────
+   COURSE GRID
+   ───────────────────────────────────────────── */
+.course-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.course-card {
+  background: var(--bg-card);
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.course-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+
+.course-thumb {
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.course-badge {
+  position: absolute;
+  top: 12px; left: 12px;
+  font-size: 10px; font-weight: 700;
+  padding: 4px 10px; border-radius: 8px;
+  color: #fff;
+}
+
+.bg-purple { background: #8b5cf6; }
+.bg-blue   { background: #3b82f6; }
+
+.course-info { padding: 20px; }
+.course-info h3 { font-size: 16px; margin: 0 0 12px; font-weight: 700; }
+
+.course-prog { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.mini-bar { flex: 1; height: 6px; background: var(--bg-main); border-radius: 3px; overflow: hidden; }
+.mini-fill { height: 100%; background: var(--primary); }
+.course-prog span { font-size: 11px; font-weight: 700; color: var(--text-sub); }
+
+.course-meta { display: flex; gap: 16px; font-size: 12px; color: var(--text-sub); }
+.course-meta span { display: flex; align-items: center; gap: 4px; }
+
+/* ─────────────────────────────────────────────
+   QUIZ LIST
+   ───────────────────────────────────────────── */
+.quiz-list { display: flex; flex-direction: column; gap: 12px; }
 .quiz-item {
-  display: flex; align-items: center; gap: 1rem;
-  padding: 1rem 1.1rem;
-  background: var(--card);
+  background: var(--bg-card);
+  padding: 16px;
+  border-radius: 16px;
   border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: var(--shadow);
-  transition: all .18s;
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
-.quiz-item:hover { border-color: rgba(129,140,248,.2); transform: translateX(2px); }
 
-.qi-cover {
-  width: 52px; height: 64px; border-radius: 10px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-}
-.qi-icon { color: rgba(255,255,255,.9); }
+.quiz-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.quiz-content { flex: 1; }
+.quiz-content h3 { font-size: 15px; margin: 4px 0; }
+.quiz-content p { font-size: 12px; color: var(--text-sub); margin: 0; }
 
-.qi-body { flex: 1; min-width: 0; }
-.qi-top  { margin-bottom: 4px; }
-.qi-badge {
-  display: inline-block; font-size: 10.5px; font-weight: 700;
-  padding: 2px 9px; border-radius: 99px;
-  text-transform: uppercase; letter-spacing: .04em;
-}
-.qi-badge.doing { background: var(--bl-l); color: var(--bl); }
-.qi-badge.new   { background: var(--gr-l); color: var(--gr); }
-.qi-badge.done  { background: var(--bg3); color: var(--t3); }
+.badge { font-size: 9px; font-weight: 700; text-transform: uppercase; padding: 2px 8px; border-radius: 6px; }
+.badge.done { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.badge.doing { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.badge.new { background: rgba(99, 102, 241, 0.1); color: var(--primary); }
 
-.qi-title { font-size: .9rem; font-weight: 700; color: var(--t1); margin-bottom: 3px; }
-.qi-sub   { font-size: 12px; color: var(--t3); }
-
-.btn-quiz {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: .5rem 1.25rem; flex-shrink: 0;
-  background: linear-gradient(135deg, #818cf8, #a78bfa) !important;
-  color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
-  font-family: var(--fnt); font-size: .8rem; font-weight: 700;
-  border: none; border-radius: 10px; cursor: pointer;
-  box-shadow: 0 2px 10px rgba(129,140,248,.35); transition: all .18s;
-  text-shadow: 0 1px 3px rgba(0,0,0,.15);
-}
-.btn-quiz:hover { transform: scale(1.04); box-shadow: 0 4px 14px rgba(129,140,248,.45); }
-
-/* ════════════════════════════
-   RIGHT RAIL CARDS
-════════════════════════════ */
-.rail-card {
-  background: var(--card);
+.btn-outline {
+  background: transparent;
   border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 1.25rem 1.35rem;
-  box-shadow: var(--shadow);
+  color: var(--primary);
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
 }
-.rc-hd {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: .875rem;
-}
-.rc-title { font-size: .9rem; font-weight: 700; color: var(--t1); }
-.notif-count {
-  background: var(--rd); color: #fff;
-  font-size: 11px; font-weight: 700;
-  padding: 2px 8px; border-radius: 99px;
-}
-.rc-label {
-  font-size: 12px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: .07em; color: var(--t3); margin-bottom: .625rem;
-}
-.rc-label.mt-md { margin-top: 1rem; }
+.btn-outline:hover { background: var(--border); }
 
-/* Level Track */
-.level-track {
-  display: flex; align-items: center; gap: 0;
-  padding: .25rem 0 .75rem;
-}
-.lt-step {
-  display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1;
-}
-.lt-dot {
-  width: 28px; height: 28px; border-radius: 50%;
-  background: var(--bg3); border: 2px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  color: var(--t3);
-}
-.lt-step.done .lt-dot { background: var(--gr-l); border-color: var(--gr); color: var(--gr); }
-.current-dot { background: var(--in-l) !important; border-color: var(--in) !important; color: var(--in) !important; }
-.target-dot  { background: var(--am-l) !important; border-color: var(--am) !important; color: var(--am) !important; }
+/* ─────────────────────────────────────────────
+   SIDEBAR
+   ───────────────────────────────────────────── */
+.side-panel { padding: 24px; }
+.side-title { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-main); margin: 0 0 16px; }
+.dept-text { font-size: 11px; color: var(--text-sub); margin-bottom: 20px; font-weight: 600; }
+.cap-stats { display: flex; justify-content: space-between; }
+.cap-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.cap-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+.cap-icon.purple { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
+.cap-icon.blue   { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.cap-icon.green  { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.cap-lbl { font-size: 10px; color: var(--text-sub); }
+.cap-val { font-size: 16px; font-weight: 700; }
 
-.lt-line {
-  flex: 1; height: 2px; background: var(--border); margin-top: -24px; z-index: 0;
-  align-self: center; margin-left: -4px; margin-right: -4px;
-}
-.lt-line.done { background: var(--gr); }
+.summary-list { display: flex; flex-direction: column; gap: 12px; }
+.summary-item { display: flex; justify-content: space-between; font-size: 13px; font-weight: 500; }
+.s-lbl { color: var(--text-sub); }
+.s-val { font-weight: 700; }
 
-.lt-lbl   { font-size: 11px; font-weight: 600; color: var(--t3); margin-top: 2px; }
-.lt-score { font-size: 1rem; font-weight: 800; }
-.entry-score   { color: var(--gr); }
-.current-score { color: var(--in); }
-.target-score  { color: var(--am); }
+.panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.notif-count { background: var(--bg-main); font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
 
-/* Summary list */
-.summary-list { display: flex; flex-direction: column; gap: .375rem; }
-.sl-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: .45rem 0;
-  border-bottom: 1px solid var(--border);
-}
-.sl-row:last-child { border-bottom: none; }
-.sl-label { font-size: 12.5px; color: var(--t2); }
-.sl-val   { font-size: 13px; font-weight: 700; }
+.msg-list { display: flex; flex-direction: column; gap: 10px; }
+.msg-card { display: flex; gap: 12px; padding: 10px; border-radius: 12px; background: var(--bg-main); }
+.msg-card.unread { border-left: 3px solid var(--primary); }
+.msg-icon { color: var(--text-sub); margin-top: 2px; }
+.msg-body p { font-size: 12px; margin: 0; line-height: 1.4; color: var(--text-main); }
+.msg-body span { font-size: 10px; color: var(--text-sub); }
 
-/* HR messages */
-.msg-list { display: flex; flex-direction: column; gap: .5rem; margin-bottom: .75rem; }
-.msg-item {
-  display: flex; gap: .625rem;
-  padding: .65rem .75rem;
-  border-radius: 11px;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-}
-.msg-item.unread { background: rgba(239,68,68,.05); border-color: rgba(239,68,68,.18); }
-.msg-from-icon {
-  width: 28px; height: 28px; border-radius: 50%;
-  background: var(--rd-l); color: var(--rd);
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.msg-body { flex: 1; }
-.msg-from { font-size: 11.5px; font-weight: 700; color: var(--t1); margin-bottom: 2px; }
-.msg-text { font-size: 12px; color: var(--t2); line-height: 1.45; margin-bottom: 3px; }
-.msg-time { font-size: 11px; color: var(--t3); }
-.rc-empty { font-size: 12.5px; color: var(--t3); margin-bottom: .75rem; }
+.btn-soft { width: 100%; border: none; background: rgba(99, 102, 241, 0.05); color: var(--primary); padding: 10px; border-radius: 10px; margin-top: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.btn-soft:hover { background: rgba(99, 102, 241, 0.1); }
 
-.btn-view-detail {
-  display: block; width: 100%;
-  padding: .6rem;
-  background: rgba(129,140,248,.1) !important;
-  color: #6366f1 !important;
-  -webkit-text-fill-color: #6366f1 !important;
-  font-family: var(--fnt); font-size: .84rem; font-weight: 700;
-  border: 1.5px solid rgba(129,140,248,.25); border-radius: 11px;
-  cursor: pointer; text-align: center; transition: all .18s;
-}
-.btn-view-detail:hover {
-  background: #818cf8 !important;
-  color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
-  border-color: transparent;
-}
+.badge-row { display: flex; gap: 12px; }
+.badge-box { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.b-icon { width: 44px; height: 44px; background: var(--bg-main); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text-sub); }
+.badge-box span { font-size: 9px; color: var(--text-sub); font-weight: 600; text-align: center; }
 
-/* Badges */
-.badge-grid {
-  display: grid; grid-template-columns: repeat(3,1fr); gap: .75rem;
-}
-.badge-item { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-.badge-circle {
-  width: 44px; height: 44px; border-radius: 12px;
-  background: var(--vi-l); color: var(--vi);
-  border: 1.5px solid rgba(167,139,250,.18);
-  display: flex; align-items: center; justify-content: center;
-  transition: all .18s;
-}
-.badge-item:hover .badge-circle { background: var(--vi); color: #fff; transform: scale(1.08); box-shadow: 0 4px 12px rgba(167,139,250,.3); }
-.badge-name { font-size: 10.5px; color: var(--t3); font-weight: 500; text-align: center; }
+.cert-list { display: flex; flex-direction: column; gap: 12px; }
+.cert-item-mini { display: flex; gap: 10px; align-items: flex-start; }
+.c-info p { font-size: 12px; margin: 0; font-weight: 600; line-height: 1.3; }
+.c-info span { font-size: 10px; color: var(--text-sub); }
 
-/* Certs */
-.cert-list { display: flex; flex-direction: column; gap: .375rem; }
-.cert-item { display: flex; align-items: center; gap: .625rem; padding: .45rem 0; border-bottom: 1px solid var(--border); }
-.cert-item:last-child { border-bottom: none; }
-.cert-icon { width: 28px; height: 28px; border-radius: 8px; background: var(--am-l); color: var(--am); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.cert-info { flex: 1; min-width: 0; }
-.cert-name { font-size: .82rem; font-weight: 600; color: var(--t1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cert-date { font-size: 11px; color: var(--t3); }
+.link-btn, .link-btn-sm { background: none; border: none; color: var(--text-sub); font-weight: 600; cursor: pointer; }
+.link-btn { font-size: 13px; }
+.link-btn-sm { font-size: 11px; }
 
-/* ════════════════════════════
+/* ─────────────────────────────────────────────
    LOADING
-════════════════════════════ */
-.dash-loading {
-  height: 60vh; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 1rem;
-}
-.dash-loading p { font-size: 13px; color: var(--t3); }
-.loader {
-  width: 36px; height: 36px;
-  border: 3px solid var(--border); border-top-color: var(--in);
-  border-radius: 50%; animation: spin .85s linear infinite;
-}
+   ───────────────────────────────────────────── */
+.dash-loading-screen { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+.spinner { width: 40px; height: 40px; border: 4px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-/* ════════════════════════════
-   ANIMATIONS
-════════════════════════════ */
-@keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
-@keyframes spin   { to { transform:rotate(360deg) } }
-
-/* ════════════════════════════
+/* ─────────────────────────────────────────────
    RESPONSIVE
-════════════════════════════ */
-@media(max-width:768px){
-  .dash { padding: 1rem 1rem 2.5rem; }
-  .goals-bubble { display: none; }
-  .goals-mascot { display: none; }
-  .task-right .btn-start { display: none; }
-  .course-cards { grid-template-columns: repeat(2,1fr); }
-  .mc-left { display: none; }
+   ───────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .main-layout { grid-template-columns: 1fr; }
+  .side-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 }
-@media(max-width:480px){
-  .course-cards { grid-template-columns: 1fr; }
+
+@media (max-width: 768px) {
+  .dash { padding: 16px; }
+  .side-col { grid-template-columns: 1fr; }
+  .mission-layout { flex-direction: column; gap: 24px; align-items: center; }
+  .course-grid { grid-template-columns: 1fr; }
 }
 </style>
