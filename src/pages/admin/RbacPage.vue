@@ -12,8 +12,8 @@
 		</div>
 
 		<div class="tabs-container">
-			<div class="tabs glass-tabs" ref="tabsRef">
-				<div class="tab-indicator" :style="indicatorStyle"></div>
+			<div ref="tabsRef" class="tabs glass-tabs">
+				<div class="tab-indicator" :style="indicatorStyle" />
 				<button
 					class="tab"
 					:class="{ active: tab === 'roles' }"
@@ -33,8 +33,7 @@
 
 		<div class="tab-content-wrapper">
 			<Transition name="fade-slide" mode="out-in">
-				<!-- Roles Tab -->
-				<div v-if="tab === 'roles'" class="tab-content" :key="'roles'">
+				<div v-if="tab === 'roles'" :key="'roles'" class="tab-content">
 					<div class="section-bar">
 						<h2 class="section-title">Vai trò hệ thống</h2>
 						<button
@@ -92,7 +91,7 @@
 										<span
 											class="cat-dot"
 											:style="{ background: getCatColor(cat) }"
-										></span>
+										/>
 										{{ cat }}
 									</div>
 									<div class="perm-items-grid">
@@ -123,8 +122,7 @@
 					</div>
 				</div>
 
-				<!-- Assign Tab -->
-				<div v-else-if="tab === 'assign'" class="tab-content" :key="'assign'">
+				<div v-else-if="tab === 'assign'" :key="'assign'" class="tab-content">
 					<div class="assign-layout">
 						<div class="user-select-panel glass-card">
 							<div class="panel-header">
@@ -133,19 +131,19 @@
 									<Search :size="14" class="animated-icon" />
 									<input
 										v-model="userSearch"
-										@input="debounceSearch"
 										placeholder="Tìm tên/email..."
 										class="search-input-premium sm"
+										@input="debounceSearch"
 									/>
 								</div>
 							</div>
 							<div class="user-list-scroll custom-scrollbar">
 								<div v-if="loadingUsers" class="loading-state-skeleton">
 									<div v-for="i in 5" :key="i" class="user-skeleton">
-										<div class="skel-avatar"></div>
+										<div class="skel-avatar" />
 										<div class="skel-info">
-											<div class="skel-line w-70"></div>
-											<div class="skel-line w-50"></div>
+											<div class="skel-line w-70" />
+											<div class="skel-line w-50" />
 										</div>
 									</div>
 								</div>
@@ -153,7 +151,7 @@
 									<Users :size="32" />
 									<p>Không tìm thấy user</p>
 								</div>
-								<TransitionGroup name="list" tag="div" v-else>
+								<TransitionGroup v-else name="list" tag="div">
 									<div
 										v-for="u in users"
 										:key="u.id || u.Id"
@@ -172,14 +170,18 @@
 											{{ u.avatar || u.Avatar ? "" : getInitials(u.fullName) }}
 										</div>
 										<div class="user-item-info">
-											<div class="user-item-name">{{ u.fullName }}</div>
-											<div class="user-item-email">{{ u.email }}</div>
+											<div class="user-item-name">
+												{{ u.fullName }}
+											</div>
+											<div class="user-item-email">
+												{{ u.email }}
+											</div>
 										</div>
 										<ChevronRight :size="16" class="arrow" />
 									</div>
 								</TransitionGroup>
 							</div>
-							<div class="panel-footer" v-if="userTotal > userPageSize">
+							<div v-if="userTotal > userPageSize" class="panel-footer">
 								<button
 									class="btn-icon sm ghost"
 									:disabled="userPage === 1"
@@ -209,14 +211,14 @@
 
 						<div class="role-assign-panel glass-card">
 							<Transition name="fade-slide" mode="out-in">
-								<div v-if="!assignedUser" class="no-selection" :key="'none'">
+								<div v-if="!assignedUser" :key="'none'" class="no-selection">
 									<div class="no-selection-icon pulse-glow">
 										<UserPlus :size="56" />
 									</div>
 									<h3>Chưa chọn người dùng</h3>
 									<p>Hãy chọn người dùng để gán quyền</p>
 								</div>
-								<div v-else class="assign-content" :key="assignedUser.id">
+								<div v-else :key="assignedUser.id" class="assign-content">
 									<div class="assign-header profile-card-layout">
 										<div
 											class="profile-bg-glow"
@@ -225,7 +227,7 @@
 													assignedUser.fullName || assignedUser.userName,
 												),
 											}"
-										></div>
+										/>
 										<div class="selected-user-detail">
 											<div
 												class="user-lg-avatar"
@@ -252,8 +254,8 @@
 												</p>
 												<div class="user-badges">
 													<span
-														class="user-detail-badge"
 														v-if="assignedUser.role"
+														class="user-detail-badge"
 														>{{ assignedUser.role }}</span
 													>
 													<span class="user-detail-badge premium"
@@ -278,8 +280,8 @@
 												<input
 													type="checkbox"
 													:checked="selectedRoleIds.includes(role.id)"
-													@change="toggleUserRole(role)"
 													class="hidden-input"
+													@change="toggleUserRole(role)"
 												/>
 												<div class="role-block-content">
 													<div
@@ -310,8 +312,8 @@
 									<div class="assign-actions">
 										<button
 											class="btn btn-primary btn-glow btn-lg w-full"
-											@click="saveUserRoles"
 											:disabled="savingRoles"
+											@click="saveUserRoles"
 										>
 											<Loader2
 												v-if="savingRoles"
@@ -329,7 +331,6 @@
 			</Transition>
 		</div>
 
-		<!-- Create Role Modal -->
 		<Transition name="modal-fade">
 			<div
 				v-if="showCreateRole"
@@ -341,7 +342,9 @@
 						<X :size="20" />
 					</button>
 					<div class="modal-header">
-						<div class="modal-icon-wrap"><Plus :size="24" /></div>
+						<div class="modal-icon-wrap">
+							<Plus :size="24" />
+						</div>
 						<h3>Tạo Role mới</h3>
 					</div>
 					<div class="modal-body">
@@ -359,7 +362,7 @@
 								v-model="newRole.description"
 								class="premium-input textarea"
 								placeholder="Mô tả..."
-							></textarea>
+							/>
 						</div>
 					</div>
 					<div class="modal-footer">
@@ -368,8 +371,8 @@
 						</button>
 						<button
 							class="btn btn-primary btn-glow"
-							@click="createRole"
 							:disabled="!newRole.name || creatingRole"
+							@click="createRole"
 						>
 							<Loader2
 								v-if="creatingRole"
@@ -382,7 +385,6 @@
 			</div>
 		</Transition>
 
-		<!-- Floating Toast -->
 		<Transition name="toast-slide">
 			<div v-if="toast.show" class="floating-toast" :class="toast.type">
 				<div class="toast-content">
@@ -392,10 +394,7 @@
 					/>
 					<span>{{ toast.msg }}</span>
 				</div>
-				<div
-					class="toast-progress"
-					:style="{ width: toast.progress + '%' }"
-				></div>
+				<div class="toast-progress" :style="{ width: toast.progress + '%' }" />
 			</div>
 		</Transition>
 	</div>
@@ -408,7 +407,6 @@ import {
 	Shield,
 	ShieldCheck,
 	Users,
-	Key,
 	UserCheck,
 	Plus,
 	Check,
@@ -418,11 +416,8 @@ import {
 	ChevronRight,
 	ChevronLeft,
 	UserPlus,
-	SearchX,
 	Loader2,
 	X,
-	AlertCircle,
-	CheckCircle2,
 } from "lucide-vue-next";
 
 const tab = ref("roles");
@@ -500,7 +495,7 @@ async function fetchUsers() {
 		});
 		users.value = data.items;
 		userTotal.value = data.totalCount;
-	} catch (e) {
+	} catch {
 		showToast("Lỗi tải danh sách người dùng", true);
 	} finally {
 		loadingUsers.value = false;
@@ -512,13 +507,11 @@ async function selectUser(u) {
 	if (!userId) return showToast("ID người dùng không hợp lệ", true);
 	try {
 		const { data } = await rbacAPI.getUserRoles(userId);
-		// Đồng bộ hóa tất cả các biến thể ID về .id để component dễ sử dụng
 		assignedUser.value = { ...data, id: userId, userId: userId };
 		selectedRoleIds.value = roles.value
 			.filter((r) => (data.roles || data.Roles || []).includes(r.name))
 			.map((r) => r.id);
-	} catch (e) {
-		console.error("RBAC load error:", e);
+	} catch {
 		showToast("Lỗi tải thông tin quyền của người dùng", true);
 	}
 }
@@ -575,7 +568,7 @@ function getCatColor(cat) {
 			Report: "#ef4444",
 			System: "#8b5cf6",
 			Group: "#ec4899",
-			Certificate: "#0ea5e9", // Màu xanh dương cho chứng chỉ
+			Certificate: "#0ea5e9",
 		}[cat] || "#9ca3af"
 	);
 }
@@ -608,7 +601,7 @@ async function createRole() {
 		newRole.value = { name: "", description: "" };
 		await loadData();
 		showToast("Tạo Role thành công!");
-	} catch (e) {
+	} catch {
 		showToast("Lỗi tạo role", true);
 	} finally {
 		creatingRole.value = false;
@@ -620,7 +613,7 @@ async function deleteRole(id) {
 		await rbacAPI.deleteRole(id);
 		await loadData();
 		showToast("Đã xóa Role.");
-	} catch (e) {
+	} catch {
 		showToast("Lỗi xóa role", true);
 	}
 }
@@ -635,7 +628,7 @@ async function togglePermission(role, perm) {
 		const { data } = await rbacAPI.updateRolePermissions(role.id, permIds);
 		role.permissions = data.permissions;
 		showToast(`Đã cập nhật đặc quyền cho ${role.name}`);
-	} catch (e) {
+	} catch {
 		showToast("Lỗi cập nhật", true);
 	}
 }
@@ -648,17 +641,19 @@ async function saveUserRoles() {
 	if (!assignedUser.value) return;
 	savingRoles.value = true;
 	try {
-		const userId = assignedUser.value.id || assignedUser.value.userId || assignedUser.value.UserId;
+		const userId =
+			assignedUser.value.id ||
+			assignedUser.value.userId ||
+			assignedUser.value.UserId;
 		if (!userId) throw new Error("userId is undefined");
-		
+
 		const { data } = await rbacAPI.updateUserRoles(
 			userId,
 			selectedRoleIds.value,
 		);
-		// Duy trì id để không bị undefined ở lần lưu sau
 		assignedUser.value = { ...data, id: userId, userId: userId };
 		showToast("Lưu phân quyền thành công!");
-	} catch (e) {
+	} catch {
 		showToast("Lỗi cập nhật", true);
 	} finally {
 		savingRoles.value = false;
@@ -668,7 +663,6 @@ onMounted(loadData);
 </script>
 
 <style scoped>
-/* Typography & Layout */
 .rbac-page {
 	padding-bottom: var(--space-2xl);
 	color: var(--text-primary);
@@ -698,7 +692,6 @@ onMounted(loadData);
 	max-width: 600px;
 }
 
-/* Tabs */
 .tabs-container {
 	margin-bottom: var(--space-xl);
 	display: flex;
@@ -748,7 +741,6 @@ onMounted(loadData);
 	color: white;
 }
 
-/* Utilities */
 .glass-card {
 	background: #ffffff;
 	border: 1px solid rgba(0, 0, 0, 0.05);
@@ -805,7 +797,6 @@ onMounted(loadData);
 	background: rgba(0, 0, 0, 0.15);
 }
 
-/* Roles Tab */
 .roles-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
@@ -977,7 +968,6 @@ onMounted(loadData);
 	display: none;
 }
 
-/* Permissions Tab */
 .glass-search {
 	position: relative;
 	width: 100%;
@@ -1092,7 +1082,6 @@ onMounted(loadData);
 	font-weight: 600;
 }
 
-/* Assign Tab */
 .assign-layout {
 	display: flex;
 	gap: var(--space-xl);
@@ -1293,7 +1282,6 @@ onMounted(loadData);
 	height: 100%;
 }
 
-/* Profile Card Fixes */
 .profile-card-layout {
 	position: relative;
 	padding: var(--space-xl) var(--space-2xl);
@@ -1483,7 +1471,6 @@ onMounted(loadData);
 	justify-content: center;
 }
 
-/* Modal */
 .glass-modal-overlay {
 	position: fixed;
 	inset: 0;
@@ -1600,7 +1587,6 @@ onMounted(loadData);
 	color: var(--text-primary);
 }
 
-/* Toast */
 .floating-toast {
 	position: fixed;
 	bottom: 32px;
@@ -1642,7 +1628,6 @@ onMounted(loadData);
 	background: var(--danger-500);
 }
 
-/* Transitions */
 .list-enter-active,
 .list-leave-active {
 	transition: all 0.3s ease;

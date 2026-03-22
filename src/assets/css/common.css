@@ -1,17 +1,7 @@
-/* table pagination style */
+
 
 .container-fluid .table-responsive .paginate_button {
-  /* font-size: 1rem;
- 
-  min-width: 2.5rem;
-  border: 0.0625rem solid var(--primary);
-  border-radius: 2.8125rem;
-  padding: 0 0.85rem;
-  line-height: 2.5rem;
-  margin: 0 0.625rem;
-  display: inline-block;
-  color: var(--primary) !important;
-  cursor: pointer; */
+  
   margin-left: 5px;
   font-size: 1rem;
   margin-top: 5px;
@@ -99,7 +89,7 @@
   }
 }
 
-/* select option 2 style */
+
 .select_option_2 .vs__dropdown-option:hover {
   background-color: var(--primary) !important;
 }
@@ -110,7 +100,7 @@
   background-color: var(--primary) !important;
 }
 
-/* date picker */
+
 
 .dp__input_readonly,
 .form-control[readonly] {
@@ -119,13 +109,13 @@
   border: 1px solid var(--border);
 }
 
-/* Ck Editor style */
+
 
 .ck.ck-editor__top .ck-sticky-panel .ck-sticky-panel__content {
   border: none !important;
 }
 
-/* vue3 datatable .net pagination style */
+
 
 #example3_wrapper > .dt-layout-row:nth-child(3) {
   display: flex;

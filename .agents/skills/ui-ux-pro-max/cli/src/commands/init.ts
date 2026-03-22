@@ -28,10 +28,7 @@ interface InitOptions {
   legacy?: boolean; // Use old ZIP-based install
 }
 
-/**
- * Try to install from GitHub release (legacy method)
- * Returns the copied folders if successful, null if failed
- */
+
 async function tryGitHubInstall(
   targetDir: string,
   aiType: AIType,
@@ -93,9 +90,7 @@ async function tryGitHubInstall(
   }
 }
 
-/**
- * Install using template generation (new method)
- */
+
 async function templateInstall(
   targetDir: string,
   aiType: AIType,

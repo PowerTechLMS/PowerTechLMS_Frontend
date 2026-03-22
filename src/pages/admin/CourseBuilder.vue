@@ -4,7 +4,9 @@
 			<div class="col-sm-6 p-md-0">
 				<div class="welcome-text">
 					<h4 class="text-dark fw-bold">Thiết Kế Khóa Học Mới</h4>
-					<p class="text-muted fs-13 mb-0">Tạo nội dung giáo trình và cấu hình bài thi.</p>
+					<p class="text-muted fs-13 mb-0">
+						Tạo nội dung giáo trình và cấu hình bài thi.
+					</p>
 				</div>
 			</div>
 			<div class="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
@@ -56,7 +58,7 @@
 
 					<div class="card-body mt-3">
 						<form @submit.prevent="submitCourse" novalidate>
-							<!-- TAB 1: BASIC INFO -->
+							
 							<div v-if="activeTab === 'basic'">
 								<div class="row bg-light p-3 rounded mb-4">
 									<div class="col-lg-8">
@@ -184,9 +186,12 @@
 												accept="image/*"
 												@change="handleImageUpload"
 											/>
-                                            <div v-if="course.CoverImage" class="mt-2">
-                                                <img :src="getObjectURL(course.CoverImage)" style="max-height: 150px; border-radius: 8px;" />
-                                            </div>
+											<div v-if="course.CoverImage" class="mt-2">
+												<img
+													:src="getObjectURL(course.CoverImage)"
+													style="max-height: 150px; border-radius: 8px"
+												/>
+											</div>
 										</div>
 									</div>
 								</div>
@@ -263,7 +268,7 @@
 								</div>
 							</div>
 
-							<!-- TAB 2: CURRICULUM -->
+							
 							<div v-if="activeTab === 'curriculum'">
 								<div
 									v-for="(module, mIdx) in curriculum"
@@ -420,9 +425,13 @@
 															class="form-control form-control-sm"
 															@change="onVideoUpload($event, mIdx, lIdx)"
 														/>
-                                                        <div v-if="lesson.videoFile" class="mt-1 small text-primary fw-bold">
-                                                            <i class="fas fa-video me-1"></i> {{ lesson.videoFile.name }}
-                                                        </div>
+														<div
+															v-if="lesson.videoFile"
+															class="mt-1 small text-primary fw-bold"
+														>
+															<i class="fas fa-video me-1"></i>
+															{{ lesson.videoFile.name }}
+														</div>
 													</div>
 												</div>
 												<div v-else class="bg-light p-3 rounded">
@@ -432,48 +441,66 @@
 														rows="4"
 														placeholder="Nhập nội dung bài đọc..."
 													></textarea>
-                                                    <div class="row gx-2 align-items-center bg-white p-2 border rounded mx-0">
-                                                        <div class="col-auto">
-                                                            <label class="form-label mb-0 fw-bold fs-12 text-primary">Thời gian bài đọc:</label>
-                                                        </div>
-                                                        <div class="col-auto d-flex align-items-center">
-                                                            <input
-                                                                type="number"
-                                                                class="form-control form-control-sm border-primary text-center"
-                                                                style="width: 60px"
-                                                                placeholder="Phút"
-                                                                :value="Math.floor(lesson.durationSeconds / 60)"
-                                                                @input="(e: Event) => {
-                                                                    const target = e.target as HTMLInputElement;
-                                                                    const m = parseInt(target.value) || 0;
-                                                                    const s = lesson.durationSeconds % 60;
-                                                                    lesson.durationSeconds = m * 60 + s;
-                                                                }"
-                                                            />
-                                                            <span class="mx-1 fs-12 fw-bold text-muted">phút</span>
-                                                        </div>
-                                                        <div class="col-auto d-flex align-items-center">
-                                                            <input
-                                                                type="number"
-                                                                class="form-control form-control-sm border-primary text-center"
-                                                                style="width: 60px"
-                                                                placeholder="Giây"
-                                                                max="59"
-                                                                :value="lesson.durationSeconds % 60"
-                                                                @input="(e: Event) => {
-                                                                    const target = e.target as HTMLInputElement;
-                                                                    let s = parseInt(target.value) || 0;
-                                                                    if (s > 59) s = 59;
-                                                                    const m = Math.floor(lesson.durationSeconds / 60);
-                                                                    lesson.durationSeconds = m * 60 + s;
-                                                                }"
-                                                            />
-                                                            <span class="mx-1 fs-12 fw-bold text-muted">giây</span>
-                                                        </div>
-                                                        <div class="col ps-2">
-                                                            <small class="text-muted fs-11">* Học viên phải đợi đúng thời gian cài đặt.</small>
-                                                        </div>
-                                                    </div>
+													<div
+														class="row gx-2 align-items-center bg-white p-2 border rounded mx-0"
+													>
+														<div class="col-auto">
+															<label
+																class="form-label mb-0 fw-bold fs-12 text-primary"
+																>Thời gian bài đọc:</label
+															>
+														</div>
+														<div class="col-auto d-flex align-items-center">
+															<input
+																type="number"
+																class="form-control form-control-sm border-primary text-center"
+																style="width: 60px"
+																placeholder="Phút"
+																:value="Math.floor(lesson.durationSeconds / 60)"
+																@input="
+																	(e: Event) => {
+																		const target = e.target as HTMLInputElement;
+																		const m = parseInt(target.value) || 0;
+																		const s = lesson.durationSeconds % 60;
+																		lesson.durationSeconds = m * 60 + s;
+																	}
+																"
+															/>
+															<span class="mx-1 fs-12 fw-bold text-muted"
+																>phút</span
+															>
+														</div>
+														<div class="col-auto d-flex align-items-center">
+															<input
+																type="number"
+																class="form-control form-control-sm border-primary text-center"
+																style="width: 60px"
+																placeholder="Giây"
+																max="59"
+																:value="lesson.durationSeconds % 60"
+																@input="
+																	(e: Event) => {
+																		const target = e.target as HTMLInputElement;
+																		let s = parseInt(target.value) || 0;
+																		if (s > 59) s = 59;
+																		const m = Math.floor(
+																			lesson.durationSeconds / 60,
+																		);
+																		lesson.durationSeconds = m * 60 + s;
+																	}
+																"
+															/>
+															<span class="mx-1 fs-12 fw-bold text-muted"
+																>giây</span
+															>
+														</div>
+														<div class="col ps-2">
+															<small class="text-muted fs-11"
+																>* Học viên phải đợi đúng thời gian cài
+																đặt.</small
+															>
+														</div>
+													</div>
 												</div>
 											</div>
 
@@ -512,9 +539,13 @@
 																onAttachmentUpload($event, mIdx, lIdx, aIdx)
 															"
 														/>
-                                                        <div v-if="att.file" class="small text-success mt-1">
-                                                            <i class="fas fa-file me-1"></i> {{ att.file.name }}
-                                                        </div>
+														<div
+															v-if="att.file"
+															class="small text-success mt-1"
+														>
+															<i class="fas fa-file me-1"></i>
+															{{ att.file.name }}
+														</div>
 													</div>
 													<button
 														type="button"
@@ -526,7 +557,7 @@
 												</div>
 											</div>
 
-											<!-- MINI QUIZ FOR LESSON -->
+											
 											<div class="mt-4 pt-3 border-top border-warning">
 												<div
 													class="d-flex justify-content-between align-items-center mb-3"
@@ -640,7 +671,9 @@
 																				:value="letter"
 																				v-model="q.CorrectAnswer"
 																			/>
-                                                                            <span class="ms-1 fw-bold fs-11">{{ letter }}</span>
+																			<span class="ms-1 fw-bold fs-11">{{
+																				letter
+																			}}</span>
 																		</span>
 																		<input
 																			v-model="q.Options[letter]"
@@ -666,7 +699,8 @@
 															class="btn btn-xs btn-warning w-50 fw-bold shadow-sm"
 															@click="openImportModal('lesson', mIdx, lIdx)"
 														>
-															<i class="fas fa-file-import me-1"></i> Import từ Word/Excel
+															<i class="fas fa-file-import me-1"></i> Import từ
+															Word/Excel
 														</button>
 													</div>
 												</div>
@@ -706,7 +740,7 @@
 								</div>
 							</div>
 
-							<!-- TAB 3: FINAL QUIZ -->
+							
 							<div v-if="activeTab === 'quiz'">
 								<div
 									class="alert alert-success mb-4 d-flex align-items-center border-0 shadow-sm"
@@ -771,10 +805,11 @@
 											</div>
 										</div>
 
-                                        <div class="row g-3 mt-3 border-top pt-3">
+										<div class="row g-3 mt-3 border-top pt-3">
 											<div class="col-md-6">
 												<label class="fs-12 fw-bold text-dark mb-1"
-													><i class="fas fa-clock me-1 text-warning"></i> Thời gian chờ làm lại (Phút)</label
+													><i class="fas fa-clock me-1 text-warning"></i> Thời
+													gian chờ làm lại (Phút)</label
 												>
 												<input
 													v-model="course.QuizRetakeWaitTimeMinutes"
@@ -785,7 +820,8 @@
 											</div>
 											<div class="col-md-6">
 												<label class="fs-12 fw-bold text-dark mb-1"
-													><i class="fas fa-redo me-1 text-danger"></i> Số lần làm lại tối đa / ngày</label
+													><i class="fas fa-redo me-1 text-danger"></i> Số lần
+													làm lại tối đa / ngày</label
 												>
 												<input
 													v-model="course.QuizMaxRetakesPerDay"
@@ -817,9 +853,7 @@
 									<div
 										class="card-header bg-success-light py-1 px-3 d-flex justify-content-between align-items-center"
 									>
-										<span class="fw-bold text-success"
-											>Câu {{ qIdx + 1 }}</span
-										>
+										<span class="fw-bold text-success">Câu {{ qIdx + 1 }}</span>
 										<button
 											type="button"
 											class="btn btn-danger btn-xs"
@@ -885,7 +919,8 @@
 											@click="addQuestionFinal"
 										>
 											<span class="text-success fw-bold"
-												><i class="fas fa-plus-circle me-2 fs-5"></i>THÊM THỦ CÔNG</span
+												><i class="fas fa-plus-circle me-2 fs-5"></i>THÊM THỦ
+												CÔNG</span
 											>
 										</div>
 									</div>
@@ -896,7 +931,8 @@
 											@click="openImportModal('final')"
 										>
 											<span class="text-success fw-bold"
-												><i class="fas fa-file-import me-2 fs-5"></i>IMPORT EXCEL / WORD</span
+												><i class="fas fa-file-import me-2 fs-5"></i>IMPORT
+												EXCEL / WORD</span
 											>
 										</div>
 									</div>
@@ -916,10 +952,12 @@
 										:disabled="isSaving"
 									>
 										<span v-if="isSaving"
-											><i class="fas fa-spinner fa-spin me-2"></i>ĐANG TẠO KHÓA HỌC...</span
+											><i class="fas fa-spinner fa-spin me-2"></i>ĐANG TẠO KHÓA
+											HỌC...</span
 										>
 										<span v-else
-											><i class="fas fa-save me-2"></i>HOÀN TẤT TẠO KHÓA HỌC</span
+											><i class="fas fa-save me-2"></i>HOÀN TẤT TẠO KHÓA
+											HỌC</span
 										>
 									</button>
 								</div>
@@ -929,10 +967,10 @@
 				</div>
 			</div>
 		</div>
-		<ImportQuizModal 
-			:show="showImportModal" 
-			@close="showImportModal = false" 
-			@imported="handleImportQuestions" 
+		<ImportQuizModal
+			:show="showImportModal"
+			@close="showImportModal = false"
+			@imported="handleImportQuestions"
 		/>
 	</div>
 </template>
@@ -943,15 +981,12 @@ import { useRouter } from "vue-router";
 import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
 
-// @ts-ignore
 import { courseAPI, moduleAPI, lessonAPI, quizAPI } from "@/services/api";
-// @ts-ignore
 import ImportQuizModal from "@/components/ImportQuizModal.vue";
 import { toast } from "vue3-toastify";
 
 const router = useRouter();
 
-// UI State
 const activeTab = ref("basic");
 const isSaving = ref(false);
 
@@ -959,7 +994,6 @@ type OptionKey = "A" | "B" | "C" | "D";
 const letters: OptionKey[] = ["A", "B", "C", "D"];
 const generateId = () => Math.floor(Math.random() * -1000000);
 
-// DANH MỤC KHÓA HỌC
 const categories = [
 	{ id: 1, name: "Kỹ năng mềm" },
 	{ id: 2, name: "Kỹ thuật" },
@@ -968,7 +1002,6 @@ const categories = [
 	{ id: 5, name: "Số hóa" },
 ];
 
-// Data Models
 const course = ref({
 	Title: "",
 	Description: "",
@@ -1040,7 +1073,6 @@ interface Module {
 const curriculum = ref<Module[]>([]);
 const courseQuiz = ref<QuizModel>(createEmptyQuiz("Bài thi cuối khóa"));
 
-// UI EVENT HANDLERS
 const addModule = () =>
 	curriculum.value.push({ id: generateId(), title: "Chương mới", lessons: [] });
 const removeModule = (index: number) => {
@@ -1171,17 +1203,20 @@ const onAttachmentUpload = (
 const getObjectURL = (file: File) => URL.createObjectURL(file);
 
 const submitCourse = async () => {
-    // 1. Validate manual
-    if (!course.value.Title?.trim()) {
-        toast.warning("Vui lòng nhập Tên khóa học ở Tab 1!");
-        activeTab.value = "basic";
-        return;
-    }
-    if (course.value.PassScore === null || course.value.PassScore === undefined || course.value.PassScore < 0) {
-        toast.warning("Vui lòng nhập Điểm đạt hợp lệ ở Tab 1!");
-        activeTab.value = "basic";
-        return;
-    }
+	if (!course.value.Title?.trim()) {
+		toast.warning("Vui lòng nhập Tên khóa học ở Tab 1!");
+		activeTab.value = "basic";
+		return;
+	}
+	if (
+		course.value.PassScore === null ||
+		course.value.PassScore === undefined ||
+		course.value.PassScore < 0
+	) {
+		toast.warning("Vui lòng nhập Điểm đạt hợp lệ ở Tab 1!");
+		activeTab.value = "basic";
+		return;
+	}
 	if (!course.value.CategoryId) {
 		toast.warning("Vui lòng chọn Danh mục phân loại ở Tab 1!");
 		activeTab.value = "basic";
@@ -1203,11 +1238,12 @@ const submitCourse = async () => {
 				? Number(course.value.CompletionDeadlineDays)
 				: null,
 			completionEndDate: course.value.CompletionEndDate?.toISOString() || null,
-			quizRetakeWaitTimeMinutes: Number(course.value.QuizRetakeWaitTimeMinutes) || 5,
+			quizRetakeWaitTimeMinutes:
+				Number(course.value.QuizRetakeWaitTimeMinutes) || 5,
 			quizMaxRetakesPerDay: Number(course.value.QuizMaxRetakesPerDay) || 3,
 		};
 		const resCourse = await courseAPI.create(coursePayload);
-        const newCourseId = resCourse.data.id;
+		const newCourseId = resCourse.data.id;
 
 		if (course.value.CoverImage) {
 			const formData = new FormData();
@@ -1216,11 +1252,11 @@ const submitCourse = async () => {
 		}
 
 		for (const mod of curriculum.value) {
-            const resMod = await moduleAPI.create(newCourseId, {
-                title: mod.title,
-                sortOrder: 0,
-            });
-            const currentModuleId = resMod.data.id;
+			const resMod = await moduleAPI.create(newCourseId, {
+				title: mod.title,
+				sortOrder: 0,
+			});
+			const currentModuleId = resMod.data.id;
 
 			for (const les of mod.lessons) {
 				const lessonPayload = {
@@ -1230,14 +1266,20 @@ const submitCourse = async () => {
 					videoUrl: les.videoType === "url" ? les.videoUrl : null,
 					isFreePreview: les.isFreePreview,
 					sortOrder: 0,
-					videoDurationSeconds: les.type === "Video" ? (Number(les.durationSeconds) || 0) : 0,
-					readingDurationSeconds: les.type === "Text" ? (Number(les.durationSeconds) || 0) : 0,
+					videoDurationSeconds:
+						les.type === "Video" ? Number(les.durationSeconds) || 0 : 0,
+					readingDurationSeconds:
+						les.type === "Text" ? Number(les.durationSeconds) || 0 : 0,
 					videoStatus: "Ready",
 				};
-                const resLes = await lessonAPI.create(currentModuleId, lessonPayload);
-                const currentLessonId = resLes.data.id;
+				const resLes = await lessonAPI.create(currentModuleId, lessonPayload);
+				const currentLessonId = resLes.data.id;
 
-				if (les.type === "Video" && les.videoType === "upload" && les.videoFile) {
+				if (
+					les.type === "Video" &&
+					les.videoType === "upload" &&
+					les.videoFile
+				) {
 					const vForm = new FormData();
 					vForm.append("file", les.videoFile);
 					await lessonAPI.uploadVideo(currentModuleId, currentLessonId, vForm);
@@ -1246,71 +1288,92 @@ const submitCourse = async () => {
 					if (att.file) {
 						const aForm = new FormData();
 						aForm.append("file", att.file);
-						await lessonAPI.uploadAttachment(currentModuleId, currentLessonId, aForm);
+						await lessonAPI.uploadAttachment(
+							currentModuleId,
+							currentLessonId,
+							aForm,
+						);
 					}
 				}
 
 				if (les.hasQuiz && les.quiz.questions.length > 0) {
-                    const qPayload = {
-                        title: les.quiz.Title || `Quiz: ${les.title}`,
-                        timeLimitMinutes: les.quiz.TimeLimitMinutes ? Number(les.quiz.TimeLimitMinutes) : null,
-                        passScore: Number(les.quiz.PassScore) || 5,
-                        questionCount: Number(les.quiz.questions.length),
-                        shuffleQuestions: true,
-                        shuffleAnswers: true,
-                        retakeWaitTimeMinutes: les.quiz.RetakeWaitTimeMinutes ? Number(les.quiz.RetakeWaitTimeMinutes) : null,
-                        maxRetakesPerDay: les.quiz.MaxRetakesPerDay ? Number(les.quiz.MaxRetakesPerDay) : null,
-                    };
-                    const resQuiz = await quizAPI.createForLesson(currentModuleId, currentLessonId, qPayload);
-                    const targetQuizId = resQuiz.data.id;
+					const qPayload = {
+						title: les.quiz.Title || `Quiz: ${les.title}`,
+						timeLimitMinutes: les.quiz.TimeLimitMinutes
+							? Number(les.quiz.TimeLimitMinutes)
+							: null,
+						passScore: Number(les.quiz.PassScore) || 5,
+						questionCount: Number(les.quiz.questions.length),
+						shuffleQuestions: true,
+						shuffleAnswers: true,
+						retakeWaitTimeMinutes: les.quiz.RetakeWaitTimeMinutes
+							? Number(les.quiz.RetakeWaitTimeMinutes)
+							: null,
+						maxRetakesPerDay: les.quiz.MaxRetakesPerDay
+							? Number(les.quiz.MaxRetakesPerDay)
+							: null,
+					};
+					const resQuiz = await quizAPI.createForLesson(
+						currentModuleId,
+						currentLessonId,
+						qPayload,
+					);
+					const targetQuizId = resQuiz.data.id;
 
 					for (const q of les.quiz.questions) {
-                        await quizAPI.addQuestion(targetQuizId, {
-                            content: q.QuestionText,
-                            optionA: q.Options.A || "",
-                            optionB: q.Options.B || "",
-                            optionC: q.Options.C || "",
-                            optionD: q.Options.D || "",
-                            correctAnswer: q.CorrectAnswer,
-                            points: Number(q.Points) || 1,
-                        });
+						await quizAPI.addQuestion(targetQuizId, {
+							content: q.QuestionText,
+							optionA: q.Options.A || "",
+							optionB: q.Options.B || "",
+							optionC: q.Options.C || "",
+							optionD: q.Options.D || "",
+							correctAnswer: q.CorrectAnswer,
+							points: Number(q.Points) || 1,
+						});
 					}
 				}
 			}
 		}
 
 		if (courseQuiz.value.questions.length > 0) {
-            const finalPayload = {
-                title: courseQuiz.value.Title || "Đề thi cuối khóa",
-                passScore: Number(courseQuiz.value.PassScore) || 8,
-                questionCount: Number(courseQuiz.value.QuestionCount) || courseQuiz.value.questions.length,
-                timeLimitMinutes: Number(courseQuiz.value.TimeLimitMinutes) || null,
-                shuffleQuestions: true,
-                shuffleAnswers: true,
-                retakeWaitTimeMinutes: courseQuiz.value.RetakeWaitTimeMinutes ? Number(courseQuiz.value.RetakeWaitTimeMinutes) : null,
-                maxRetakesPerDay: courseQuiz.value.MaxRetakesPerDay ? Number(courseQuiz.value.MaxRetakesPerDay) : null,
-            };
-            const resFQuiz = await quizAPI.create(newCourseId, finalPayload);
-            const finalId = resFQuiz.data.id;
+			const finalPayload = {
+				title: courseQuiz.value.Title || "Đề thi cuối khóa",
+				passScore: Number(courseQuiz.value.PassScore) || 8,
+				questionCount:
+					Number(courseQuiz.value.QuestionCount) ||
+					courseQuiz.value.questions.length,
+				timeLimitMinutes: Number(courseQuiz.value.TimeLimitMinutes) || null,
+				shuffleQuestions: true,
+				shuffleAnswers: true,
+				retakeWaitTimeMinutes: courseQuiz.value.RetakeWaitTimeMinutes
+					? Number(courseQuiz.value.RetakeWaitTimeMinutes)
+					: null,
+				maxRetakesPerDay: courseQuiz.value.MaxRetakesPerDay
+					? Number(courseQuiz.value.MaxRetakesPerDay)
+					: null,
+			};
+			const resFQuiz = await quizAPI.create(newCourseId, finalPayload);
+			const finalId = resFQuiz.data.id;
 
 			for (const q of courseQuiz.value.questions) {
-                await quizAPI.addQuestion(finalId, {
-                    content: q.QuestionText,
-                    optionA: q.Options.A,
-                    optionB: q.Options.B,
-                    optionC: q.Options.C,
-                    optionD: q.Options.D,
-                    correctAnswer: q.CorrectAnswer,
-                    points: 1,
-                });
+				await quizAPI.addQuestion(finalId, {
+					content: q.QuestionText,
+					optionA: q.Options.A,
+					optionB: q.Options.B,
+					optionC: q.Options.C,
+					optionD: q.Options.D,
+					correctAnswer: q.CorrectAnswer,
+					points: 1,
+				});
 			}
 		}
 
 		toast.success("Tạo khóa học thành công!");
 		router.push("/admin/courses");
 	} catch (error: any) {
-		console.error("LỖI TẠO:", error.response?.data || error);
-		toast.error("Lỗi: " + (error.response?.data?.message || "Không thể tạo khóa học."));
+		toast.error(
+			"Lỗi: " + (error.response?.data?.message || "Không thể tạo khóa học."),
+		);
 	} finally {
 		isSaving.value = false;
 	}

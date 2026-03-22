@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
-// @ts-ignore
 import { courseGroupAPI, courseAPI } from "@/services/api";
 import { toast } from "vue3-toastify";
 import {
@@ -25,7 +24,6 @@ const form = ref({ name: "", description: "" });
 const isSubmitting = ref(false);
 const loading = ref(true);
 
-// Danh sách khóa học
 const pathCourses = ref<any[]>([]);
 const allCourses = ref<any[]>([]);
 const selectedCourseToAdd = ref("");
@@ -42,7 +40,7 @@ const fetchData = async () => {
 		form.value.description = pathRes.data.description;
 		pathCourses.value = pathRes.data.courses || [];
 		allCourses.value = coursesRes.data.items || coursesRes.data;
-	} catch (error) {
+	} catch {
 		toast.error("Lỗi tải thông tin lộ trình.");
 		router.push("/admin/coursegroup");
 	} finally {
@@ -52,7 +50,6 @@ const fetchData = async () => {
 
 onMounted(fetchData);
 
-// Lọc những khóa học chưa được gán vào lộ trình này
 const availableCourses = computed(() => {
 	const existingIds = new Set(pathCourses.value.map((c) => c.id));
 	return allCourses.value.filter(
@@ -65,7 +62,7 @@ const updatePath = async () => {
 	try {
 		await courseGroupAPI.update(pathId, form.value);
 		toast.success("Cập nhật thông tin thành công!");
-	} catch (error) {
+	} catch {
 		toast.error("Lỗi cập nhật.");
 	} finally {
 		isSubmitting.value = false;
@@ -78,13 +75,11 @@ const addCourseToPath = async () => {
 	try {
 		const courseId = Number(selectedCourseToAdd.value);
 		await courseGroupAPI.addCourse(pathId, courseId);
-
-		// Refresh list
 		const pathRes = await courseGroupAPI.getById(pathId);
 		pathCourses.value = pathRes.data.courses || [];
 		selectedCourseToAdd.value = "";
 		toast.success("Đã thêm khóa học vào lộ trình.");
-	} catch (error) {
+	} catch {
 		toast.error("Lỗi khi thêm khóa học.");
 	} finally {
 		isSubmitting.value = false;
@@ -97,7 +92,7 @@ const removeCourse = async (courseId: number, title: string) => {
 		await courseGroupAPI.removeCourse(pathId, courseId);
 		pathCourses.value = pathCourses.value.filter((c) => c.id !== courseId);
 		toast.success("Đã gỡ khóa học.");
-	} catch (error) {
+	} catch {
 		toast.error("Lỗi khi gỡ khóa học.");
 	}
 };
@@ -277,7 +272,6 @@ const removeCourse = async (courseId: number, title: string) => {
 </template>
 
 <style scoped>
-/* Toàn bộ CSS định dạng cao cấp */
 .section-title {
 	font-size: 18px;
 	font-weight: 700;

@@ -1,10 +1,6 @@
 <template>
 	<div class="catalog-page">
-		<!-- ═══════════════════════════════════════════
-         HERO: Split Layout — Left text · Right search
-    ═══════════════════════════════════════════ -->
 		<div class="hero-section">
-			<!-- Left: branding + headline -->
 			<div class="hero-left">
 				<div class="hero-badge badge-glass primary">E-Learning Excellence</div>
 				<h1 class="hero-title">
@@ -14,18 +10,17 @@
 					Bắt đầu hành trình phát triển bản thân với bộ sưu tập các khóa học
 					chất lượng cao, được thiết kế bởi các chuyên gia hàng đầu.
 				</p>
-				<!-- Stat row under headline -->
+
 				<div class="hero-stats">
-					<div class="hstat" v-for="s in heroStats" :key="s.label">
+					<div v-for="s in heroStats" :key="s.label" class="hstat">
 						<span class="hstat-val">{{ s.val }}</span>
 						<span class="hstat-lbl">{{ s.label }}</span>
 					</div>
 				</div>
-				<div class="hero-decoration-1"></div>
-				<div class="hero-decoration-2"></div>
+				<div class="hero-decoration-1" />
+				<div class="hero-decoration-2" />
 			</div>
 
-			<!-- Right: search card -->
 			<div class="hero-right">
 				<div class="search-panel glass">
 					<p class="search-panel-label">Tìm khóa học phù hợp</p>
@@ -33,11 +28,11 @@
 						<Search :size="18" class="search-icon" />
 						<input
 							v-model="search"
-							@input="debounceFetch"
-							@keyup.enter="fetchCourses"
 							type="text"
 							placeholder="Bạn muốn học gì hôm nay?"
 							class="hero-search-input"
+							@input="debounceFetch"
+							@keyup.enter="fetchCourses"
 						/>
 						<button class="search-btn-neon" @click="fetchCourses">Tìm</button>
 					</div>
@@ -55,7 +50,7 @@
 							>{{ tag }}</span
 						>
 					</div>
-					<!-- Quick category pills -->
+
 					<div class="quick-cats">
 						<button
 							v-for="cat in categories"
@@ -71,11 +66,7 @@
 			</div>
 		</div>
 
-		<!-- ═══════════════════════════════════════════
-         MAIN BODY: Sidebar + Content
-    ═══════════════════════════════════════════ -->
 		<div class="main-layout">
-			<!-- LEFT SIDEBAR: filters -->
 			<aside class="sidebar glass">
 				<div class="sb-section">
 					<div class="sb-heading">Danh mục</div>
@@ -90,14 +81,14 @@
 							<span
 								class="sb-cat-dot"
 								:style="{ background: catColors[cat.id] || '#94a3b8' }"
-							></span>
+							/>
 							{{ cat.name }}
 							<span class="sb-cat-arrow"><ChevronRight :size="14" /></span>
 						</button>
 					</div>
 				</div>
 
-				<div class="sb-divider"></div>
+				<div class="sb-divider" />
 
 				<div class="sb-section">
 					<div class="sb-heading">Sắp xếp theo</div>
@@ -123,9 +114,7 @@
 				</button>
 			</aside>
 
-			<!-- RIGHT CONTENT -->
 			<div class="content-area">
-				<!-- Content toolbar: result count + view toggle -->
 				<div class="content-toolbar">
 					<div class="toolbar-info">
 						<span class="result-count">{{ courses.length }} khóa học</span>
@@ -154,7 +143,6 @@
 					</div>
 				</div>
 
-				<!-- SKELETON -->
 				<div
 					v-if="loading"
 					:class="viewMode === 'grid' ? 'courses-grid' : 'courses-list'"
@@ -164,16 +152,15 @@
 						:key="i"
 						class="course-card-skeleton animate-pulse"
 					>
-						<div class="skeleton-cover"></div>
+						<div class="skeleton-cover" />
 						<div class="skeleton-body">
-							<div class="line h-4 w-3/4"></div>
-							<div class="line h-3 w-full mt-3"></div>
-							<div class="line h-3 w-1/2 mt-2"></div>
+							<div class="line h-4 w-3/4" />
+							<div class="line h-3 w-full mt-3" />
+							<div class="line h-3 w-1/2 mt-2" />
 						</div>
 					</div>
 				</div>
 
-				<!-- GRID VIEW -->
 				<div
 					v-else-if="courses.length && viewMode === 'grid'"
 					class="courses-grid"
@@ -193,7 +180,7 @@
 										? { backgroundImage: `url(${course.coverImageUrl})` }
 										: { background: getCardGradient(index) }
 								"
-							></div>
+							/>
 							<div class="card-cover-overlay">
 								<span class="badge-glass dark"
 									><Play :size="11" class="me-1" />
@@ -213,7 +200,9 @@
 							class="card-content"
 							:class="{ 'is-locked': isLocked(course) }"
 						>
-							<h3 class="card-title">{{ course.title }}</h3>
+							<h3 class="card-title">
+								{{ course.title }}
+							</h3>
 							<p class="card-desc">
 								{{ course.description || "Chưa có mô tả cho khóa học này." }}
 							</p>
@@ -234,7 +223,6 @@
 					</div>
 				</div>
 
-				<!-- LIST VIEW -->
 				<div
 					v-else-if="courses.length && viewMode === 'list'"
 					class="courses-list"
@@ -253,7 +241,7 @@
 									? { backgroundImage: `url(${course.coverImageUrl})` }
 									: { background: getCardGradient(index) }
 							"
-						></div>
+						/>
 						<div class="list-body">
 							<div class="list-meta-top d-flex gap-2">
 								<span class="badge-glass dark list-lessons"
@@ -296,7 +284,6 @@
 					</div>
 				</div>
 
-				<!-- EMPTY -->
 				<div v-else class="empty-state-premium">
 					<div class="empty-illustration">
 						<SearchX :size="56" class="text-primary opacity-50" />
@@ -308,12 +295,11 @@
 					<button class="sb-reset-btn" @click="resetFilters">Xóa bộ lọc</button>
 				</div>
 
-				<!-- PAGINATION -->
-				<div class="pagination-wrap" v-if="totalPages > 1">
+				<div v-if="totalPages > 1" class="pagination-wrap">
 					<button
 						class="page-btn glass-btn"
-						@click="changePage(page - 1)"
 						:disabled="page <= 1"
+						@click="changePage(page - 1)"
 					>
 						<ChevronLeft :size="18" />
 					</button>
@@ -330,16 +316,14 @@
 					</div>
 					<button
 						class="page-btn glass-btn"
-						@click="changePage(page + 1)"
 						:disabled="page >= totalPages"
+						@click="changePage(page + 1)"
 					>
 						<ChevronRight :size="18" />
 					</button>
 				</div>
 			</div>
-			<!-- /content-area -->
 		</div>
-		<!-- /main-layout -->
 	</div>
 </template>
 
@@ -349,20 +333,15 @@ import { courseAPI, enrollmentAPI } from "@/services/api";
 import {
 	Search,
 	SearchX,
-	Users,
 	ChevronLeft,
 	ChevronRight,
 	Play,
-	Filter,
 	Clock,
-	TrendingUp,
-	BookOpen,
 	LayoutGrid,
 	LayoutList,
 	Lock,
 } from "lucide-vue-next";
 
-// ── All original logic preserved ──────────────────────────────────
 const courses = ref([]);
 const loading = ref(true);
 const search = ref("");
@@ -370,9 +349,8 @@ const page = ref(1);
 const totalPages = ref(1);
 const sortBy = ref("newest");
 const activeCategory = ref(null);
-const viewMode = ref("grid"); // new: grid | list
+const viewMode = ref("grid");
 
-// Access Control
 const completedLevel1Ids = ref([]);
 const level1CourseCount = ref(0);
 const allLevel1Ids = ref([]);
@@ -387,7 +365,6 @@ const categories = [
 	{ id: 5, name: "Số hóa" },
 ];
 
-// ── UI-only static data ───────────────────────────────────────────
 const heroStats = [
 	{ val: "500+", label: "Học viên" },
 	{ val: "24+", label: "Khóa học" },
@@ -417,10 +394,8 @@ const cardGradients = [
 ];
 const getCardGradient = (idx) => cardGradients[idx % cardGradients.length];
 
-// ── Original logic — untouched ────────────────────────────────────
 let debounceTimer = null;
 
-// @ts-ignore
 import { useAuthStore } from "@/stores/auth";
 
 const authStore = useAuthStore();
@@ -428,26 +403,21 @@ const authStore = useAuthStore();
 async function fetchCourses() {
 	loading.value = true;
 	try {
-        const params = {
+		const params = {
 			page: page.value,
 			pageSize: 12,
 			search: search.value || undefined,
 			categoryId: activeCategory.value || undefined,
 			isPublished: true,
-			level: 3, 
+			level: 3,
 		};
-
-        // ĐÃ XÓA: Không truyền manage=true cho Giảng viên nữa để họ thấy được toàn bộ thư viện
 
 		const { data } = await courseAPI.getAll(params);
 		courses.value = data.items;
 		totalPages.value = Math.ceil(data.totalCount / 12);
 
-		// Đếm số lượng khóa học Level 1 trong danh sách API trả về (hoặc fetch riêng nếu cần chính xác tuyệt đối)
-		// Ở đây ta tạm lấy từ danh sách hiện tại để highlight
 		level1CourseCount.value = courses.value.filter((c) => c.level === 1).length;
-	} catch (e) {
-		console.error(e);
+	} catch {
 	} finally {
 		loading.value = false;
 	}
@@ -456,7 +426,6 @@ async function fetchCourses() {
 async function fetchUserProgress() {
 	if (!isLoggedIn.value) return;
 	try {
-		// 1. Fetch toàn bộ Level 1 để biết tổng số cần hoàn thành
 		const { data: allCourses } = await courseAPI.getAll({
 			pageSize: 1000,
 			isPublished: true,
@@ -465,27 +434,21 @@ async function fetchUserProgress() {
 			.filter((c) => c.level === 1)
 			.map((c) => c.id);
 
-		// 2. Fetch ghi danh của user để check status Completed
 		const { data: myEnrollments } = await enrollmentAPI.getMy();
 		completedLevel1Ids.value = myEnrollments
 			.filter((e) => e.status === "Completed" || e.status === "Finished")
 			.map((e) => e.courseId);
-	} catch (e) {
-		console.error("Lỗi khi lấy tiến độ người dùng:", e);
-	}
+	} catch {}
 }
 
 function isLocked(course) {
-	// Giáo viên và Admin được xem tất cả, không bị khóa level
 	if (authStore.isInstructor || authStore.isAdmin) return false;
 
 	if (course.level !== 2) return false;
 	if (!isLoggedIn.value) return true;
 
-	// Nếu không có khóa Level 1 nào tồn tại thì không khóa Level 2
 	if (allLevel1Ids.value.length === 0) return false;
 
-	// Kiểm tra xem tất cả ID trong allLevel1Ids có nằm trong completedLevel1Ids không
 	return !allLevel1Ids.value.every((id) =>
 		completedLevel1Ids.value.includes(id),
 	);
@@ -525,9 +488,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* ══════════════════════════════════════
-   BASE
-══════════════════════════════════════ */
 .catalog-page {
 	padding-bottom: 5rem;
 	max-width: var(--content-max-width, 1400px);
@@ -542,7 +502,6 @@ onMounted(async () => {
 	border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
-/* ── Badges (all original colors kept) ── */
 .badge-glass {
 	padding: 3px 10px;
 	border-radius: 20px;
@@ -580,9 +539,6 @@ onMounted(async () => {
 	backdrop-filter: blur(4px);
 }
 
-/* ══════════════════════════════════════
-   HERO — SPLIT LAYOUT
-══════════════════════════════════════ */
 .hero-section {
 	display: grid;
 	grid-template-columns: 1fr 420px;
@@ -593,7 +549,6 @@ onMounted(async () => {
 	padding: 4rem 0 3rem;
 }
 
-/* Left column */
 .hero-left {
 	position: relative;
 	z-index: 1;
@@ -678,7 +633,6 @@ onMounted(async () => {
 	background: #a855f7;
 }
 
-/* Right column — search panel card */
 .hero-right {
 	position: relative;
 	z-index: 2;
@@ -769,7 +723,6 @@ onMounted(async () => {
 	color: #4f46e5;
 }
 
-/* Quick category pills in search panel */
 .quick-cats {
 	display: flex;
 	gap: 8px;
@@ -798,9 +751,6 @@ onMounted(async () => {
 	color: #4f46e5;
 }
 
-/* ══════════════════════════════════════
-   MAIN LAYOUT — SIDEBAR + CONTENT
-══════════════════════════════════════ */
 .main-layout {
 	display: grid;
 	grid-template-columns: 240px 1fr;
@@ -808,7 +758,6 @@ onMounted(async () => {
 	align-items: start;
 }
 
-/* ── SIDEBAR ── */
 .sidebar {
 	border-radius: 20px;
 	padding: 1.5rem;
@@ -836,7 +785,6 @@ onMounted(async () => {
 	margin: 0.25rem 0;
 }
 
-/* Category list */
 .sb-cat-list {
 	display: flex;
 	flex-direction: column;
@@ -880,7 +828,6 @@ onMounted(async () => {
 	color: #4f46e5;
 }
 
-/* Sort list */
 .sb-sort-list {
 	display: flex;
 	flex-direction: column;
@@ -911,7 +858,6 @@ onMounted(async () => {
 	color: #4f46e5;
 }
 
-/* Level checkboxes */
 .sb-level-list {
 	display: flex;
 	flex-direction: column;
@@ -966,7 +912,6 @@ onMounted(async () => {
 	background: rgba(239, 68, 68, 0.04);
 }
 
-/* ── CONTENT AREA ── */
 .content-area {
 	min-width: 0;
 }
@@ -1027,9 +972,6 @@ onMounted(async () => {
 	color: #4f46e5;
 }
 
-/* ══════════════════════════════════════
-   GRID VIEW (original card design)
-══════════════════════════════════════ */
 .courses-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -1183,9 +1125,6 @@ onMounted(async () => {
 	color: #94a3b8;
 }
 
-/* ══════════════════════════════════════
-   LIST VIEW
-══════════════════════════════════════ */
 .courses-list {
 	display: flex;
 	flex-direction: column;
@@ -1289,9 +1228,6 @@ onMounted(async () => {
 	background: rgba(79, 70, 229, 0.05);
 }
 
-/* ══════════════════════════════════════
-   SKELETON
-══════════════════════════════════════ */
 .course-card-skeleton {
 	border-radius: 20px;
 	border: 1px solid #e2e8f0;
@@ -1334,9 +1270,6 @@ onMounted(async () => {
 	margin-top: 0.75rem;
 }
 
-/* ══════════════════════════════════════
-   EMPTY STATE
-══════════════════════════════════════ */
 .empty-state-premium {
 	display: flex;
 	flex-direction: column;
@@ -1373,9 +1306,6 @@ onMounted(async () => {
 	color: #64748b;
 }
 
-/* ══════════════════════════════════════
-   PAGINATION (original logic, new style)
-══════════════════════════════════════ */
 .pagination-wrap {
 	display: flex;
 	justify-content: center;
@@ -1419,9 +1349,6 @@ onMounted(async () => {
 	cursor: not-allowed;
 }
 
-/* ══════════════════════════════════════
-   ANIMATIONS
-══════════════════════════════════════ */
 @keyframes slideInUp {
 	from {
 		opacity: 0;
@@ -1453,9 +1380,6 @@ onMounted(async () => {
 	animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* ══════════════════════════════════════
-   RESPONSIVE
-══════════════════════════════════════ */
 @media (max-width: 1100px) {
 	.main-layout {
 		grid-template-columns: 200px 1fr;
@@ -1500,9 +1424,6 @@ onMounted(async () => {
 	}
 }
 
-/* ══════════════════════════════════════
-   LEVEL BADGES & LOCKING (MỚI)
-══════════════════════════════════════ */
 .badge-level {
 	padding: 2px 8px;
 	border-radius: 4px;

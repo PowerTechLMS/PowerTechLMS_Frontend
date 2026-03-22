@@ -33,8 +33,12 @@
 					<component :is="stat.icon" :size="24" />
 				</div>
 				<div class="stat-info">
-					<div class="stat-value text-dark">{{ stat.value }}</div>
-					<div class="stat-label fw-bold">{{ stat.label }}</div>
+					<div class="stat-value text-dark">
+						{{ stat.value }}
+					</div>
+					<div class="stat-label fw-bold">
+						{{ stat.label }}
+					</div>
 				</div>
 			</div>
 		</div>
@@ -93,7 +97,7 @@
 								:style="{
 									width: (featuredEnrollment.progressPercent || 0) + '%',
 								}"
-							></div>
+							/>
 						</div>
 					</div>
 
@@ -112,14 +116,14 @@
 				<h2 class="section-title text-dark fw-900">Tất cả khóa học</h2>
 				<div class="filter-toolbar glass shadow-sm">
 					<div class="filter-pills-wrapper">
-						<div class="active-pill-bg" :style="activePillStyle"></div>
+						<div class="active-pill-bg" :style="activePillStyle" />
 						<button
 							v-for="(f, index) in filters"
 							:key="f.id"
+							ref="filterButtons"
 							class="pill-btn"
 							:class="{ active: activeFilter === f.id }"
 							@click="setActiveFilter(f.id, index)"
-							ref="filterButtons"
 						>
 							{{ f.label }}
 						</button>
@@ -132,7 +136,7 @@
 					v-for="i in 3"
 					:key="i"
 					class="skeleton-item glass animate-pulse"
-				></div>
+				/>
 			</div>
 
 			<div v-else-if="filteredEnrollments.length" class="list-wrapper">
@@ -158,7 +162,9 @@
 						</div>
 					</div>
 					<div class="row-main">
-						<h4 class="course-name">{{ e.courseTitle }}</h4>
+						<h4 class="course-name">
+							{{ e.courseTitle }}
+						</h4>
 						<div class="course-meta-small">
 							<span
 								class="badge-glass"
@@ -180,7 +186,7 @@
 							>
 						</div>
 					</div>
-					<div class="row-progress" v-if="e.status !== 'Pending'">
+					<div v-if="e.status !== 'Pending'" class="row-progress">
 						<div class="progress-group">
 							<span
 								class="percent-label"
@@ -194,7 +200,7 @@
 									:class="{
 										'bg-success': Math.round(e.progressPercent) >= 100,
 									}"
-								></div>
+								/>
 							</div>
 						</div>
 					</div>
@@ -224,17 +230,13 @@ import { ref, onMounted, computed } from "vue";
 import { enrollmentAPI } from "@/services/api";
 import {
 	GraduationCap,
-	BookMarked,
-	Clock,
 	CheckCircle,
 	ArrowRight,
 	ChevronRight,
 	BookOpen,
 	Award,
 	BarChart3,
-	Search,
 	Play,
-	Lock,
 } from "lucide-vue-next";
 
 const enrollments = ref([]);
@@ -251,7 +253,6 @@ const filters = [
 	{ id: "mandatory", label: "Bắt buộc" },
 ];
 
-// [ĐÃ NÂNG CẤP]: Dùng Math.round để tránh sai số thập phân khiến bộ lọc bị trượt
 const stats = computed(() => [
 	{
 		label: "Tổng khóa học",
@@ -291,7 +292,7 @@ const featuredEnrollment = computed(() => {
 	return (
 		enrollments.value.find(
 			(e) =>
-				e.status === "Approved" && 
+				e.status === "Approved" &&
 				Math.round(e.progressPercent) > 0 &&
 				Math.round(e.progressPercent) < 100,
 		) || null
@@ -329,10 +330,11 @@ function updateActivePillPosition() {
 onMounted(async () => {
 	try {
 		const { data } = await enrollmentAPI.getMy();
-		enrollments.value = data.filter(e => e.status === "Approved" || e.status === "Completed");
+		enrollments.value = data.filter(
+			(e) => e.status === "Approved" || e.status === "Completed",
+		);
 		setTimeout(updateActivePillPosition, 100);
-	} catch (e) {
-		console.error(e);
+	} catch {
 	} finally {
 		loading.value = false;
 	}
@@ -346,7 +348,6 @@ onMounted(async () => {
 	margin: 0 auto;
 }
 
-/* Glass Basics */
 .glass {
 	background: var(--bg-card);
 	backdrop-filter: blur(16px);
@@ -368,7 +369,6 @@ onMounted(async () => {
 	box-shadow: var(--shadow-lg);
 }
 
-/* Badges */
 .badge-glass {
 	padding: 5px 14px;
 	border-radius: 20px;
@@ -400,7 +400,6 @@ onMounted(async () => {
 	border-color: rgba(239, 68, 68, 0.3);
 }
 
-/* Header */
 .page-header-premium {
 	padding: 1rem 0;
 	position: relative;
@@ -432,11 +431,10 @@ onMounted(async () => {
 	-webkit-text-fill-color: transparent;
 }
 
-/* Fix dark title manually for scoped style */
-[data-theme='dark'] .title-gradient {
-  background: none !important;
-  -webkit-text-fill-color: var(--text-primary) !important;
-  color: var(--text-primary) !important;
+[data-theme="dark"] .title-gradient {
+	background: none !important;
+	-webkit-text-fill-color: var(--text-primary) !important;
+	color: var(--text-primary) !important;
 }
 .header-decoration-bg {
 	position: absolute;
@@ -453,7 +451,6 @@ onMounted(async () => {
 	pointer-events: none;
 }
 
-/* Stats */
 .stats-overview {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -462,8 +459,8 @@ onMounted(async () => {
 }
 .stat-card {
 	padding: 1.5rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	border-radius: 24px;
 	display: flex;
 	align-items: center;
@@ -484,7 +481,7 @@ onMounted(async () => {
 	font-weight: 900;
 	line-height: 1;
 	margin-bottom: 4px;
-  color: var(--text-primary);
+	color: var(--text-primary);
 }
 .stat-label {
 	font-size: 0.9rem;
@@ -492,7 +489,6 @@ onMounted(async () => {
 	letter-spacing: 0.5px;
 }
 
-/* Featured Card */
 .featured-section {
 	margin-bottom: 4rem;
 }
@@ -506,7 +502,7 @@ onMounted(async () => {
 	font-size: 1.5rem;
 	letter-spacing: -0.5px;
 	margin: 0;
-  color: var(--text-primary);
+	color: var(--text-primary);
 }
 
 .featured-card {
@@ -514,8 +510,8 @@ onMounted(async () => {
 	grid-template-columns: 380px 1fr;
 	border-radius: 28px;
 	overflow: hidden;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	box-shadow: var(--shadow-md);
 	cursor: pointer;
 }
@@ -565,7 +561,7 @@ onMounted(async () => {
 	font-weight: 800;
 	margin-bottom: 2rem;
 	line-height: 1.3;
-  color: var(--text-primary);
+	color: var(--text-primary);
 }
 
 .featured-progress-wrap {
@@ -619,7 +615,6 @@ onMounted(async () => {
 	background: rgba(79, 70, 229, 0.1);
 }
 
-/* List Section */
 .filter-toolbar {
 	padding: 0.4rem;
 	border-radius: 30px;
@@ -672,8 +667,8 @@ onMounted(async () => {
 }
 
 .enrollment-row {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	display: flex;
 	align-items: center;
 	padding: 1.25rem 1.75rem;
@@ -683,9 +678,9 @@ onMounted(async () => {
 	animation: slideInUp 0.5s ease backwards var(--delay);
 }
 .enrollment-row:hover {
-  background: var(--bg-card-hover);
-  border-color: var(--primary);
-  transform: translateX(4px);
+	background: var(--bg-card-hover);
+	border-color: var(--primary);
+	transform: translateX(4px);
 }
 
 .icon-box-soft {
@@ -742,7 +737,7 @@ onMounted(async () => {
 .percent-label {
 	font-size: 1rem;
 	font-weight: 800;
-  color: var(--text-primary);
+	color: var(--text-primary);
 }
 .progress-mini {
 	height: 8px;
@@ -778,7 +773,6 @@ onMounted(async () => {
 	transform: translateX(5px);
 }
 
-/* Empty State */
 .empty-state-premium {
 	padding: 6rem 2rem;
 	text-align: center;
@@ -803,14 +797,12 @@ onMounted(async () => {
 	margin: 0 auto 1.5rem;
 }
 
-/* Skeletons */
 .skeleton-item {
 	height: 90px;
 	border-radius: 20px;
 	border: 1px solid #e2e8f0;
 }
 
-/* Animations */
 @keyframes slideInUp {
 	from {
 		opacity: 0;

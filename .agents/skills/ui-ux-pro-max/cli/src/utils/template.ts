@@ -53,9 +53,7 @@ async function exists(path: string): Promise<boolean> {
   }
 }
 
-/**
- * Load platform configuration from JSON file
- */
+
 export async function loadPlatformConfig(aiType: string): Promise<PlatformConfig> {
   const platformName = AI_TO_PLATFORM[aiType];
   if (!platformName) {
@@ -67,9 +65,7 @@ export async function loadPlatformConfig(aiType: string): Promise<PlatformConfig
   return JSON.parse(content) as PlatformConfig;
 }
 
-/**
- * Load all available platform configs
- */
+
 export async function loadAllPlatformConfigs(): Promise<Map<string, PlatformConfig>> {
   const configs = new Map<string, PlatformConfig>();
 
@@ -198,9 +194,7 @@ export async function generatePlatformFiles(
   return createdFolders;
 }
 
-/**
- * Generate files for all AI types
- */
+
 export async function generateAllPlatformFiles(targetDir: string): Promise<string[]> {
   const allFolders = new Set<string>();
 
@@ -216,9 +210,7 @@ export async function generateAllPlatformFiles(targetDir: string): Promise<strin
   return Array.from(allFolders);
 }
 
-/**
- * Get list of supported AI types
- */
+
 export function getSupportedAITypes(): string[] {
   return Object.keys(AI_TO_PLATFORM);
 }

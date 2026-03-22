@@ -1,26 +1,18 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
-// @ts-ignore
 import { userAPI } from "@/services/api";
 import {
 	ArrowLeft,
-	UserPlus,
-	IdCard,
 	Mail,
 	Lock,
 	Eye,
 	EyeOff,
 	Camera,
-	Shield,
 	Save,
 	Loader2,
-	CheckCircle2,
-	UserCheck,
 	ChevronRight,
 	Pencil,
-	AlertCircle,
-	Users,
 	Layout,
 } from "lucide-vue-next";
 import { toast } from "vue3-toastify";
@@ -49,9 +41,6 @@ const userForm = ref({
 
 const departments = ref<any[]>([]);
 
-const defaultAvatar =
-	"https://ui-avatars.com/api/?background=random&color=fff&name=";
-
 const fetchUserData = async () => {
 	loading.value = true;
 	try {
@@ -68,7 +57,7 @@ const fetchUserData = async () => {
 				? data.avatar
 				: `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${data.avatar}`;
 		}
-	} catch (error) {
+	} catch {
 		toast.error("Không thể tải dữ liệu nhân sự");
 		router.push("/admin/staff");
 	} finally {
@@ -81,9 +70,7 @@ onMounted(async () => {
 	try {
 		const res = await userGroupAPI.getAll();
 		departments.value = res.data.items || res.data;
-	} catch (error) {
-		console.error("Lỗi tải phòng ban", error);
-	}
+	} catch {}
 });
 
 const handleAvatarChange = (event: Event) => {
@@ -155,7 +142,6 @@ const submitForm = async () => {
 
 <template>
 	<div class="staff-edit-page">
-		<!-- Premium Header -->
 		<div class="page-header mb-4">
 			<div class="header-content">
 				<div class="header-icon-box pulse-glow">
@@ -192,16 +178,13 @@ const submitForm = async () => {
 			</div>
 		</div>
 
-		<!-- MAIN LOADING -->
 		<div v-if="loading" class="loading-state py-5 text-center mt-5">
 			<div class="spinner"></div>
 			<p class="mt-3 text-muted fw-semi-bold">Đang tải dữ liệu nhân sự...</p>
 		</div>
 
-		<!-- MAIN FORM -->
 		<form v-else @submit.prevent="submitForm" class="fade-in">
 			<div class="row g-4">
-				<!-- Left Column: Primary Info -->
 				<div class="col-lg-7">
 					<div class="glass-content-card h-100">
 						<div class="glass-card-header">
@@ -212,7 +195,6 @@ const submitForm = async () => {
 						</div>
 
 						<div class="glass-card-body pt-0">
-							<!-- Full Name -->
 							<div class="form-group-premium mb-4">
 								<label class="label-premium"
 									>Họ và tên <span class="text-danger">*</span></label
@@ -229,7 +211,6 @@ const submitForm = async () => {
 								</div>
 							</div>
 
-							<!-- Email -->
 							<div class="form-group-premium mb-4">
 								<label class="label-premium"
 									>Email đăng nhập <span class="text-danger">*</span></label
@@ -251,7 +232,6 @@ const submitForm = async () => {
 								</div>
 							</div>
 
-							<!-- Password Section -->
 							<div class="password-change-box mt-5 p-4 rounded-4">
 								<div class="d-flex align-items-center gap-2 mb-3 text-danger">
 									<Lock :size="16" style="width: 16px; height: 16px" />
@@ -319,7 +299,6 @@ const submitForm = async () => {
 					</div>
 				</div>
 
-				<!-- Right Column: Avatar & Permissions -->
 				<div class="col-lg-5">
 					<div class="glass-content-card h-100">
 						<div class="glass-card-header">
@@ -330,7 +309,6 @@ const submitForm = async () => {
 						</div>
 
 						<div class="glass-card-body pt-0">
-							<!-- Avatar Uploader -->
 							<div class="avatar-premium-uploader mb-5">
 								<div class="uploader-circle" @click="triggerFileInput">
 									<img
@@ -361,7 +339,6 @@ const submitForm = async () => {
 								</div>
 							</div>
 
-							<!-- Department Selection -->
 							<div class="form-group-premium mb-4">
 								<label class="label-premium">Phòng ban / Bộ phận</label>
 								<div class="input-glass-wrap with-icon">
@@ -383,11 +360,11 @@ const submitForm = async () => {
 									<div class="input-focus-glow"></div>
 								</div>
 								<p class="fs-11 text-tertiary mt-2">
-									Chuyển đổi phòng ban sẽ áp dụng lộ trình học tập mới của phòng đó.
+									Chuyển đổi phòng ban sẽ áp dụng lộ trình học tập mới của phòng
+									đó.
 								</p>
 							</div>
 
-							<!-- Status Box (Moved up since Role is removed) -->
 							<div
 								class="premium-status-box mt-auto"
 								:class="userForm.isActive ? 'active' : 'inactive'"
@@ -421,7 +398,6 @@ const submitForm = async () => {
 				</div>
 			</div>
 
-			<!-- Footer Actions -->
 			<div
 				class="form-footer-actions mt-5 pt-4 d-flex justify-content-end gap-3 border-top"
 			>
@@ -452,7 +428,6 @@ const submitForm = async () => {
 </template>
 
 <style scoped>
-/* ===== Core Typography & Animations ===== */
 .staff-edit-page {
 	padding-bottom: var(--space-2xl);
 	color: var(--text-primary);
@@ -494,7 +469,6 @@ const submitForm = async () => {
 	}
 }
 
-/* ===== Premium Header ===== */
 .page-header {
 	display: flex;
 	justify-content: space-between;
@@ -576,7 +550,6 @@ const submitForm = async () => {
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-/* ===== Glass Content Card ===== */
 .glass-content-card {
 	background: rgba(255, 255, 255, 0.9);
 	backdrop-filter: blur(20px);
@@ -610,7 +583,6 @@ const submitForm = async () => {
 	flex-direction: column;
 }
 
-/* ===== Form Premium Elements ===== */
 .label-premium {
 	display: block;
 	font-weight: 700;
@@ -707,13 +679,11 @@ const submitForm = async () => {
 	padding-right: 46px;
 }
 
-/* Password Box */
 .password-change-box {
 	background: rgba(239, 68, 68, 0.03);
 	border: 1px solid rgba(239, 68, 68, 0.1);
 }
 
-/* ===== Avatar Premium Uploader ===== */
 .avatar-premium-uploader {
 	display: flex;
 	align-items: center;
@@ -763,7 +733,6 @@ const submitForm = async () => {
 	opacity: 1;
 }
 
-/* ===== Role Selection Grid ===== */
 .role-selection-grid {
 	display: flex;
 	flex-direction: column;
@@ -823,7 +792,6 @@ const submitForm = async () => {
 	color: inherit;
 }
 
-/* ===== Premium Status Box ===== */
 .premium-status-box {
 	display: flex;
 	align-items: center;
@@ -853,7 +821,6 @@ const submitForm = async () => {
 	box-shadow: 0 0 10px var(--success-500);
 }
 
-/* Glass Switch */
 .glass-switch {
 	position: relative;
 	width: 48px;
@@ -892,7 +859,6 @@ input:checked + .switch-slider:before {
 	transform: translateX(22px);
 }
 
-/* ===== Footer Actions & Loading ===== */
 .btn-glass-secondary {
 	height: 48px;
 	padding: 0 24px;
@@ -950,7 +916,6 @@ input:checked + .switch-slider:before {
 	margin: 0 auto;
 }
 
-/* Responsive */
 @media (max-width: 991px) {
 	.page-header {
 		text-align: center;

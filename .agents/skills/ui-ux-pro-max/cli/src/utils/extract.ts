@@ -95,17 +95,12 @@ export async function cleanup(tempDir: string): Promise<void> {
   }
 }
 
-/**
- * Create a temporary directory for extracting ZIP files
- */
+
 export async function createTempDir(): Promise<string> {
   return mkdtemp(join(tmpdir(), 'uipro-'));
 }
 
-/**
- * Find the extracted folder inside temp directory
- * GitHub release ZIPs often contain a single root folder
- */
+
 async function findExtractedRoot(tempDir: string): Promise<string> {
   const entries = await readdir(tempDir, { withFileTypes: true });
   const dirs = entries.filter(e => e.isDirectory());
@@ -119,9 +114,7 @@ async function findExtractedRoot(tempDir: string): Promise<string> {
   return tempDir;
 }
 
-/**
- * Install from a downloaded and extracted ZIP file
- */
+
 export async function installFromZip(
   zipPath: string,
   targetDir: string,

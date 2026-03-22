@@ -2,7 +2,7 @@ import axios from "axios";
 
 const api = axios.create({
 	baseURL: "/api",
-	timeout: 600000, // 10 minutes for large uploads
+	timeout: 600000,
 });
 
 api.interceptors.request.use((config) => {
@@ -23,13 +23,11 @@ api.interceptors.response.use(
 	},
 );
 
-// Auth
 export const authAPI = {
 	login: (data) => api.post("/auth/login", data),
 	register: (data) => api.post("/auth/register", data),
 };
 
-// Courses
 export const courseAPI = {
 	getAll: (params) => api.get("/courses", { params }),
 	getById: (id) => api.get(`/courses/${id}`),
@@ -44,7 +42,6 @@ export const courseAPI = {
 		api.put(`/courses/${id}/certificate-template`, data),
 };
 
-// Modules
 export const moduleAPI = {
 	create: (courseId, data) => api.post(`/courses/${courseId}/modules`, data),
 	update: (courseId, id, data) =>
@@ -54,7 +51,6 @@ export const moduleAPI = {
 		api.put(`/courses/${courseId}/modules/sort-order`, { items }),
 };
 
-// Lessons
 export const lessonAPI = {
 	create: (moduleId, data) => api.post(`/modules/${moduleId}/lessons`, data),
 	update: (moduleId, id, data) =>
@@ -77,7 +73,6 @@ export const lessonAPI = {
 		`/api/modules/${moduleId}/lessons/attachments/${id}/download`,
 };
 
-// Enrollments
 export const enrollmentAPI = {
 	enroll: (courseId) => api.post("/enrollments", { courseId }),
 	adminEnroll: (data) => api.post("/enrollments/admin", data),
@@ -89,10 +84,12 @@ export const enrollmentAPI = {
 	getAll: (params) => api.get("/enrollments", { params }),
 };
 
-// Progress
 export const progressAPI = {
 	complete: (lessonId, isQuizPassed = false) =>
-		api.post("/progress/complete", { lessonId: Number(lessonId), isQuizPassed }),
+		api.post("/progress/complete", {
+			lessonId: Number(lessonId),
+			isQuizPassed,
+		}),
 	updateVideoPosition: (lessonId, positionSeconds, watchedPercent) =>
 		api.put("/progress/video-position", {
 			lessonId,
@@ -105,7 +102,6 @@ export const progressAPI = {
 	canAccess: (lessonId) => api.get(`/progress/can-access/${lessonId}`),
 };
 
-// Quizzes
 export const quizAPI = {
 	getById: (id) => api.get(`/quizzes/${id}`),
 	create: (courseId, data) => api.post(`/quizzes/course/${courseId}`, data),
@@ -122,7 +118,6 @@ export const quizAPI = {
 	getResults: (quizId) => api.get(`/quizzes/${quizId}/results`),
 };
 
-// Certificates
 export const certificateAPI = {
 	issue: (courseId) => api.post(`/certificates/${courseId}`),
 	getMy: () => api.get("/certificates/my"),
@@ -131,40 +126,32 @@ export const certificateAPI = {
 	revoke: (id, reason) => api.put(`/certificates/${id}/revoke`, { reason }),
 };
 
-// Q&A
 export const qaAPI = {
 	create: (lessonId, data) => api.post(`/lessons/${lessonId}/qa`, data),
 	getAll: (lessonId) => api.get(`/lessons/${lessonId}/qa`),
 	delete: (lessonId, id) => api.delete(`/lessons/${lessonId}/qa/${id}`),
 };
 
-// Notes
 export const noteAPI = {
 	create: (lessonId, data) => api.post(`/lessons/${lessonId}/notes`, data),
 	getAll: (lessonId) => api.get(`/lessons/${lessonId}/notes`),
 	delete: (lessonId, id) => api.delete(`/lessons/${lessonId}/notes/${id}`),
 };
 
-// Leaderboard
 export const leaderboardAPI = {
 	get: (top = 10) => api.get("/leaderboard", { params: { top } }),
 	getMyBadges: () => api.get("/leaderboard/badges"),
 };
 
-// Documents
 export const documentAPI = {
 	getAll: (params) => api.get("/documents", { params }),
 	create: (formData) => api.post("/documents", formData),
 	update: (id, data) => api.put(`/documents/${id}`, data),
-
-	// === 4 HÀM NÀY LÀ BẮT BUỘC PHẢI CÓ CHO TRANG EDIT ===
 	getById: (id) => api.get(`/documents/${id}`),
 	getPermissions: (id) => api.get(`/documents/${id}/permissions`),
 	updatePermissions: (id, data) =>
 		api.put(`/documents/${id}/permissions`, data),
 	clearPermissions: (id) => api.delete(`/documents/${id}/permissions`),
-	// ====================================================
-
 	addVersion: (id, formData) => api.post(`/documents/${id}/versions`, formData),
 	getVersions: (id) => api.get(`/documents/${id}/versions`),
 	delete: (id) => api.delete(`/documents/${id}`),
@@ -176,7 +163,6 @@ export const documentAPI = {
 		`/api/documents/versions/${versionId}/download?preview=true`,
 };
 
-// Reports
 export const reportAPI = {
 	getTraining: (courseId) =>
 		api.get("/reports/training", { params: { courseId } }),
@@ -185,7 +171,6 @@ export const reportAPI = {
 	getQuizAnalytics: (quizId) => api.get(`/reports/quiz-analytics/${quizId}`),
 };
 
-// Users
 export const userAPI = {
 	getAll: (params) => api.get("/users", { params }),
 	getById: (id) => api.get(`/users/${id}`),
@@ -199,7 +184,6 @@ export const userAPI = {
 		}),
 };
 
-// Profile
 export const profileAPI = {
 	get: () => api.get("/profile"),
 	update: (data) => api.put("/profile", data),
@@ -207,7 +191,6 @@ export const profileAPI = {
 	changePassword: (data) => api.put("/profile/password", data),
 };
 
-// User Groups (Phòng ban)
 export const userGroupAPI = {
 	getAll: (params) => api.get("/usergroups", { params }),
 	getById: (id) => api.get(`/usergroups/${id}`),
@@ -218,17 +201,12 @@ export const userGroupAPI = {
 		api.post(`/usergroups/${groupId}/users/${userId}`),
 	removeUser: (groupId, userId) =>
 		api.delete(`/usergroups/${groupId}/users/${userId}`),
-
-	// [BỔ SUNG QUAN TRỌNG]: Gán khung lộ trình vào phòng ban
 	assignCourseGroup: (departmentId, courseGroupId) =>
 		api.post(`/usergroups/${departmentId}/course-groups/${courseGroupId}`),
-
-	// [TÙY CHỌN BỔ SUNG]: Nếu bạn có tính năng gỡ khung lộ trình khỏi phòng ban
 	removeCourseGroup: (departmentId, courseGroupId) =>
 		api.delete(`/usergroups/${departmentId}/course-groups/${courseGroupId}`),
 };
 
-// Course Groups (Khung lộ trình đào tạo)
 export const courseGroupAPI = {
 	getAll: (params) => api.get("/coursegroups", { params }),
 	getMy: () => api.get("/coursegroups/my"),
@@ -242,13 +220,11 @@ export const courseGroupAPI = {
 		api.delete(`/coursegroups/${groupId}/courses/${courseId}`),
 };
 
-// Alias để sử dụng tương thích với mã cũ trong component AddDepartment.vue
 export const groupAPI = {
 	getCourseGroups: (page = 1, pageSize = 100) =>
 		api.get("/coursegroups", { params: { page, pageSize } }),
 };
 
-// RBAC
 export const rbacAPI = {
 	getRoles: () => api.get("/rbac/roles"),
 	createRole: (data) => api.post("/rbac/roles", data),
@@ -261,13 +237,11 @@ export const rbacAPI = {
 		api.put(`/rbac/users/${userId}/roles`, { roleIds }),
 };
 
-// --- DASHBOARD API ---
 export const dashboardAPI = {
 	getLearnerData: () => api.get("/dashboard/learner"),
 	getSummary: () => api.get("/dashboard/learner"),
 };
 
-// --- NOTIFICATIONS API ---
 export const notificationAPI = {
 	getAll: (params) => api.get("/notifications", { params }),
 	markAsRead: (id) => api.post(`/notifications/${id}/read`),

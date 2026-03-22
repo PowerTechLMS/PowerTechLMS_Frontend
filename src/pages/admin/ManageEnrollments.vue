@@ -20,9 +20,9 @@
 
 		<div class="tabs-premium-nav mb-5">
 			<button
-				@click="activeTab = 'pending'"
 				class="nav-tab-btn"
 				:class="{ active: activeTab === 'pending' }"
+				@click="activeTab = 'pending'"
 			>
 				<div
 					class="tab-index"
@@ -37,11 +37,13 @@
 				</div>
 			</button>
 			<button
-				@click="activeTab = 'assign'"
 				class="nav-tab-btn"
 				:class="{ active: activeTab === 'assign' }"
+				@click="activeTab = 'assign'"
 			>
-				<div class="tab-index success"><UserPlus :size="16" /></div>
+				<div class="tab-index success">
+					<UserPlus :size="16" />
+				</div>
 				<div class="tab-label">
 					<span>Phân công đào tạo</span>
 					<small>Gán khóa học bắt buộc</small>
@@ -51,7 +53,7 @@
 
 		<div class="main-content">
 			<transition name="fade-slide" mode="out-in">
-				<div v-if="activeTab === 'pending'" class="glass-panel" key="pending">
+				<div v-if="activeTab === 'pending'" key="pending" class="glass-panel">
 					<div
 						class="panel-header-glass d-flex justify-content-between align-items-center mb-4"
 					>
@@ -70,7 +72,7 @@
 
 					<div class="panel-body-glass">
 						<div v-if="loadingPending" class="loading-state-luxe py-5">
-							<div class="luxe-spinner"></div>
+							<div class="luxe-spinner" />
 							<p>Đang tải dữ liệu ghi danh...</p>
 						</div>
 
@@ -117,7 +119,8 @@
 														{{ item.fullName || "Người dùng ẩn" }}
 													</div>
 													<div class="user-id text-secondary fs-12">
-														{{ item.departmentName || "Phòng ban ẩn" }} • Mã NV: {{ item.userId }}
+														{{ item.departmentName || "Phòng ban ẩn" }} • Mã NV:
+														{{ item.userId }}
 													</div>
 												</div>
 											</div>
@@ -146,15 +149,15 @@
 											<div class="actions-cell justify-content-end">
 												<button
 													class="btn-action-glow approve shadow-sm"
-													@click="handleApprove(item.id, true)"
 													title="Phê duyệt"
+													@click="handleApprove(item.id, true)"
 												>
 													<Check :size="16" /> Phê duyệt
 												</button>
 												<button
 													class="btn-action-glow reject shadow-sm"
-													@click="handleApprove(item.id, false)"
 													title="Từ chối"
+													@click="handleApprove(item.id, false)"
 												>
 													<X :size="16" /> Từ chối
 												</button>
@@ -169,8 +172,8 @@
 
 				<div
 					v-else-if="activeTab === 'assign'"
-					class="glass-panel"
 					key="assign"
+					class="glass-panel"
 				>
 					<div
 						class="panel-header-glass d-flex justify-content-between align-items-center mb-4"
@@ -178,7 +181,9 @@
 						<h5
 							class="fw-800 text-secondary mb-0 d-flex align-items-center gap-2"
 						>
-							<div class="s-icon-mini success"><UserPlus :size="16" /></div>
+							<div class="s-icon-mini success">
+								<UserPlus :size="16" />
+							</div>
 							Giao nhiệm vụ học tập
 						</h5>
 					</div>
@@ -211,7 +216,9 @@
 									>
 										<template #option="option">
 											<div>
-												<div class="fw-700 fs-13">{{ option.fullName }}</div>
+												<div class="fw-700 fs-13">
+													{{ option.fullName }}
+												</div>
 												<div class="text-secondary fs-11">
 													{{ option.email }}
 												</div>
@@ -237,7 +244,9 @@
 									>
 										<template #option="option">
 											<div>
-												<div class="fw-700 fs-13">{{ option.title }}</div>
+												<div class="fw-700 fs-13">
+													{{ option.title }}
+												</div>
 												<div class="text-secondary fs-11">
 													Cấp độ: {{ option.level }}
 												</div>
@@ -249,23 +258,23 @@
 
 							<button
 								class="btn-premium-action lg w-100 justify-content-center shadow-primary"
-								@click="adminAssign"
 								:disabled="
 									assigning || !assignForm.userId || !assignForm.courseId
 								"
+								@click="adminAssign"
 							>
 								<div
 									v-if="assigning"
 									class="spinner-border spinner-border-sm me-2"
-								></div>
+								/>
 								<UserPlus v-else :size="18" class="me-2" />
 								{{ assigning ? "ĐANG PHÂN CÔNG..." : "THỰC HIỆN PHÂN CÔNG" }}
 							</button>
 
 							<transition name="fade">
 								<div
-									class="assign-success-alert shadow-sm mt-4"
 									v-if="assignSuccess"
+									class="assign-success-alert shadow-sm mt-4"
 								>
 									<div class="success-icon-badge">
 										<CheckCircle2 :size="18" />
@@ -293,21 +302,17 @@ import {
 	BookUp,
 	Calendar,
 	UserPlus,
-	User,
-	Loader2,
 	CheckCircle2,
 	ClipboardList,
 	Check,
 	X,
 	RefreshCw,
-	Lock,
 } from "lucide-vue-next";
 
-const activeTab = ref("pending"); // pending | assign
+const activeTab = ref("pending");
 const pendingList = ref([]);
 const loadingPending = ref(false);
 
-// Assignment Data
 const userOptions = ref([]);
 const courseOptions = ref([]);
 const loadingOptions = ref(false);
@@ -326,9 +331,7 @@ async function loadPending() {
 	try {
 		const { data } = await enrollmentAPI.getPending();
 		pendingList.value = data;
-	} catch (e) {
-		console.error("Lỗi tải danh sách chờ", e);
-	}
+	} catch {}
 	loadingPending.value = false;
 }
 
@@ -350,19 +353,15 @@ async function handleApprove(id, isApproved) {
 async function loadAssignmentData() {
 	loadingOptions.value = true;
 	try {
-		// Fetch users (active ones)
 		const userRes = await userAPI.getAll({ pageSize: 1000 });
 		userOptions.value = userRes.data.items.filter((u) => u.isActive);
 
-		// Fetch courses (published ones)
 		const courseRes = await courseAPI.getAll({
 			pageSize: 1000,
 			isPublished: true,
 		});
 		courseOptions.value = courseRes.data.items;
-	} catch (e) {
-		console.error("Lỗi tải dữ liệu phân công", e);
-	}
+	} catch {}
 	loadingOptions.value = false;
 }
 
@@ -374,7 +373,7 @@ async function adminAssign() {
 		await enrollmentAPI.adminEnroll({
 			userId: assignForm.userId,
 			courseId: assignForm.courseId,
-			deadline: null, // Bỏ hạn chót
+			deadline: null,
 			isMandatory: assignForm.isMandatory,
 		});
 		assignSuccess.value = true;
@@ -399,7 +398,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Page Base */
 .enrollments-page {
 	min-height: 100vh;
 	animation: fadeIn 0.5s ease-out;
@@ -418,7 +416,6 @@ onMounted(() => {
 	}
 }
 
-/* Premium Header */
 .page-header-premium {
 	display: flex;
 	justify-content: space-between;
@@ -479,7 +476,6 @@ onMounted(() => {
 	color: #6366f1;
 }
 
-/* Tabs Navigation */
 .tabs-premium-nav {
 	display: grid;
 	grid-template-columns: repeat(2, 1fr);
@@ -567,7 +563,6 @@ onMounted(() => {
 	color: #6366f1;
 }
 
-/* Panels & Glass Containers */
 .glass-panel {
 	background: rgba(255, 255, 255, 0.85);
 	backdrop-filter: blur(12px);
@@ -613,7 +608,6 @@ onMounted(() => {
 	border-color: #cbd5e1;
 }
 
-/* Spinners & Empty State */
 .loading-state-luxe,
 .empty-state-premium {
 	display: flex;
@@ -656,7 +650,6 @@ onMounted(() => {
 	justify-content: center;
 }
 
-/* Data Table */
 .data-table-glass {
 	overflow-x: auto;
 	background: white;
@@ -739,7 +732,6 @@ onMounted(() => {
 	border-radius: 10px;
 }
 
-/* Action Buttons Grid */
 .actions-cell {
 	display: flex;
 	gap: 10px;
@@ -777,7 +769,6 @@ onMounted(() => {
 	box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
 }
 
-/* Assign Studio Form */
 .assign-studio-wrapper {
 	display: flex;
 	justify-content: center;
@@ -799,7 +790,6 @@ onMounted(() => {
 	justify-content: center;
 }
 
-/* Form Inputs Luxe */
 .glass-input-group label {
 	display: block;
 	font-size: 13px;
@@ -839,7 +829,6 @@ onMounted(() => {
 	color: #6366f1;
 }
 
-/* Switch Toggle Premium */
 .switch-premium {
 	display: flex;
 	align-items: center;
@@ -876,7 +865,6 @@ onMounted(() => {
 	box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4);
 }
 
-/* Master Buttons */
 .btn-premium-action {
 	padding: 16px 28px;
 	background: linear-gradient(135deg, #6366f1, #4f46e5);
@@ -901,7 +889,6 @@ onMounted(() => {
 	cursor: not-allowed;
 }
 
-/* Success Alert */
 .assign-success-alert {
 	display: flex;
 	align-items: center;
@@ -913,7 +900,6 @@ onMounted(() => {
 	color: #10b981;
 }
 
-/* Vue Select Customization */
 .luxe-select-no-ico-wrap :deep(.vs__dropdown-toggle) {
 	background: white;
 	border: 1px solid #e2e8f0;

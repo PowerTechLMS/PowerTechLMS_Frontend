@@ -6,13 +6,11 @@
 			'focus-mode': isFocusMode,
 		}"
 	>
-		<!-- ───────────────────────── LOADING TOÀN TRANG ───────────────────────── -->
 		<div v-if="loading" class="player-loading">
-			<div class="loading-spinner"></div>
+			<div class="loading-spinner" />
 			<p>Đang tải bài học...</p>
 		</div>
 
-		<!-- ───────────────────────── LỖI ───────────────────────── -->
 		<div v-else-if="error" class="player-error card glass">
 			<AlertCircle
 				:size="48"
@@ -28,9 +26,7 @@
 			</button>
 		</div>
 
-		<!-- ───────────────────────── NỘI DUNG CHÍNH ───────────────────────── -->
 		<template v-else-if="lesson">
-			<!-- HEADER -->
 			<header class="player-header-bar glass">
 				<div class="header-left">
 					<button
@@ -41,7 +37,9 @@
 						<X :size="20" />
 					</button>
 					<div class="course-info">
-						<h1 class="course-name">{{ course?.title }}</h1>
+						<h1 class="course-name">
+							{{ course?.title }}
+						</h1>
 						<div class="lesson-breadcrumb">
 							<span>{{ activeModuleName }}</span>
 							<ChevronRight :size="12" />
@@ -59,9 +57,7 @@
 							>
 							<span class="lesson-count-text ms-2">
 								({{ lessonProgresses.filter((lp) => lp.isCompleted).length }} /
-								{{
-									course?.modules?.flatMap((m) => m.lessons).length || 0
-								}}
+								{{ course?.modules?.flatMap((m) => m.lessons).length || 0 }}
 								bài)
 							</span>
 						</div>
@@ -71,7 +67,7 @@
 								:style="{
 									width: Math.round(courseProgress?.progressPercent || 0) + '%',
 								}"
-							></div>
+							/>
 						</div>
 					</div>
 					<button
@@ -86,11 +82,11 @@
 					</button>
 					<button
 						class="btn btn-icon btn-ghost sm ms-2 focus-mode-btn"
-						@click="toggleFocusMode"
 						:aria-label="
 							isFocusMode ? 'Thoát chế độ tập trung' : 'Bật chế độ tập trung'
 						"
 						:title="isFocusMode ? 'Thoát Focus Mode' : 'Chế độ tập trung'"
+						@click="toggleFocusMode"
 					>
 						<Maximize v-if="!isFocusMode" :size="20" />
 						<Minimize v-else :size="20" />
@@ -98,19 +94,16 @@
 				</div>
 			</header>
 
-			<!-- BODY -->
 			<div class="player-container">
-				<!-- BACKDROP MOBILE (click để đóng sidebar) -->
 				<transition name="fade">
 					<div
 						v-if="!isSidebarCollapsed"
 						class="sidebar-backdrop"
-						@click="isSidebarCollapsed = true"
 						aria-hidden="true"
-					></div>
+						@click="isSidebarCollapsed = true"
+					/>
 				</transition>
 
-				<!-- SIDEBAR -->
 				<aside
 					class="player-sidebar glass"
 					:class="{ collapsed: isSidebarCollapsed }"
@@ -150,13 +143,14 @@
 										:size="16"
 									/>
 								</div>
-								<h4 class="module-title">{{ mod.title }}</h4>
+								<h4 class="module-title">
+									{{ mod.title }}
+								</h4>
 								<div class="module-stats">{{ mod.lessons.length }} bài học</div>
 							</div>
 
-							<div class="lesson-list" v-show="expandedModules.has(mod.id)">
+							<div v-show="expandedModules.has(mod.id)" class="lesson-list">
 								<template v-for="l in mod.lessons" :key="l.id">
-									<!-- BÀI HỌC -->
 									<div
 										class="lesson-item"
 										:class="{
@@ -213,23 +207,23 @@
 													}}</span>
 												</div>
 												<span
-													class="l-duration"
 													v-if="l.type === 'Video' && l.videoDurationSeconds"
+													class="l-duration"
 												>
 													<Clock :size="12" />
 													{{ formatTime(l.videoDurationSeconds) }}
 												</span>
 												<span
-													class="l-progress-tag"
 													v-if="
 														l.type === 'Video' &&
 														getLessonProgressPercent(l.id) > 0 &&
 														!isLessonDone(l.id)
 													"
+													class="l-progress-tag"
 												>
 													Đã xem {{ getLessonProgressPercent(l.id) }}%
 												</span>
-												<span class="l-duration" v-else-if="l.type === 'Text'">
+												<span v-else-if="l.type === 'Text'" class="l-duration">
 													<Clock :size="12" />
 													{{ formatTime(l.readingDurationSeconds || 180) }}
 												</span>
@@ -237,7 +231,6 @@
 										</div>
 									</div>
 
-									<!-- QUIZ BÀI HỌC -->
 									<div
 										v-if="l.hasQuiz"
 										class="lesson-item quiz-sub-item"
@@ -275,7 +268,6 @@
 							</div>
 						</div>
 
-						<!-- EXTRA QUIZZES -->
 						<template v-if="course?.extraQuizzes?.length">
 							<div
 								v-for="q in course.extraQuizzes"
@@ -316,18 +308,14 @@
 					</div>
 				</aside>
 
-				<!-- NỘI DUNG CHÍNH -->
 				<main class="player-content">
 					<div class="content-primary">
-						<!-- ── FIX: Tách video container và text container ── -->
-						<!-- VIDEO LESSON -->
-						<div class="video-theater glass" v-if="lesson?.type === 'Video'">
+						<div v-if="lesson?.type === 'Video'" class="video-theater glass">
 							<div class="video-container">
 								<div class="content-type-badge video">
 									<Video :size="14" /> VIDEO BÀI GIẢNG
 								</div>
 
-								<!-- Video Progress Ring (hiển thị % đã xem) -->
 								<div
 									v-if="!isCompleted && videoDurationRef > 0"
 									class="video-watch-indicator"
@@ -382,14 +370,14 @@
 										allowfullscreen
 										class="video-iframe"
 										title="Video bài giảng"
-									></iframe>
+									/>
 								</template>
 								<template v-else>
 									<div
 										v-if="lesson?.videoStatus === 'Processing'"
 										class="video-processing-state glass flex-center flex-column"
 									>
-										<div class="processing-glow mb-3"></div>
+										<div class="processing-glow mb-3" />
 										<h3 class="processing-title">
 											Bài giảng đang được xử lý...
 										</h3>
@@ -399,13 +387,13 @@
 									</div>
 									<video
 										v-else-if="lesson?.videoUrl"
+										ref="videoRef"
 										:src="
 											lesson.videoStatus === 'Ready' &&
 											lesson.videoUrl.endsWith('.m3u8')
 												? null
 												: getFullMediaUrl(lesson.videoUrl)
 										"
-										ref="videoRef"
 										controls
 										controlsList="nodownload"
 										class="video-item"
@@ -434,8 +422,7 @@
 							</div>
 						</div>
 
-						<!-- TEXT LESSON — FIX: Không dùng aspect-ratio 16/9 cho bài đọc -->
-						<div class="text-theater glass" v-else-if="lesson?.type === 'Text'">
+						<div v-else-if="lesson?.type === 'Text'" class="text-theater glass">
 							<div class="content-type-badge text">
 								<FileText :size="14" /> TÀI LIỆU BÀI ĐỌC
 							</div>
@@ -443,11 +430,10 @@
 								<div
 									class="text-content-wrap custom-scrollbar"
 									v-html="lesson?.content"
-								></div>
+								/>
 							</div>
 						</div>
 
-						<!-- READING TIMER BAR — FIX: Hiển thị trực quan countdown -->
 						<div
 							v-if="
 								lesson?.type === 'Text' &&
@@ -474,23 +460,22 @@
 									<div
 										class="reading-timer-fill"
 										:style="{ width: readingProgressPercent + '%' }"
-									></div>
+									/>
 								</div>
 							</div>
 						</div>
 
-						<!-- TABS -->
-						<div class="content-tabs-container glass" ref="tabsContainer">
+						<div ref="tabsContainer" class="content-tabs-container glass">
 							<div class="tabs-header" role="tablist">
 								<button
 									v-for="tab in availableTabs"
+									:id="`tab-${tab.id}`"
 									:key="tab.id"
 									class="tab-btn"
 									:class="{ active: activeTab === tab.id }"
 									role="tab"
 									:aria-selected="activeTab === tab.id"
 									:aria-controls="`tabpanel-${tab.id}`"
-									:id="`tab-${tab.id}`"
 									@click="activeTab = tab.id"
 								>
 									<component :is="tab.icon" :size="16" />
@@ -503,31 +488,31 @@
 								</button>
 							</div>
 
-							<!-- ── FIX: TẤT CẢ TAB PANELS NẰM TRONG tab-content-area ── -->
 							<div class="tab-content-area custom-scrollbar">
-								<!-- TAB: TỔNG QUAN -->
 								<div
 									v-if="activeTab === 'overview'"
+									id="tabpanel-overview"
 									class="tab-pane animate-fade-in"
 									role="tabpanel"
-									id="tabpanel-overview"
 									aria-labelledby="tab-overview"
 								>
 									<div class="lesson-intro">
 										<div class="intro-header-modern">
 											<div class="title-area">
-												<h2 class="m-0 fw-800">{{ lesson?.title }}</h2>
+												<h2 class="m-0 fw-800">
+													{{ lesson?.title }}
+												</h2>
 												<p
-													class="text-secondary mt-1 mb-0"
 													v-if="lesson?.type === 'Video'"
+													class="text-secondary mt-1 mb-0"
 												>
 													<Clock :size="14" class="me-1" />
 													Thời lượng:
 													{{ formatTime(lesson?.videoDurationSeconds) }}
 												</p>
 												<p
-													class="text-secondary mt-1 mb-0"
 													v-else-if="lesson?.type === 'Text'"
+													class="text-secondary mt-1 mb-0"
 												>
 													<Clock :size="14" class="me-1" />
 													Thời gian đọc kiến nghị:
@@ -541,9 +526,9 @@
 												<button
 													v-if="!isCompleted"
 													class="btn btn-primary btn-complete-premium"
-													@click="completeLesson(false)"
 													:disabled="savingProgress || !canCompleteManual"
 													:aria-label="completeBtnMessage"
+													@click="completeLesson(false)"
 												>
 													<CheckCircle :size="18" />
 													{{ completeBtnMessage }}
@@ -576,30 +561,28 @@
 														thức nền tảng và ứng dụng thực tế của chủ đề hiện
 														tại.
 													</p>
-													<div v-else v-html="lesson.description"></div>
+													<div v-else v-html="lesson.description" />
 												</div>
 											</div>
 
 											<div
-												class="desc-section mt-4"
 												v-if="lesson?.content && lesson?.type === 'Video'"
+												class="desc-section mt-4"
 											>
 												<h4 class="section-title-dot">Nội dung chính</h4>
-												<div class="section-body" v-html="lesson.content"></div>
+												<div class="section-body" v-html="lesson.content" />
 											</div>
 										</div>
 									</div>
 								</div>
 
-								<!-- TAB: BÀI TẬP QUIZ -->
 								<div
 									v-else-if="activeTab === 'quiz'"
+									id="tabpanel-quiz"
 									class="tab-pane animate-fade-in"
 									role="tabpanel"
-									id="tabpanel-quiz"
 									aria-labelledby="tab-quiz"
 								>
-									<!-- Chưa bắt đầu -->
 									<div
 										v-if="!quizStarted && !quizResult"
 										class="text-center py-5"
@@ -626,7 +609,6 @@
 										</button>
 									</div>
 
-									<!-- Đang làm bài -->
 									<div
 										v-else-if="quizStarted && !quizResult"
 										class="quiz-active-area"
@@ -667,10 +649,10 @@
 													}"
 												>
 													<input
+														v-model="selectedAnswers[q.id]"
 														type="radio"
 														:name="'q_' + q.id"
 														:value="optKey"
-														v-model="selectedAnswers[q.id]"
 														class="me-3 form-check-input"
 														style="transform: scale(1.2)"
 													/>
@@ -683,20 +665,18 @@
 										<div class="text-end mt-4">
 											<button
 												class="btn btn-success btn-lg px-5 shadow-sm"
-												@click="submitMiniQuiz"
 												:disabled="
 													Object.keys(selectedAnswers).length <
 													lesson?.quiz?.questions?.length
 												"
+												@click="submitMiniQuiz"
 											>
 												<CheckCircle :size="20" class="me-2" /> Nộp Bài
 											</button>
 										</div>
 									</div>
 
-									<!-- Kết quả -->
 									<div v-else-if="quizResult" class="text-center py-5">
-										<!-- Đậu -->
 										<div
 											v-if="quizResult.passed"
 											class="congratulations-box p-4 rounded bg-success-light border border-success mb-4 d-inline-block w-100"
@@ -723,7 +703,6 @@
 											</div>
 										</div>
 
-										<!-- Rớt -->
 										<div v-else>
 											<Trophy :size="72" class="text-danger mb-3" />
 											<h2 class="fw-black mb-2 text-danger">
@@ -737,7 +716,6 @@
 												/ {{ quizResult.totalScore }}
 											</div>
 
-											<!-- FIX: Hiển thị countdown trực quan -->
 											<div
 												v-if="quizRetryCountdown > 0"
 												class="retry-countdown-box mb-4"
@@ -755,7 +733,7 @@
 														:style="{
 															width: (1 - quizRetryCountdown / 300) * 100 + '%',
 														}"
-													></div>
+													/>
 												</div>
 											</div>
 
@@ -775,10 +753,9 @@
 											</div>
 										</div>
 
-										<!-- Chi tiết bài làm -->
 										<div
-											class="mt-5 text-start"
 											v-if="quizResult.details && quizResult.details.length"
+											class="mt-5 text-start"
 										>
 											<h4 class="fw-bold mb-4 border-bottom pb-2 text-dark">
 												Chi tiết bài làm
@@ -844,12 +821,11 @@
 									</div>
 								</div>
 
-								<!-- TAB: TÀI NGUYÊN -->
 								<div
 									v-else-if="activeTab === 'resources'"
+									id="tabpanel-resources"
 									class="tab-pane animate-fade-in"
 									role="tabpanel"
-									id="tabpanel-resources"
 									aria-labelledby="tab-resources"
 								>
 									<div v-if="lesson?.attachments?.length" class="resource-list">
@@ -857,7 +833,6 @@
 											v-for="att in lesson.attachments"
 											:key="att.id"
 											href="#"
-											@click.prevent="downloadFile(att)"
 											class="resource-item card"
 											:aria-label="`Tải xuống ${att.fileName}`"
 											:style="
@@ -865,13 +840,11 @@
 													? 'opacity: 0.6; pointer-events: none;'
 													: ''
 											"
+											@click.prevent="downloadFile(att)"
 										>
 											<div class="res-icon">
-												<div
-													v-if="isDownloading[att.id]"
-													class="dl-spinner"
-												></div>
-												<Paperclip :size="20" v-else />
+												<div v-if="isDownloading[att.id]" class="dl-spinner" />
+												<Paperclip v-else :size="20" />
 											</div>
 											<div class="res-info">
 												<div class="res-name">{{ att.fileName }}</div>
@@ -887,9 +860,9 @@
 												</div>
 											</div>
 											<Download
+												v-if="!isDownloading[att.id]"
 												:size="18"
 												class="res-dl"
-												v-if="!isDownloading[att.id]"
 											/>
 										</a>
 									</div>
@@ -899,12 +872,11 @@
 									</div>
 								</div>
 
-								<!-- TAB: HỎI ĐÁP -->
 								<div
 									v-else-if="activeTab === 'qa'"
+									id="tabpanel-qa"
 									class="tab-pane animate-fade-in"
 									role="tabpanel"
-									id="tabpanel-qa"
 									aria-labelledby="tab-qa"
 								>
 									<div class="qa-container">
@@ -913,19 +885,19 @@
 												v-model="newQuestion"
 												placeholder="Đặt câu hỏi về bài học này..."
 												aria-label="Nội dung câu hỏi"
-											></textarea>
+											/>
 											<div class="qa-actions">
 												<button
 													class="btn btn-primary btn-sm"
-													@click="postQuestion"
 													:disabled="!newQuestion.trim()"
+													@click="postQuestion"
 												>
 													Gửi câu hỏi
 												</button>
 											</div>
 										</div>
 
-										<div class="qa-list" v-if="qaList.length">
+										<div v-if="qaList.length" class="qa-list">
 											<div
 												v-for="qa in qaList"
 												:key="qa.id"
@@ -959,7 +931,9 @@
 															>
 															• <span>{{ formatDate(qa?.createdAt) }}</span>
 														</div>
-														<p class="qa-text">{{ qa.content }}</p>
+														<p class="qa-text">
+															{{ qa.content }}
+														</p>
 														<button
 															class="reply-btn"
 															:aria-expanded="replyTo === qa.id"
@@ -973,8 +947,8 @@
 												</div>
 
 												<div
-													class="replies-section"
 													v-if="qa.replies?.length || replyTo === qa.id"
+													class="replies-section"
 												>
 													<div
 														v-if="replyTo === qa.id"
@@ -984,7 +958,7 @@
 															v-model="replyContent"
 															placeholder="Viết phản hồi..."
 															aria-label="Nội dung phản hồi"
-														></textarea>
+														/>
 														<button
 															class="btn btn-primary btn-sm"
 															@click="postReply(qa.id)"
@@ -1029,7 +1003,9 @@
 																•
 																<span>{{ formatDate(reply?.createdAt) }}</span>
 															</div>
-															<p class="qa-text">{{ reply.content }}</p>
+															<p class="qa-text">
+																{{ reply.content }}
+															</p>
 														</div>
 													</div>
 												</div>
@@ -1038,12 +1014,11 @@
 									</div>
 								</div>
 
-								<!-- TAB: GHI CHÚ -->
 								<div
 									v-else-if="activeTab === 'notes'"
+									id="tabpanel-notes"
 									class="tab-pane animate-fade-in"
 									role="tabpanel"
-									id="tabpanel-notes"
 									aria-labelledby="tab-notes"
 								>
 									<div class="notes-container">
@@ -1052,16 +1027,16 @@
 												v-model="newNote"
 												placeholder="Ghi chú cá nhân (chỉ mình bạn thấy)..."
 												aria-label="Nội dung ghi chú"
-											></textarea>
+											/>
 											<button
 												class="btn btn-secondary btn-sm"
-												@click="saveNote"
 												:disabled="!newNote.trim()"
+												@click="saveNote"
 											>
 												Lưu ghi chú
 											</button>
 										</div>
-										<div class="notes-list" v-if="notes.length">
+										<div v-if="notes.length" class="notes-list">
 											<div
 												v-for="note in notes"
 												:key="note.id"
@@ -1094,19 +1069,15 @@
 									</div>
 								</div>
 							</div>
-							<!-- /.tab-content-area -->
 						</div>
-						<!-- /.content-tabs-container -->
 					</div>
-					<!-- /.content-primary -->
 
-					<!-- FOOTER NAV -->
 					<div class="content-footer-nav glass">
 						<button
 							class="btn btn-ghost"
-							@click="navigatePrev"
 							:disabled="!prevLesson"
 							aria-label="Bài học trước"
+							@click="navigatePrev"
 						>
 							<ChevronLeft :size="18" /> Bài trước
 						</button>
@@ -1114,16 +1085,16 @@
 							Đang xem: <span>{{ lesson?.title }}</span>
 						</div>
 						<button
-							class="btn btn-primary"
-							@click="goToNextLesson"
 							v-if="nextLesson"
+							class="btn btn-primary"
 							aria-label="Bài học tiếp theo"
+							@click="goToNextLesson"
 						>
 							Bài tiếp theo <ChevronRight :size="18" />
 						</button>
 						<button
-							class="btn btn-success"
 							v-else-if="course?.finalQuizId"
+							class="btn btn-success"
 							@click="
 								router.push(`/quiz/${course.finalQuizId}?courseId=${course.id}`)
 							"
@@ -1132,12 +1103,9 @@
 						</button>
 					</div>
 				</main>
-				<!-- /main.player-content -->
 			</div>
-			<!-- /.player-container -->
 		</template>
 
-		<!-- MODAL HOÀN THÀNH KHÓA HỌC -->
 		<teleport to="body">
 			<div
 				v-if="showCourseCompletedModal"
@@ -1159,7 +1127,7 @@
 						thống đang tiến hành đánh giá và lưu trữ thành tích.
 					</p>
 					<div v-if="isIssuingCert" class="text-primary mb-4 fw-bold">
-						<div class="spinner-border spinner-border-sm me-2"></div>
+						<div class="spinner-border spinner-border-sm me-2" />
 						Đang khởi tạo chứng chỉ...
 					</div>
 					<div class="d-flex justify-content-center gap-3 mt-4">
@@ -1171,8 +1139,8 @@
 						</button>
 						<button
 							class="btn btn-success px-4 fw-bold shadow-sm"
-							@click="$router.push('/certificates')"
 							:disabled="isIssuingCert"
+							@click="$router.push('/certificates')"
 						>
 							<Award :size="18" class="me-2" /> Xem Chứng Chỉ
 						</button>
@@ -1181,7 +1149,6 @@
 			</div>
 		</teleport>
 
-		<!-- FIX: LESSON LOADING OVERLAY khi chuyển bài -->
 		<transition name="fade">
 			<div
 				v-if="lessonLoading"
@@ -1190,7 +1157,7 @@
 				aria-label="Đang chuyển bài học"
 			>
 				<div class="lesson-switch-card glass">
-					<div class="loading-spinner sm"></div>
+					<div class="loading-spinner sm" />
 					<span>Đang chuyển bài học...</span>
 				</div>
 			</div>
@@ -1208,13 +1175,11 @@ import {
 	onBeforeUnmount,
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
-// @ts-ignore
 import api, {
 	courseAPI,
 	progressAPI,
 	qaAPI,
 	noteAPI,
-	lessonAPI,
 	certificateAPI,
 	quizAPI,
 } from "@/services/api";
@@ -1259,7 +1224,6 @@ const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
 
-// ────────── DATA ──────────
 const course = ref(null);
 const lesson = ref(null);
 const lessonProgresses = ref([]);
@@ -1267,33 +1231,29 @@ const courseProgress = ref(null);
 const qaList = ref([]);
 const notes = ref([]);
 const loading = ref(true);
-const lessonLoading = ref(false); // FIX: Loading riêng cho chuyển bài
+const lessonLoading = ref(false);
 const error = ref(null);
 const savingProgress = ref(false);
 const videoRef = ref(null);
 const tabsContainer = ref(null);
 
-// ────────── VIDEO STATE ──────────
 const maxWatchedTime = ref(0);
 const lastSavedTime = ref(0);
 const preSeekTime = ref(0);
 const lastCurrentTime = ref(0);
 const isSeeking = ref(false);
 const isVideoWatchedEnough = ref(false);
-const videoDurationRef = ref(0); // FIX: Track video duration reactively
+const videoDurationRef = ref(0);
 let saveProgressInterval = null;
 
-// FIX: Debounce cho seek warning toast
 let lastSeekWarnTime = 0;
 const SEEK_WARN_DEBOUNCE_MS = 2500;
 
-// ────────── READING STATE ──────────
 const readingTimeLeft = ref(0);
-const readingTotalSeconds = ref(180); // FIX: Lưu tổng thời gian để tính %
+const readingTotalSeconds = ref(180);
 const isReadingTimeFinished = ref(false);
 let readingTimer = null;
 
-// ────────── UI STATE ──────────
 const currentModuleId = ref(null);
 const isDownloading = ref({});
 const showCourseCompletedModal = ref(false);
@@ -1303,27 +1263,20 @@ const isFocusMode = ref(false);
 const expandedModules = ref(new Set());
 const activeTab = ref("overview");
 
-// ────────── QUIZ STATE ──────────
 const quizStarted = ref(false);
 const quizResult = ref(null);
 const selectedAnswers = ref({});
 const isLoadingQuizDetails = ref(false);
-const quizRetryCountdown = ref(0); // FIX: Countdown timer làm lại quiz
+const quizRetryCountdown = ref(0);
 let quizRetryInterval = null;
 
-// ────────── INPUTS ──────────
 const newQuestion = ref("");
 const newNote = ref("");
 const replyTo = ref(null);
 const replyContent = ref("");
 
-// ────────── SIGNALR ──────────
 let signalrConnection = null;
-let signalRCurrentLessonId = null; // FIX: Track lesson đang join
-
-// ────────────────────────────────────────────
-// COMPUTED
-// ────────────────────────────────────────────
+let signalRCurrentLessonId = null;
 
 const availableTabs = computed(() => {
 	const baseTabs = [
@@ -1394,7 +1347,6 @@ const prevLesson = computed(() => {
 	return idx > 0 ? allLessons[idx - 1] : null;
 });
 
-// FIX: Video watch % cho progress ring
 const videoWatchPercent = computed(() => {
 	if (!videoDurationRef.value || videoDurationRef.value <= 0) return 0;
 	return Math.min(
@@ -1403,16 +1355,11 @@ const videoWatchPercent = computed(() => {
 	);
 });
 
-// FIX: Reading progress % cho timer bar
 const readingProgressPercent = computed(() => {
 	if (!readingTotalSeconds.value) return 0;
 	const elapsed = readingTotalSeconds.value - readingTimeLeft.value;
 	return Math.min(100, Math.round((elapsed / readingTotalSeconds.value) * 100));
 });
-
-// ────────────────────────────────────────────
-// HELPERS
-// ────────────────────────────────────────────
 
 function getLessonProgressPercent(lessonId) {
 	const lp = lessonProgresses.value.find((p) => p.lessonId === lessonId);
@@ -1433,18 +1380,12 @@ function toggleModule(id) {
 	else expandedModules.value.add(id);
 }
 
-// FIX: Format countdown quiz retry
 function formatRetryCountdown(seconds) {
 	const m = Math.floor(seconds / 60);
 	const s = seconds % 60;
 	return m > 0 ? `${m}:${String(s).padStart(2, "0")}` : `${s}s`;
 }
 
-// ────────────────────────────────────────────
-// WATCH
-// ────────────────────────────────────────────
-
-// Watch lesson type để quản lý reading timer
 watch(
 	() => lesson.value?.id,
 	() => {
@@ -1502,9 +1443,6 @@ watch(
 	},
 );
 
-// ────────────────────────────────────────────
-// 1. LOAD DATA & SEQUENTIAL LEARNING
-// ────────────────────────────────────────────
 async function loadData() {
 	const { courseId, lessonId } = route.params;
 	loading.value = true;
@@ -1564,10 +1502,9 @@ async function loadData() {
 			currentModuleId.value = activeMod.id;
 		}
 
-		// Reset video state
 		maxWatchedTime.value = 0;
 		lastSavedTime.value = 0;
-		videoDurationRef.value = 0; // FIX
+		videoDurationRef.value = 0;
 		isVideoWatchedEnough.value =
 			isCompleted.value || lesson.value.type !== "Video";
 		if (saveProgressInterval) {
@@ -1575,12 +1512,10 @@ async function loadData() {
 			saveProgressInterval = null;
 		}
 
-		// Reset quiz state
 		activeTab.value = route.query.tab || "overview";
 		quizStarted.value = false;
 		quizResult.value = null;
 		selectedAnswers.value = {};
-		// FIX: Reset retry countdown khi chuyển lesson
 		if (quizRetryInterval) {
 			clearInterval(quizRetryInterval);
 			quizRetryInterval = null;
@@ -1594,22 +1529,18 @@ async function loadData() {
 		if (activeTab.value === "quiz" && lesson.value.hasQuiz) {
 			await loadQuizDetails();
 		}
-	} catch (e) {
+	} catch {
 		error.value = "Lỗi tải dữ liệu.";
-		console.error(e);
 	} finally {
 		loading.value = false;
-		lessonLoading.value = false; // FIX
+		lessonLoading.value = false;
 		nextTick(() => {
 			setupHls();
-			updateSignalRLessonGroup(); // FIX: Thay setupSignalR
+			updateSignalRLessonGroup();
 		});
 	}
 }
 
-// ────────────────────────────────────────────
-// 2. HLS & SIGNALR
-// ────────────────────────────────────────────
 function setupHls() {
 	if (
 		!videoRef.value ||
@@ -1628,7 +1559,6 @@ function setupHls() {
 	}
 }
 
-// FIX: Tách setup connection và join/leave lesson group để re-use khi navigate
 async function ensureSignalRConnection() {
 	if (
 		signalrConnection &&
@@ -1654,9 +1584,7 @@ async function ensureSignalRConnection() {
 
 	try {
 		await signalrConnection.start();
-	} catch (err) {
-		console.error("SignalR Connection Error:", err);
-	}
+	} catch {}
 }
 
 async function updateSignalRLessonGroup() {
@@ -1667,7 +1595,6 @@ async function updateSignalRLessonGroup() {
 	)
 		return;
 
-	// FIX: Leave group cũ trước khi join group mới
 	if (signalRCurrentLessonId && signalRCurrentLessonId !== lesson.value?.id) {
 		try {
 			await signalrConnection.invoke(
@@ -1680,15 +1607,10 @@ async function updateSignalRLessonGroup() {
 		try {
 			await signalrConnection.invoke("JoinLessonGroup", lesson.value.id);
 			signalRCurrentLessonId = lesson.value.id;
-		} catch (err) {
-			console.error("SignalR JoinGroup Error:", err);
-		}
+		} catch {}
 	}
 }
 
-// ────────────────────────────────────────────
-// 3. ACCESS CONTROL
-// ────────────────────────────────────────────
 function canAccess(l) {
 	if (authStore.user?.role === "Admin") return true;
 	const allLessons = course.value.modules.flatMap((m) => m.lessons);
@@ -1703,12 +1625,9 @@ function isLessonDone(id) {
 	);
 }
 
-// ────────────────────────────────────────────
-// 4. VIDEO LOGIC
-// ────────────────────────────────────────────
 function onVideoLoaded(e) {
 	const video = e.target;
-	videoDurationRef.value = video.duration || 0; // FIX: Reactive duration
+	videoDurationRef.value = video.duration || 0;
 
 	const currentProgress = lessonProgresses.value.find(
 		(lp) => lp.lessonId === lesson.value?.id,
@@ -1741,7 +1660,7 @@ function onVideoLoaded(e) {
 	}, 10000);
 }
 
-function onSeeking(e) {
+function onSeeking() {
 	if (!isSeeking.value) preSeekTime.value = lastCurrentTime.value;
 	isSeeking.value = true;
 }
@@ -1760,7 +1679,6 @@ function onSeeked(e) {
 		return;
 	}
 
-	// FIX: Debounce cảnh báo tua
 	const now = Date.now();
 	if (now - lastSeekWarnTime > SEEK_WARN_DEBOUNCE_MS) {
 		toast.warning("Bạn không được phép tua qua nội dung chưa xem!");
@@ -1773,7 +1691,6 @@ function onTimeUpdate(e) {
 	const video = e.target;
 	const current = video.currentTime;
 
-	// Cập nhật duration nếu chưa có
 	if (!videoDurationRef.value && video.duration)
 		videoDurationRef.value = video.duration;
 
@@ -1832,9 +1749,6 @@ onBeforeUnmount(async () => {
 	}
 });
 
-// ────────────────────────────────────────────
-// 5. QUIZ LOGIC
-// ────────────────────────────────────────────
 async function loadQuizDetails() {
 	if (!lesson.value || !lesson.value.quizId || lesson.value.quiz) return;
 	isLoadingQuizDetails.value = true;
@@ -1851,8 +1765,7 @@ async function loadQuizDetails() {
 				points: 1,
 			})),
 		};
-	} catch (e) {
-		console.error("Lỗi lấy chi tiết Quiz:", e);
+	} catch {
 	} finally {
 		isLoadingQuizDetails.value = false;
 	}
@@ -1904,7 +1817,6 @@ async function submitMiniQuiz() {
 				`Rất tiếc, bạn chưa đạt điểm. Theo quy định, bạn cần ôn tập và chờ 5 phút để làm lại.${remainingText}`,
 			);
 
-			// FIX: Bắt đầu countdown 5 phút
 			startRetryCountdown(300);
 		}
 	} catch (e) {
@@ -1912,7 +1824,6 @@ async function submitMiniQuiz() {
 	}
 }
 
-// FIX: Countdown timer trực quan
 function startRetryCountdown(seconds) {
 	if (quizRetryInterval) clearInterval(quizRetryInterval);
 	quizRetryCountdown.value = seconds;
@@ -1933,9 +1844,6 @@ function retryMiniQuiz() {
 	selectedAnswers.value = {};
 }
 
-// ────────────────────────────────────────────
-// 6. PROGRESS & COMPLETION
-// ────────────────────────────────────────────
 async function completeLesson(isQuizPassedArg = false) {
 	const isQuizPassed =
 		typeof isQuizPassedArg === "boolean" ? isQuizPassedArg : false;
@@ -1979,9 +1887,7 @@ async function refreshProgress(fetchLessonProgress = true) {
 			);
 			lessonProgresses.value = lp;
 		}
-	} catch (err) {
-		console.error("Lỗi đồng bộ:", err);
-	}
+	} catch {}
 }
 
 async function triggerCourseCompletion() {
@@ -1992,16 +1898,12 @@ async function triggerCourseCompletion() {
 		toast.success(
 			"Chúc mừng! Khóa học đã hoàn thành và chứng chỉ đã được cấp.",
 		);
-	} catch (e) {
-		console.error("Lỗi khi cấp chứng chỉ:", e);
+	} catch {
 	} finally {
 		isIssuingCert.value = false;
 	}
 }
 
-// ────────────────────────────────────────────
-// 7. FILE DOWNLOAD
-// ────────────────────────────────────────────
 async function downloadFile(att) {
 	if (isDownloading.value[att.id]) return;
 	isDownloading.value[att.id] = true;
@@ -2017,16 +1919,13 @@ async function downloadFile(att) {
 		link.click();
 		document.body.removeChild(link);
 		window.URL.revokeObjectURL(blobUrl);
-	} catch (err) {
+	} catch {
 		toast.error("Không thể tải tài liệu.");
 	} finally {
 		isDownloading.value[att.id] = false;
 	}
 }
 
-// ────────────────────────────────────────────
-// 8. NAVIGATION
-// ────────────────────────────────────────────
 function navigateLesson(l, targetTab = "overview") {
 	if (!canAccess(l)) return;
 	if (
@@ -2035,7 +1934,6 @@ function navigateLesson(l, targetTab = "overview") {
 	)
 		return;
 
-	// FIX: Hiển thị loading khi chuyển bài
 	lessonLoading.value = true;
 	router.push({
 		path: `/learn/${route.params.courseId}/${l.id}`,
@@ -2051,9 +1949,6 @@ function navigatePrev() {
 	if (prevLesson.value) navigateLesson(prevLesson.value, "overview");
 }
 
-// ────────────────────────────────────────────
-// 9. Q&A & NOTES
-// ────────────────────────────────────────────
 async function postQuestion() {
 	if (!newQuestion.value.trim()) return;
 	await qaAPI.create(lesson.value.id, { content: newQuestion.value });
@@ -2101,9 +1996,6 @@ async function loadNotes() {
 	notes.value = data;
 }
 
-// ────────────────────────────────────────────
-// 10. UTILS
-// ────────────────────────────────────────────
 function isYouTubeUrl(url) {
 	return url?.includes("youtube.com") || url?.includes("youtu.be");
 }
@@ -2150,17 +2042,11 @@ function getAvatarUrl(url) {
 		: `${import.meta.env.VITE_API_URL}${url}`;
 }
 
-// ────────────────────────────────────────────
-// LIFECYCLE
-// ────────────────────────────────────────────
 onMounted(loadData);
 watch(() => route.params.lessonId, loadData);
 </script>
 
 <style scoped>
-/* ================================================================
-   DESIGN TOKENS — LIGHT THEME (mặc định sáng)
-================================================================ */
 :root,
 .learning-player {
 	--primary-400: #6366f1;
@@ -2197,9 +2083,6 @@ watch(() => route.params.lessonId, loadData);
 	--transition-fast: 0.2s ease;
 }
 
-/* ================================================================
-   LAYOUT CƠ BẢN
-================================================================ */
 .learning-player {
 	background: var(--bg-primary, #f8fafc);
 	min-height: 100vh;
@@ -2210,9 +2093,6 @@ watch(() => route.params.lessonId, loadData);
 	font-family: "Plus Jakarta Sans", system-ui, sans-serif;
 }
 
-/* ================================================================
-   FOCUS MODE — FIX: Thêm transition mượt
-================================================================ */
 .course-info,
 .progress-stats,
 .player-sidebar {
@@ -2241,9 +2121,6 @@ watch(() => route.params.lessonId, loadData);
 	max-width: 1400px;
 }
 
-/* ================================================================
-   HEADER BAR
-================================================================ */
 .player-header-bar {
 	height: 60px;
 	display: flex;
@@ -2262,13 +2139,13 @@ watch(() => route.params.lessonId, loadData);
 	display: flex;
 	align-items: center;
 	gap: var(--space-md, 12px);
-	min-width: 0; /* FIX: Cho phép shrink */
+	min-width: 0;
 }
 
 .course-info {
 	display: flex;
 	flex-direction: column;
-	min-width: 0; /* FIX */
+	min-width: 0;
 }
 
 .course-name {
@@ -2352,9 +2229,6 @@ watch(() => route.params.lessonId, loadData);
 	transition: width 0.5s ease;
 }
 
-/* ================================================================
-   PLAYER CONTAINER
-================================================================ */
 .player-container {
 	flex: 1;
 	display: flex;
@@ -2362,17 +2236,13 @@ watch(() => route.params.lessonId, loadData);
 	position: relative;
 }
 
-/* FIX: Sidebar backdrop CHỈ hiện trên mobile — KHÔNG dùng trên desktop */
 .sidebar-backdrop {
-	display: none; /* Ẩn mặc định */
+	display: none;
 }
 
-/* ================================================================
-   SIDEBAR
-================================================================ */
 .player-sidebar {
 	width: clamp(280px, 28vw, 360px);
-	border-right: 1px solid var(--border-color); /* FIX: border phải vì sidebar ở trái */
+	border-right: 1px solid var(--border-color);
 	display: flex;
 	flex-direction: column;
 	transition:
@@ -2380,13 +2250,13 @@ watch(() => route.params.lessonId, loadData);
 		width 0.3s ease,
 		opacity 0.3s ease;
 	background: var(--bg-secondary, #ffffff);
-	order: 1; /* FIX: Sidebar ở TRÁI */
+	order: 1;
 	flex-shrink: 0;
 }
 
 .player-sidebar.collapsed {
 	width: 0;
-	transform: translateX(-100%); /* FIX: Slide ra trái */
+	transform: translateX(-100%);
 	overflow: hidden;
 	opacity: 0;
 }
@@ -2580,9 +2450,6 @@ watch(() => route.params.lessonId, loadData);
 	border-left-color: var(--warning-500, #f59e0b);
 }
 
-/* ================================================================
-   CONTENT AREA
-================================================================ */
 .player-content {
 	flex: 1;
 	display: flex;
@@ -2590,15 +2457,12 @@ watch(() => route.params.lessonId, loadData);
 	overflow-y: auto;
 	background: var(--bg-primary, #f8fafc);
 	scroll-behavior: smooth;
-	order: 2; /* FIX: Content ở PHẢI sidebar */
+	order: 2;
 }
 
 .content-primary {
 	flex: 1;
-	max-width: min(
-		1000px,
-		calc(100vw - clamp(280px, 28vw, 360px) - 48px)
-	); /* FIX: Tính đúng max-width */
+	max-width: min(1000px, calc(100vw - clamp(280px, 28vw, 360px) - 48px));
 	margin: 0 auto;
 	width: 100%;
 	padding: var(--space-lg, 16px) var(--space-xl, 24px);
@@ -2607,12 +2471,9 @@ watch(() => route.params.lessonId, loadData);
 	gap: var(--space-lg, 16px);
 }
 
-/* ================================================================
-   VIDEO THEATER — FIX: Aspect ratio chỉ cho video
-================================================================ */
 .video-theater {
 	width: 100%;
-	aspect-ratio: 16 / 9; /* Chỉ áp dụng khi type === 'Video' */
+	aspect-ratio: 16 / 9;
 	background: #000;
 	border-radius: 16px;
 	overflow: hidden;
@@ -2629,7 +2490,6 @@ watch(() => route.params.lessonId, loadData);
 	border: none;
 }
 
-/* FIX: Text theater KHÔNG có aspect-ratio */
 .text-theater {
 	width: 100%;
 	background: transparent;
@@ -2686,7 +2546,6 @@ watch(() => route.params.lessonId, loadData);
 	max-height: 60vh;
 }
 
-/* FIX: Video Watch Progress Ring */
 .video-watch-indicator {
 	position: absolute;
 	top: 16px;
@@ -2699,7 +2558,6 @@ watch(() => route.params.lessonId, loadData);
 	border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* FIX: Reading Timer Bar */
 .reading-timer-bar {
 	background: var(--bg-card, #ffffff);
 	border-radius: 12px;
@@ -2752,7 +2610,6 @@ watch(() => route.params.lessonId, loadData);
 	transition: width 1s linear;
 }
 
-/* Video Processing State */
 .video-processing-state {
 	height: 100%;
 	display: flex;
@@ -2801,9 +2658,6 @@ watch(() => route.params.lessonId, loadData);
 	flex-direction: column;
 }
 
-/* ================================================================
-   TABS
-================================================================ */
 .content-tabs-container {
 	background: var(--bg-card, #ffffff);
 	border-radius: 16px;
@@ -2880,16 +2734,12 @@ watch(() => route.params.lessonId, loadData);
 	border-radius: 10px;
 }
 
-/* FIX: Tab content area chiếm toàn bộ không gian còn lại trong tabs container */
 .tab-content-area {
 	padding: var(--space-xl, 24px);
 	flex: 1;
 	overflow-y: auto;
 }
 
-/* ================================================================
-   TAB: OVERVIEW
-================================================================ */
 .intro-header-modern {
 	display: flex;
 	justify-content: space-between;
@@ -2969,9 +2819,6 @@ watch(() => route.params.lessonId, loadData);
 	font-size: 14px;
 }
 
-/* ================================================================
-   TAB: QUIZ — FIX: Countdown timer
-================================================================ */
 .quiz-active-area {
 	padding: 0;
 }
@@ -3034,9 +2881,6 @@ watch(() => route.params.lessonId, loadData);
 	transition: all 0.2s ease-in-out;
 }
 
-/* ================================================================
-   TAB: RESOURCES
-================================================================ */
 .resource-list {
 	display: flex;
 	flex-direction: column;
@@ -3094,9 +2938,6 @@ watch(() => route.params.lessonId, loadData);
 	color: var(--text-tertiary, #94a3b8);
 }
 
-/* ================================================================
-   TAB: Q&A
-================================================================ */
 .qa-container {
 	display: flex;
 	flex-direction: column;
@@ -3225,9 +3066,6 @@ watch(() => route.params.lessonId, loadData);
 	height: 60px;
 }
 
-/* ================================================================
-   TAB: NOTES
-================================================================ */
 .notes-container {
 	display: flex;
 	flex-direction: column;
@@ -3312,9 +3150,6 @@ watch(() => route.params.lessonId, loadData);
 	color: var(--danger-400, #f87171);
 }
 
-/* ================================================================
-   FOOTER NAV
-================================================================ */
 .content-footer-nav {
 	height: 64px;
 	display: flex;
@@ -3338,9 +3173,6 @@ watch(() => route.params.lessonId, loadData);
 	margin-left: var(--space-sm, 8px);
 }
 
-/* ================================================================
-   LESSON SWITCH OVERLAY — FIX: Loading khi chuyển bài
-================================================================ */
 .lesson-switch-overlay {
 	position: fixed;
 	inset: 0;
@@ -3366,9 +3198,6 @@ watch(() => route.params.lessonId, loadData);
 	box-shadow: var(--shadow-md);
 }
 
-/* ================================================================
-   MODAL HOÀN THÀNH
-================================================================ */
 .glass-modal-overlay {
 	position: fixed;
 	inset: 0;
@@ -3415,9 +3244,6 @@ watch(() => route.params.lessonId, loadData);
 	}
 }
 
-/* ================================================================
-   UTILITIES
-================================================================ */
 .animate-fade-in {
 	animation: fadeIn 0.25s ease;
 }
@@ -3499,7 +3325,6 @@ watch(() => route.params.lessonId, loadData);
 	border-radius: var(--radius-lg, 12px);
 }
 
-/* Focus mode button */
 .focus-mode-btn {
 	color: var(--text-tertiary, #94a3b8) !important;
 }
@@ -3508,9 +3333,6 @@ watch(() => route.params.lessonId, loadData);
 	color: white !important;
 }
 
-/* ================================================================
-   RESPONSIVE
-================================================================ */
 @media (max-width: 1200px) {
 	.content-primary {
 		max-width: calc(100% - 32px);
@@ -3518,11 +3340,10 @@ watch(() => route.params.lessonId, loadData);
 }
 
 @media (max-width: 1024px) {
-	/* FIX: Sidebar fixed BÊN TRÁI, z-index rõ ràng */
 	.player-sidebar {
 		position: fixed;
 		top: 60px;
-		left: 0; /* FIX: Bên trái */
+		left: 0;
 		bottom: 0;
 		z-index: 950;
 		transform: translateX(0);
@@ -3530,15 +3351,14 @@ watch(() => route.params.lessonId, loadData);
 	}
 
 	.player-sidebar.collapsed {
-		transform: translateX(-100%); /* Slide ra trái */
+		transform: translateX(-100%);
 	}
 
-	/* FIX: Backdrop CHỈ hiện trên mobile, không blur, click để đóng */
 	.sidebar-backdrop {
 		display: block;
 		position: fixed;
 		inset: 60px 0 0 0;
-		background: rgba(15, 23, 42, 0.45); /* Tối nhẹ, KHÔNG blur */
+		background: rgba(15, 23, 42, 0.45);
 		z-index: 900;
 	}
 
@@ -3561,9 +3381,8 @@ watch(() => route.params.lessonId, loadData);
 	}
 	.course-info {
 		display: none;
-	} /* Thu gọn trên mobile nhỏ */
+	}
 
-	/* FIX: Video edge-to-edge trên mobile như YouTube */
 	.video-theater {
 		border-radius: 0;
 		margin: 0 calc(-1 * var(--space-md, 12px));
@@ -3590,7 +3409,6 @@ watch(() => route.params.lessonId, loadData);
 }
 
 @media (max-width: 480px) {
-	/* Chỉ hiện icon trên mobile rất nhỏ */
 	.tab-btn span {
 		display: none;
 	}

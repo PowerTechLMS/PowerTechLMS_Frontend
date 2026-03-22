@@ -13,7 +13,6 @@ import {
 	Camera,
 	Shield,
 	Save,
-	Loader2,
 	CheckCircle2,
 	Layout,
 } from "lucide-vue-next";
@@ -42,9 +41,7 @@ onMounted(async () => {
 	try {
 		const res = await userGroupAPI.getAll();
 		departments.value = res.data.items || res.data;
-	} catch (error) {
-		console.error("Lỗi tải phòng ban", error);
-	}
+	} catch {}
 });
 
 const showPassword = ref(false);
@@ -106,7 +103,6 @@ const submitForm = async () => {
 		router.push("/admin/staff");
 	} catch (error: any) {
 		toast.error(error.response?.data?.message || "Lỗi khi tạo nhân sự");
-		console.error(error);
 	} finally {
 		submitting.value = false;
 	}
@@ -115,7 +111,6 @@ const submitForm = async () => {
 
 <template>
 	<div class="staff-add-page">
-		<!-- Premium Header -->
 		<div class="dp-header">
 			<div class="dp-header-content">
 				<h1 class="dp-title">Thêm Nhân Sự Mới</h1>
@@ -133,12 +128,9 @@ const submitForm = async () => {
 			</div>
 		</div>
 
-		<!-- MAIN FORM -->
 		<form @submit.prevent="submitForm">
 			<div class="dp-form-grid">
-				<!-- Left Column: Authentication Info -->
 				<div class="dp-card dp-card-left">
-					<!-- Card Banner -->
 					<div class="dp-card-banner info">
 						<div class="banner-icon-wrap">
 							<IdCard :size="20" stroke-width="2.5" />
@@ -150,7 +142,6 @@ const submitForm = async () => {
 
 					<div class="dp-card-body">
 						<div class="form-row">
-							<!-- Full Name -->
 							<div class="form-group mb-4">
 								<label class="dp-label"
 									>Họ và tên <span class="text-danger">*</span></label
@@ -167,7 +158,6 @@ const submitForm = async () => {
 								</div>
 							</div>
 
-							<!-- Email -->
 							<div class="form-group mb-5 pb-5 border-bottom">
 								<label class="dp-label"
 									>Email đăng nhập <span class="text-danger">*</span></label
@@ -185,7 +175,6 @@ const submitForm = async () => {
 								</div>
 							</div>
 
-							<!-- Passwords -->
 							<div class="password-grid g-4">
 								<div class="form-group m-0">
 									<label class="dp-label"
@@ -246,9 +235,7 @@ const submitForm = async () => {
 					</div>
 				</div>
 
-				<!-- Right Column: Settings & Avatar -->
 				<div class="dp-card dp-card-right d-flex flex-column">
-					<!-- Card Banner -->
 					<div class="dp-card-banner warning">
 						<div class="banner-icon-wrap">
 							<Shield :size="20" stroke-width="2.5" />
@@ -259,7 +246,6 @@ const submitForm = async () => {
 					</div>
 
 					<div class="dp-card-body d-flex flex-column flex-grow-1">
-						<!-- Avatar Upload -->
 						<div class="avatar-section">
 							<div class="avatar-uploader" @click="triggerFileInput">
 								<img
@@ -295,26 +281,29 @@ const submitForm = async () => {
 								@change="handleAvatarChange"
 							/>
 						</div>
-						
-						<!-- Department Selection -->
+
 						<div class="form-group mb-4">
 							<label class="dp-label">Phòng ban / Bộ phận</label>
 							<div class="dp-input-wrapper with-icon">
 								<Layout :size="18" class="dp-input-icon" />
 								<select v-model="userForm.groupId" class="dp-input">
 									<option :value="null">-- Chọn phòng ban (Tùy chọn) --</option>
-									<option v-for="dept in departments" :key="dept.id" :value="dept.id">
+									<option
+										v-for="dept in departments"
+										:key="dept.id"
+										:value="dept.id"
+									>
 										{{ dept.name }}
 									</option>
 								</select>
 								<div class="dp-input-focus"></div>
 							</div>
 							<p class="fs-12 text-tertiary mt-2">
-								Nhân sự sẽ tự động nhận các lộ trình học tập thuộc phòng ban này.
+								Nhân sự sẽ tự động nhận các lộ trình học tập thuộc phòng ban
+								này.
 							</p>
 						</div>
 
-						<!-- Status Toggle (Moved up since Role is removed) -->
 						<div
 							class="status-box flex-grow-1"
 							:class="userForm.isActive ? 'active' : 'inactive'"
@@ -340,7 +329,6 @@ const submitForm = async () => {
 				</div>
 			</div>
 
-			<!-- Global Actions -->
 			<div class="dp-form-actions mt-4 pt-4 border-top text-right">
 				<button type="submit" class="btn-action-submit" :disabled="submitting">
 					<span
@@ -355,7 +343,6 @@ const submitForm = async () => {
 </template>
 
 <style scoped>
-/* ===== Core Variables & Setup ===== */
 .staff-add-page {
 	padding: 0 0 var(--space-2xl) 0;
 	animation: fadeIn 0.4s ease-out;
@@ -384,7 +371,6 @@ const submitForm = async () => {
 	display: none;
 }
 
-/* ===== Header Premium ===== */
 .dp-header {
 	position: relative;
 	margin-bottom: 24px;
@@ -473,7 +459,6 @@ const submitForm = async () => {
 	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* ===== Form Structure ===== */
 .dp-form-grid {
 	display: grid;
 	grid-template-columns: 7fr 5fr;
@@ -486,7 +471,6 @@ const submitForm = async () => {
 	gap: 20px;
 }
 
-/* ===== Card Styling ===== */
 .dp-card {
 	background: var(--bg-primary);
 	border-radius: var(--radius-2xl);
@@ -500,7 +484,6 @@ const submitForm = async () => {
 	padding: 40px;
 }
 
-/* Banners */
 .dp-card-banner {
 	padding: 20px 32px;
 	display: flex;
@@ -539,7 +522,6 @@ const submitForm = async () => {
 	color: var(--text-primary);
 }
 
-/* ===== Inputs & Focus Ring ===== */
 .dp-label {
 	display: block;
 	font-weight: 700;
@@ -632,7 +614,6 @@ const submitForm = async () => {
 	transform: scale(1);
 }
 
-/* ===== Avatar Upload ===== */
 .avatar-section {
 	text-align: center;
 	margin-bottom: 32px;
@@ -716,7 +697,6 @@ const submitForm = async () => {
 	margin: 0;
 }
 
-/* ===== Role Grid ===== */
 .role-grid {
 	display: flex;
 	gap: 12px;
@@ -773,7 +753,6 @@ const submitForm = async () => {
 	color: var(--danger-700);
 }
 
-/* ===== Status Switch ===== */
 .status-box {
 	display: flex;
 	justify-content: space-between;
@@ -816,7 +795,6 @@ const submitForm = async () => {
 	opacity: 0.9;
 }
 
-/* Custom Switch Toggle */
 .dp-switch {
 	position: relative;
 	display: inline-block;
@@ -868,7 +846,6 @@ input:checked + .slider:before {
 	border-radius: 50%;
 }
 
-/* ===== Actions Output ===== */
 .dp-form-actions {
 	display: flex;
 	justify-content: flex-end;
@@ -904,7 +881,6 @@ input:checked + .slider:before {
 	box-shadow: none;
 }
 
-/* Settings */
 @keyframes fadeIn {
 	from {
 		opacity: 0;
@@ -916,7 +892,6 @@ input:checked + .slider:before {
 	}
 }
 
-/* Responsive */
 @media (max-width: 1024px) {
 	.password-grid {
 		grid-template-columns: 1fr;

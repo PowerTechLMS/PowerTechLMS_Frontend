@@ -4,11 +4,10 @@ import { useAuthStore } from "@/stores/auth";
 const APP_NAME = "EDUPOWER";
 
 const routes = [
-	// --- CÁC TRANG CÔNG KHAI (GUEST ONLY) ---
 	{
 		path: "/",
 		name: "Index",
-		component: () => import("@/pages/index.vue"), // Trang giới thiệu bạn vừa tạo
+		component: () => import("@/pages/index.vue"),
 		meta: { guest: true, title: `Chào mừng đến với ${APP_NAME}` },
 	},
 	{
@@ -18,14 +17,12 @@ const routes = [
 		meta: { guest: true, title: `Đăng nhập – ${APP_NAME}` },
 	},
 
-	// --- HỆ THỐNG NỘI BỘ (REQUIRES AUTH) ---
 	{
 		path: "/",
 		component: () => import("@/layouts/MainLayout.vue"),
 		meta: { requiresAuth: true },
 		children: [
 			{
-				// Chuyển Dashboard thành /dashboard để nhường đường dẫn gốc cho Landing Page
 				path: "dashboard",
 				name: "Dashboard",
 				component: () => import("@/pages/DashboardPage.vue"),
@@ -98,7 +95,6 @@ const routes = [
 				meta: { title: `Hồ sơ cá nhân – ${APP_NAME}` },
 			},
 
-			// --- ADMIN ROUTES ---
 			{
 				path: "admin/courses",
 				name: "AdminCourses",
@@ -148,10 +144,10 @@ const routes = [
 				path: "admin/certificates",
 				name: "AdminCertificates",
 				component: () => import("@/pages/admin/CertificatesList.vue"),
-				meta: { 
-					roles: ["Admin", "Instructor"], 
+				meta: {
+					roles: ["Admin", "Instructor"],
 					permissions: ["certificate.view", "certificate.manage"],
-					title: `Quản lý Chứng chỉ – ${APP_NAME}` 
+					title: `Quản lý Chứng chỉ – ${APP_NAME}`,
 				},
 			},
 			{
@@ -347,31 +343,25 @@ const router = createRouter({
 	},
 });
 
-// --- NAVIGATION GUARD ---
 router.beforeEach((to, from, next) => {
 	const auth = useAuthStore();
 	auth.initAuth();
 
-	// 1. Nếu trang yêu cầu đăng nhập mà chưa login -> Về Landing Page (hoặc Login)
 	if (to.meta.requiresAuth && !auth.isAuthenticated) {
 		return next("/");
 	}
 
-	// 2. Nếu User đã login mà cố vào trang Guest (Landing/Login) -> Vào thẳng Dashboard
 	if (to.meta.guest && auth.isAuthenticated) {
 		return next("/dashboard");
 	}
 
-	// 3 & 4. Kiểm tra Quyền truy cập (Roles & Permissions)
 	if (to.meta.roles || to.meta.permissions) {
 		let canAccess = false;
-		
-		// Kiểm tra role (ưu tiên nếu có meta.roles)
-		if (to.meta.roles && to.meta.roles.some(r => auth.hasRole(r))) {
+
+		if (to.meta.roles && to.meta.roles.some((r) => auth.hasRole(r))) {
 			canAccess = true;
 		}
-		
-		// Kiểm tra permission (ghi đè hoặc bổ sung nếu có meta.permissions)
+
 		if (to.meta.permissions && auth.hasAnyPermission(...to.meta.permissions)) {
 			canAccess = true;
 		}

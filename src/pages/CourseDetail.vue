@@ -1,20 +1,18 @@
 <template>
 	<div class="course-detail-page">
-		<!-- Loading State with Skeleton -->
 		<div v-if="loading" class="skeleton-container container">
-			<div class="skeleton-hero glass mb-5"></div>
+			<div class="skeleton-hero glass mb-5" />
 			<div class="row">
 				<div class="col-lg-8">
-					<div v-for="i in 3" :key="i" class="skeleton-module glass mb-3"></div>
+					<div v-for="i in 3" :key="i" class="skeleton-module glass mb-3" />
 				</div>
 				<div class="col-lg-4">
-					<div class="skeleton-sidebar glass"></div>
+					<div class="skeleton-sidebar glass" />
 				</div>
 			</div>
 		</div>
 
 		<div v-else-if="course" class="detail-container">
-			<!-- Hero Section -->
 			<div class="course-hero-premium glass">
 				<div
 					class="hero-bg-overlay"
@@ -23,11 +21,14 @@
 							? { backgroundImage: `url(${course.coverImageUrl})` }
 							: { background: 'var(--gradient-card)' }
 					"
-				></div>
+				/>
 				<div class="hero-content-wrapper container">
 					<div class="hero-main-info animate-slide-up">
 						<div class="d-flex gap-2 mb-3">
-							<div v-if="course.categoryName" class="badge-glass primary fw-bold">
+							<div
+								v-if="course.categoryName"
+								class="badge-glass primary fw-bold"
+							>
 								{{ course.categoryName }}
 							</div>
 							<div v-if="course.level === 1" class="badge-glass danger fw-bold">
@@ -46,14 +47,15 @@
 								TỰ CHỌN (LEVEL 3)
 							</div>
 						</div>
-						<h1 class="hero-title title-gradient">{{ course.title }}</h1>
+						<h1 class="hero-title title-gradient">
+							{{ course.title }}
+						</h1>
 						<div v-if="course.description" class="hero-desc-wrapper">
 							<p class="hero-desc">
 								{{ course.description }}
 							</p>
 						</div>
 
-						<!-- [MỚI] Cảnh báo tiền đề -->
 						<div
 							v-if="course.level === 2 && !isLevel1Completed && !isEnrolled"
 							class="prerequisite-warning glass mb-4"
@@ -71,13 +73,15 @@
 						<div class="hero-meta-grid">
 							<div class="meta-item-glass">
 								<User :size="16" class="text-primary" />
-								<span>👤 <strong>{{ course.createdByName }}</strong></span>
+								<span
+									>👤 <strong>{{ course.createdByName }}</strong></span
+								>
 							</div>
 							<div class="meta-item-glass">
 								<BookOpen :size="16" class="text-success" />
 								<span>📚 {{ totalLessons }} Bài học</span>
 							</div>
-							<div class="meta-item-glass" v-if="totalDuration > 0">
+							<div v-if="totalDuration > 0" class="meta-item-glass">
 								<Clock :size="16" class="text-info" />
 								<span>⏱ {{ Math.ceil(totalDuration / 60) }} Phút</span>
 							</div>
@@ -87,42 +91,38 @@
 							</div>
 						</div>
 
-						<!-- Mobile Action Button -->
 						<div class="mobile-only mt-4">
 							<button
 								v-if="!isEnrolled"
 								class="btn-neon w-100"
-								@click="handleEnroll"
 								:disabled="
 									enrollStatus !== 'open' ||
 									enrolling ||
 									hasPendingEnrollment ||
 									(course.level === 2 && !isLevel1Completed)
 								"
+								@click="handleEnroll"
 							>
-								<template v-if="hasPendingEnrollment"
-									><Clock :size="18" /> Đang chờ duyệt</template
-								>
-								<template v-else-if="enrolling"
-									><Loader2 :size="18" class="spin" /> Đang ghi
-									danh...</template
-								>
-								<template v-else-if="course.level === 2 && !isLevel1Completed"
-									><Lock :size="18" /> Chưa đủ điều kiện</template
-								>
-								<template v-else
-									><UserPlus :size="18" /> Đăng ký khóa học</template
-								>
+								<template v-if="hasPendingEnrollment">
+									<Clock :size="18" /> Đang chờ duyệt
+								</template>
+								<template v-else-if="enrolling">
+									<Loader2 :size="18" class="spin" /> Đang ghi danh...
+								</template>
+								<template v-else-if="course.level === 2 && !isLevel1Completed">
+									<Lock :size="18" /> Chưa đủ điều kiện
+								</template>
+								<template v-else>
+									<UserPlus :size="18" /> Đăng ký khóa học
+								</template>
 							</button>
 						</div>
 					</div>
 				</div>
 			</div>
 
-			<!-- Main Layout Grid -->
 			<div class="container mt-n5 position-relative z-2">
 				<div class="row g-4">
-					<!-- Left Column: Curriculum -->
 					<div class="col-lg-8 animate-slide-up" style="animation-delay: 0.1s">
 						<div class="curriculum-wrap">
 							<div class="section-header-premium mb-4">
@@ -139,8 +139,8 @@
 							>
 								<div
 									class="module-header-premium"
-									@click="toggleModule(mod.id)"
 									:class="{ 'is-active': expandedModules.has(mod.id) }"
+									@click="toggleModule(mod.id)"
 								>
 									<div class="module-info-main">
 										<div class="chevron-box">
@@ -149,7 +149,9 @@
 												:class="{ rotated: expandedModules.has(mod.id) }"
 											/>
 										</div>
-										<h3 class="module-title-text">{{ mod.title }}</h3>
+										<h3 class="module-title-text">
+											{{ mod.title }}
+										</h3>
 									</div>
 									<div class="module-meta-info">
 										<span class="lesson-count-badge"
@@ -160,8 +162,8 @@
 
 								<Transition name="expand">
 									<div
-										class="module-lessons-list"
 										v-show="expandedModules.has(mod.id)"
+										class="module-lessons-list"
 									>
 										<div
 											v-for="lesson in mod.lessons"
@@ -182,8 +184,14 @@
 												/>
 												<div v-else class="type-icon-box">
 													<Video v-if="lesson.type === 'Video'" :size="18" />
-													<FileText v-else-if="lesson.type === 'Document'" :size="18" />
-													<ClipboardList v-else-if="lesson.type === 'Quiz'" :size="18" />
+													<FileText
+														v-else-if="lesson.type === 'Document'"
+														:size="18"
+													/>
+													<ClipboardList
+														v-else-if="lesson.type === 'Quiz'"
+														:size="18"
+													/>
 													<FileText v-else :size="18" />
 												</div>
 											</div>
@@ -194,18 +202,28 @@
 														<span class="play-indicator">▶</span>
 														Bài học: {{ lesson.title }}
 													</span>
-													<span v-if="isLessonCompleted(lesson.id)" class="completed-tag">✓ Đã hoàn thành</span>
+													<span
+														v-if="isLessonCompleted(lesson.id)"
+														class="completed-tag"
+														>✓ Đã hoàn thành</span
+													>
 												</div>
 												<div class="lesson-tags-wrap">
 													<span class="type-tag">
-														<template v-if="lesson.type === 'Video'">🎥 Video</template>
-														<template v-else-if="lesson.type === 'Document'">📄 Tài liệu</template>
-														<template v-else-if="lesson.type === 'Quiz'">📝 Quiz</template>
+														<template v-if="lesson.type === 'Video'"
+															>🎥 Video</template
+														>
+														<template v-else-if="lesson.type === 'Document'"
+															>📄 Tài liệu</template
+														>
+														<template v-else-if="lesson.type === 'Quiz'"
+															>📝 Quiz</template
+														>
 														<template v-else>📄 Bài học</template>
 													</span>
 													<span
-														class="badge-glass primary sm"
 														v-if="lesson.isFreePreview"
+														class="badge-glass primary sm"
 														>Xem thử</span
 													>
 													<span
@@ -213,14 +231,18 @@
 														class="duration-tag"
 													>
 														<Clock :size="12" class="me-1" />
-														⏱ {{ Math.floor(lesson.videoDurationSeconds / 60) }} phút
+														⏱
+														{{ Math.floor(lesson.videoDurationSeconds / 60) }}
+														phút
 													</span>
 												</div>
 											</div>
 
 											<div class="lesson-action-indicator">
 												<Lock
-													v-if="!canAccessLesson(lesson) && !lesson.isFreePreview"
+													v-if="
+														!canAccessLesson(lesson) && !lesson.isFreePreview
+													"
 													:size="16"
 													class="text-tertiary"
 												/>
@@ -233,7 +255,6 @@
 								</Transition>
 							</div>
 
-							<!-- Instructor Info -->
 							<div class="instructor-card-premium glass mt-5 mb-5 p-4">
 								<h3 class="section-title mb-4">GIẢNG VIÊN</h3>
 								<div class="instructor-profile">
@@ -244,8 +265,12 @@
 										/>
 									</div>
 									<div class="instructor-details">
-										<div class="instructor-name">{{ course.createdByName }}</div>
-										<div class="instructor-dept">Giảng viên / Training Dept</div>
+										<div class="instructor-name">
+											{{ course.createdByName }}
+										</div>
+										<div class="instructor-dept">
+											Giảng viên / Training Dept
+										</div>
 										<p v-if="course.instructorBio" class="instructor-bio">
 											{{ course.instructorBio }}
 										</p>
@@ -253,12 +278,13 @@
 								</div>
 							</div>
 
-							<!-- Social Learning / Discussion -->
 							<div class="discussion-section glass p-4 mb-5">
 								<div class="section-header-premium mb-4">
 									<h3 class="section-title">THẢO LUẬN & HOẠT ĐỘNG</h3>
 									<div class="d-flex gap-3">
-										<span class="badge-glass dark">👤 {{ course.enrollmentCount }} người đang học</span>
+										<span class="badge-glass dark"
+											>👤 {{ course.enrollmentCount }} người đang học</span
+										>
 									</div>
 								</div>
 								<div class="discussion-placeholder">
@@ -270,7 +296,6 @@
 						</div>
 					</div>
 
-					<!-- Right Column: Sticky Sidebar -->
 					<div class="col-lg-4 animate-slide-up" style="animation-delay: 0.2s">
 						<div class="sticky-sidebar">
 							<div class="enroll-card glass shadow-glow">
@@ -296,45 +321,65 @@
 											<div
 												class="progress-fill-glow"
 												:style="{ width: progress.progressPercent + '%' }"
-											></div>
+											/>
 										</div>
 									</div>
 								</div>
 
 								<div class="card-body-premium p-4">
-									<!-- Pricing or Status -->
 									<div class="status-price-row mb-4">
-										<span class="huge-text-gradient" v-if="!isEnrolled"
+										<span v-if="!isEnrolled" class="huge-text-gradient"
 											>MIỄN PHÍ</span
 										>
-										<span class="huge-text-gradient" v-else-if="progress?.isCompleted">HOÀN THÀNH</span>
-										<span class="huge-text-gradient" v-else>ĐANG HỌC</span>
+										<span
+											v-else-if="progress?.isCompleted"
+											class="huge-text-gradient"
+											>HOÀN THÀNH</span
+										>
+										<span v-else class="huge-text-gradient">ĐANG HỌC</span>
 									</div>
 
-									<!-- New Detailed Progress -->
-									<div v-if="isEnrolled && progress" class="detailed-progress-box mb-4">
+									<div
+										v-if="isEnrolled && progress"
+										class="detailed-progress-box mb-4"
+									>
 										<div class="d-flex justify-content-between mb-2">
 											<span class="label-premium">TIẾN ĐỘ HỌC TẬP</span>
-											<span class="percent-premium">{{ Math.round(progress.progressPercent) }}%</span>
+											<span class="percent-premium"
+												>{{ Math.round(progress.progressPercent) }}%</span
+											>
 										</div>
 										<div class="progress-bar-premium mb-3">
-											<div class="progress-fill-glow" :style="{ width: progress.progressPercent + '%' }"></div>
+											<div
+												class="progress-fill-glow"
+												:style="{ width: progress.progressPercent + '%' }"
+											/>
 										</div>
 										<div class="stats-grid-mini">
 											<div class="stat-item">
-												<span class="stat-val">{{ lessonProgresses.filter(p => p.isCompleted).length }} / {{ totalLessons }}</span>
+												<span class="stat-val"
+													>{{
+														lessonProgresses.filter((p) => p.isCompleted).length
+													}}
+													/ {{ totalLessons }}</span
+												>
 												<span class="stat-lbl">Bài học</span>
 											</div>
 											<div class="stat-item text-end">
 												<span class="stat-val">
-													{{ progress.timeSpentMinutes > 0 ? progress.timeSpentMinutes : (progress.progressPercent > 0 ? 'Dưới 1' : '0') }}
+													{{
+														progress.timeSpentMinutes > 0
+															? progress.timeSpentMinutes
+															: progress.progressPercent > 0
+																? "Dưới 1"
+																: "0"
+													}}
 												</span>
 												<span class="stat-lbl">Phút đã học</span>
 											</div>
 										</div>
 									</div>
 
-									<!-- Actions -->
 									<div class="sidebar-actions gap-3 d-flex flex-column">
 										<template v-if="!isEnrolled">
 											<div
@@ -353,28 +398,28 @@
 											</div>
 											<button
 												class="btn-neon lg w-100"
-												@click="handleEnroll"
 												:disabled="
 													enrollStatus !== 'open' ||
 													enrolling ||
 													hasPendingEnrollment ||
 													(course.level === 2 && !isLevel1Completed)
 												"
+												@click="handleEnroll"
 											>
-												<template v-if="hasPendingEnrollment"
-													><Clock :size="20" /> CHỜ PHÊ DUYỆT</template
-												>
-												<template v-else-if="enrolling"
-													><Loader2 :size="20" class="spin" /> ĐANG XỬ
-													LÝ...</template
-												>
+												<template v-if="hasPendingEnrollment">
+													<Clock :size="20" /> CHỜ PHÊ DUYỆT
+												</template>
+												<template v-else-if="enrolling">
+													<Loader2 :size="20" class="spin" /> ĐANG XỬ LÝ...
+												</template>
 												<template
 													v-else-if="course.level === 2 && !isLevel1Completed"
-													><Lock :size="20" /> CHƯA ĐỦ ĐIỀU KIỆN</template
 												>
-												<template v-else
-													><UserPlus :size="20" /> ĐĂNG KÝ NGAY</template
-												>
+													<Lock :size="20" /> CHƯA ĐỦ ĐIỀU KIỆN
+												</template>
+												<template v-else>
+													<UserPlus :size="20" /> ĐĂNG KÝ NGAY
+												</template>
 											</button>
 										</template>
 
@@ -395,7 +440,10 @@
 												>
 													THI LẠI
 												</button>
-												<button class="btn-neon warning flex-fill" @click="router.push('/certificates')">
+												<button
+													class="btn-neon warning flex-fill"
+													@click="router.push('/certificates')"
+												>
 													<Medal :size="18" /> XEM CHỨNG CHỈ
 												</button>
 											</div>
@@ -415,28 +463,40 @@
 										</button>
 									</div>
 
-									<!-- Completion Requirements -->
 									<div v-if="isEnrolled" class="completion-requirements mt-4">
 										<h4 class="mini-title mb-3">ĐIỀU KIỆN HOÀN THÀNH</h4>
 										<ul class="req-list">
-											<li :class="{ completed: lessonProgresses.some(p => p.isCompleted) }">
+											<li
+												:class="{
+													completed: lessonProgresses.some(
+														(p) => p.isCompleted,
+													),
+												}"
+											>
 												<CheckCircle2 :size="14" /> Video & Tài liệu
 											</li>
-											<li v-if="course?.finalQuizId" :class="{ completed: progress.quizPassed }">
-												<CheckCircle2 :size="14" /> Vượt qua bài kiểm tra cuối khóa
+											<li
+												v-if="course?.finalQuizId"
+												:class="{ completed: progress.quizPassed }"
+											>
+												<CheckCircle2 :size="14" /> Vượt qua bài kiểm tra cuối
+												khóa
 											</li>
 										</ul>
 									</div>
 
-									<!-- Gamification (Optional/Generic) -->
 									<div class="gamification-box mt-4 p-3 glass">
 										<div class="d-flex align-items-center gap-3">
 											<div class="xp-badge">
 												<Trophy :size="20" />
 											</div>
 											<div>
-												<div class="fw-bold text-success">+{{ course.points || 0 }} XP</div>
-												<div class="text-muted small">Củng cố hồ sơ đào tạo</div>
+												<div class="fw-bold text-success">
+													+{{ course.points || 0 }} XP
+												</div>
+												<div class="text-muted small">
+													Củng cố hồ sơ đào tạo
+												</div>
 											</div>
 										</div>
 									</div>
@@ -454,7 +514,6 @@
 			</div>
 		</div>
 
-		<!-- Toast Component -->
 		<Transition name="toast">
 			<div v-if="toast" class="toast-premium glass">
 				<div class="toast-content">
@@ -486,16 +545,11 @@ import {
 	BookOpen,
 	Users,
 	User,
-	ArrowRight,
 	Play,
 	Check,
 	Info,
-	ShieldCheck,
-	Layout,
 	MessageSquare,
-	HelpCircle,
 	Trophy,
-	BarChart3,
 	Medal,
 } from "lucide-vue-next";
 
@@ -512,9 +566,8 @@ const loading = ref(true);
 const toast = ref("");
 let toastTimer = null;
 
-// Access Control
 const isLevel1Completed = ref(false);
-const isLoggedIn = ref(!!localStorage.getItem("token"));
+// const isLoggedIn = ref(!!localStorage.getItem("token"));
 
 function showToast(msg) {
 	clearTimeout(toastTimer);
@@ -530,14 +583,22 @@ const totalLessons = computed(
 const totalDuration = computed(() => {
 	if (!course.value?.modules) return 0;
 	return course.value.modules.reduce((acc, mod) => {
-		return acc + mod.lessons.reduce((lAcc, lesson) => lAcc + (lesson.videoDurationSeconds || 0), 0);
+		return (
+			acc +
+			mod.lessons.reduce(
+				(lAcc, lesson) => lAcc + (lesson.videoDurationSeconds || 0),
+				0,
+			)
+		);
 	}, 0);
 });
 
-const isAllCompleted = computed(() => {
-	const all = course.value?.modules?.flatMap((m) => m.lessons) ?? [];
-	return all.length > 0 && all.every((l) => isLessonCompleted(l.id));
-});
+/*
+ * const isAllCompleted = computed(() => {
+ * 	const all = course.value?.modules?.flatMap((m) => m.lessons) ?? [];
+ * 	return all.length > 0 && all.every((l) => isLessonCompleted(l.id));
+ * });
+ */
 
 const enrollStatus = computed(() => {
 	const c = course.value;
@@ -617,44 +678,7 @@ async function handleEnroll() {
 			showToast("Chúc mừng! Bạn đã ghi danh thành khóa học thành công.");
 			setTimeout(() => startLearning(), 1000);
 		}
-	} catch (e) {
-		console.error("LỖI GHI DANH:", e.response?.data);
-		showToast(e.response?.data?.message || "Lỗi ghi danh khóa học");
-	} finally {
-		enrolling.value = false;
-	}
-}
-
-async function checkLevel1Completion() {
-	if (!isLoggedIn.value) return;
-	try {
-		// 1. Fetch toàn bộ khóa học để đếm số Level 1
-		const { data: allCourses } = await courseAPI.getAll({
-			pageSize: 1000,
-			isPublished: true,
-		});
-		const level1Ids = allCourses.items
-			.filter((c) => c.level === 1)
-			.map((c) => c.id);
-
-		if (level1Ids.length === 0) {
-			isLevel1Completed.value = true;
-			return;
-		}
-
-		// 2. Fetch ghi danh của user để check status Completed
-		const { data: myEnrollments } = await enrollmentAPI.getMy();
-		const completedLevel1Ids = myEnrollments
-			.filter((e) => e.status === "Completed" || e.status === "Finished")
-			.map((e) => e.courseId);
-
-		// 3. So sánh
-		isLevel1Completed.value = level1Ids.every((id) =>
-			completedLevel1Ids.includes(id),
-		);
-	} catch (e) {
-		console.error("Lỗi kiểm tra Cấp 1:", e);
-	}
+	} catch {}
 }
 
 onMounted(async () => {
@@ -685,9 +709,7 @@ onMounted(async () => {
 						progress.value = progressRes.data;
 						const lpRes = await progressAPI.getLessonProgresses(id);
 						lessonProgresses.value = lpRes.data;
-					} catch (e) {
-						console.error("Could not fetch course progress");
-					}
+					} catch {}
 				}
 			} else {
 				isEnrolled.value = false;
@@ -696,12 +718,10 @@ onMounted(async () => {
 			isEnrolled.value = false;
 		}
 
-		// [MỚI] Kiểm tra điều kiện Cấp 1
 		if (course.value.level === 2) {
 			await checkLevel1Completion();
 		}
-	} catch (e) {
-		console.error(e);
+	} catch {
 	} finally {
 		loading.value = false;
 	}
@@ -714,7 +734,6 @@ onMounted(async () => {
 	min-height: 100vh;
 }
 
-/* Glass & Premium Basics */
 .glass {
 	background: rgba(255, 255, 255, 0.7);
 	backdrop-filter: blur(20px);
@@ -738,7 +757,6 @@ onMounted(async () => {
 	-webkit-text-fill-color: transparent;
 }
 
-/* Badges */
 .badge-glass {
 	padding: 6px 14px;
 	border-radius: 30px;
@@ -780,7 +798,6 @@ onMounted(async () => {
 	backdrop-filter: blur(8px);
 }
 
-/* Hero Section */
 .course-hero-premium {
 	position: relative;
 	border-radius: 0 0 40px 40px;
@@ -870,7 +887,6 @@ onMounted(async () => {
 	border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-/* Curriculum Section */
 .section-header-premium {
 	display: flex;
 	justify-content: space-between;
@@ -941,7 +957,6 @@ onMounted(async () => {
 	border-radius: 8px;
 }
 
-/* Lesson Rows Enhanced */
 .lesson-row-premium {
 	display: flex;
 	align-items: center;
@@ -1009,7 +1024,6 @@ onMounted(async () => {
 	transform: scale(1.2);
 }
 
-/* Instructor & Discussion */
 .instructor-profile {
 	display: flex;
 	gap: 1.5rem;
@@ -1021,7 +1035,7 @@ onMounted(async () => {
 	border-radius: 20px;
 	object-fit: cover;
 	border: 3px solid white;
-	box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 .instructor-name {
 	font-size: 1.25rem;
@@ -1048,7 +1062,6 @@ onMounted(async () => {
 	font-weight: 600;
 }
 
-/* Detailed Progress Sidebar */
 .detailed-progress-box {
 	background: rgba(255, 255, 255, 0.5);
 	padding: 1.25rem;
@@ -1129,7 +1142,6 @@ onMounted(async () => {
 	box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
 }
 
-/* Play Indicator & Button */
 .play-indicator {
 	color: #4f46e5;
 	font-size: 0.8rem;
@@ -1153,7 +1165,6 @@ onMounted(async () => {
 	background: #4338ca;
 }
 
-/* Other Courses Instructor */
 .other-item-mini {
 	display: flex;
 	align-items: center;
@@ -1170,12 +1181,12 @@ onMounted(async () => {
 .other-item-mini:hover {
 	background: white;
 	color: #4f46e5;
-	box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .tiny-progress-bar {
 	height: 4px;
-	background: rgba(0,0,0,0.05);
+	background: rgba(0, 0, 0, 0.05);
 	border-radius: 10px;
 	overflow: hidden;
 }
@@ -1184,7 +1195,9 @@ onMounted(async () => {
 	background: #10b981;
 }
 
-.fw-600 { font-weight: 600; }
+.fw-600 {
+	font-weight: 600;
+}
 
 .btn-glass.flex-fill {
 	display: flex;
@@ -1196,7 +1209,6 @@ onMounted(async () => {
 	opacity: 1;
 }
 
-/* Sticky Sidebar */
 .sticky-sidebar {
 	position: sticky;
 	top: 100px;
@@ -1313,7 +1325,6 @@ onMounted(async () => {
 	color: #10b981;
 }
 
-/* Toast */
 .toast-premium {
 	position: fixed;
 	bottom: 2rem;
@@ -1331,7 +1342,6 @@ onMounted(async () => {
 	color: #1e293b;
 }
 
-/* Skeletons */
 .skeleton-hero {
 	height: 400px;
 	border-radius: 0 0 40px 40px;
@@ -1345,7 +1355,6 @@ onMounted(async () => {
 	border-radius: 28px;
 }
 
-/* Transitions & Animations */
 .expand-enter-active,
 .expand-leave-active {
 	transition: all 0.3s ease;
@@ -1383,7 +1392,7 @@ onMounted(async () => {
 		transform: rotate(360deg);
 	}
 }
-/* [MỚI] Prerequisite Warning */
+
 .prerequisite-warning {
 	padding: 1.25rem;
 	border-radius: 16px;

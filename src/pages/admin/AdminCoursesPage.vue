@@ -1,41 +1,33 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import { RouterLink } from "vue-router";
-// @ts-ignore
 import { courseAPI } from "@/services/api";
 import {
 	Plus,
 	Search,
 	Globe,
 	FileText,
-	Archive,
 	Layers,
 	Users,
 	BookOpen,
-	Calendar,
 	Eye,
 	Award,
 	Pencil,
 	Trash2,
 	ChevronRight,
 	CheckCircle2,
-	PencilRuler,
 	Info,
 	LayoutGrid,
-	MoreVertical,
 	BookCheck,
-	GraduationCap,
 } from "lucide-vue-next";
 import { toast } from "vue3-toastify";
 
-// Các state quản lý dữ liệu
 const courses = ref<any[]>([]);
-const totalStats = ref({ total: 0, published: 0, students: 0 }); // Lưu thống kê tổng từ Server
+const totalStats = ref({ total: 0, published: 0, students: 0 });
 const isLoading = ref(true);
 const searchQuery = ref("");
 const currentFilter = ref("All");
 
-// 1. Hàm lấy dữ liệu từ Backend
 const fetchCourses = async () => {
 	isLoading.value = true;
 	try {
@@ -43,17 +35,15 @@ const fetchCourses = async () => {
 			page: 1,
 			pageSize: 50,
 			search: searchQuery.value || null,
-			manage: true, // Bật chế độ quản lý để GV chỉ thấy khoá của mình
+			manage: true,
 		};
 
-		// Truyền filter xuống Backend (Dựa theo biến isPublished = true/false)
 		if (currentFilter.value === "Published") params.isPublished = true;
 		if (currentFilter.value === "Draft") params.isPublished = false;
 
 		const response = await courseAPI.getAll(params);
 		courses.value = response.data.items || response.data || [];
 
-		// Cập nhật thống kê (Nếu chọn All thì mới đếm tổng)
 		if (currentFilter.value === "All" && !searchQuery.value) {
 			totalStats.value = {
 				total: response.data.totalCount || courses.value.length,
@@ -64,32 +54,28 @@ const fetchCourses = async () => {
 				),
 			};
 		}
-	} catch (error) {
+	} catch {
 		toast.error("Lỗi lấy danh sách khóa học");
 	} finally {
 		isLoading.value = false;
 	}
 };
 
-// 2. Hàm format ngày tháng
 const formatDate = (dateString: string) => {
 	if (!dateString) return "Chưa cập nhật";
 	const date = new Date(dateString);
 	return date.toLocaleDateString("vi-VN");
 };
 
-// 3. Hàm chọn Tab Lọc
 const setFilter = (status: string) => {
 	currentFilter.value = status;
 	fetchCourses();
 };
 
-// 4. Lắng nghe ô tìm kiếm (Dùng Enter để tìm cho nhẹ Server)
 const handleSearch = () => {
 	fetchCourses();
 };
 
-// 5. Hàm Xóa khóa học gọi API
 const deleteCourse = async (id: number) => {
 	if (
 		confirm(
@@ -100,7 +86,7 @@ const deleteCourse = async (id: number) => {
 			await courseAPI.delete(id);
 			toast.success("Xóa khóa học thành công!");
 			fetchCourses();
-		} catch (error) {
+		} catch {
 			toast.error("Đã xảy ra lỗi khi xóa khóa học.");
 		}
 	}
@@ -335,13 +321,11 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Giữ nguyên toàn bộ CSS của bạn ở đây - chỉ thêm 1 class mới */
 .admin-courses-page {
 	min-height: 100vh;
 	animation: fadeIn 0.5s ease-out;
 }
 
-/* Header Styling */
 .page-header-premium {
 	display: flex;
 	justify-content: space-between;
@@ -436,7 +420,6 @@ onMounted(() => {
 	opacity: 0.8;
 }
 
-/* Stats Grid */
 .stats-grid {
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
@@ -486,7 +469,6 @@ onMounted(() => {
 	margin: 0;
 }
 
-/* Toolbar */
 .toolbar-glass-container {
 	display: flex;
 	justify-content: space-between;
@@ -538,7 +520,6 @@ onMounted(() => {
 	width: 100%;
 }
 
-/* Grid Cards */
 .course-premium-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -731,7 +712,6 @@ onMounted(() => {
 	background: white;
 }
 
-/* Empty state */
 .empty-glass-state {
 	display: flex;
 	flex-direction: column;
@@ -761,7 +741,6 @@ onMounted(() => {
 	gap: 8px;
 }
 
-/* Animations */
 @keyframes fadeIn {
 	from {
 		opacity: 0;
@@ -773,7 +752,6 @@ onMounted(() => {
 	}
 }
 
-/* Global spinner */
 .glass-spinner {
 	margin: 0 auto;
 	width: 40px;
@@ -789,7 +767,6 @@ onMounted(() => {
 	}
 }
 
-/* Responsive adjustments */
 @media (max-width: 1024px) {
 	.stats-grid {
 		grid-template-columns: 1fr;

@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from "vue";
 import { useRouter, RouterLink } from "vue-router";
-// @ts-ignore
 import { userAPI, userGroupAPI } from "@/services/api";
 import {
 	Users,
@@ -13,50 +12,40 @@ import {
 	Ban,
 	User as UserIcon,
 	CheckCircle,
-	XCircle,
+	CheckCircle,
 	Mail,
 	Shield,
 	Layout,
-	MoreVertical,
 	ChevronLeft,
 	ChevronRight,
 	UserCheck,
 	UserMinus,
-	ShieldCheck,
-	MailWarning,
-	Clock,
-	Filter,
-	Loader2,
 	FileUp,
 } from "lucide-vue-next";
 import { toast } from "vue3-toastify";
 
-// --- STATE ---
 const router = useRouter();
 const users = ref<any[]>([]);
 const groups = ref<any[]>([]);
 const loading = ref(true);
 const viewMode = ref<"list" | "grid">("list");
 
-// Filters & Pagination
 const searchQuery = ref("");
 const roleFilter = ref("All");
-const statusFilter = ref("All"); // All, Active, Inactive
+const statusFilter = ref("All");
 const currentPage = ref(1);
 const itemsPerPage = ref(12);
 
 const defaultAvatar =
 	"https://ui-avatars.com/api/?background=random&color=fff&name=";
 
-// --- API Calls ---
 const fetchUsers = async () => {
 	loading.value = true;
 	try {
 		const res = await userAPI.getAll({ pageSize: 1500 });
 		users.value = res.data.items || res.data;
-	} catch (error) {
+	} catch {
 		toast.error("Lỗi khi tải danh sách nhân sự");
-		console.error(error);
 	} finally {
 		loading.value = false;
 	}
@@ -66,9 +55,7 @@ const fetchGroups = async () => {
 	try {
 		const res = await userGroupAPI.getAll();
 		groups.value = res.data.items || res.data;
-	} catch (error) {
-		console.error("Lỗi tải phòng ban", error);
-	}
+	} catch {}
 };
 
 onMounted(() => {
@@ -76,7 +63,6 @@ onMounted(() => {
 	fetchGroups();
 });
 
-// --- HELPERS ---
 const getAvatar = (name: string, avatarUrl: string | null) => {
 	if (avatarUrl) {
 		return avatarUrl.startsWith("http")
@@ -94,7 +80,6 @@ const getRoleDisplay = (role: string) => {
 	return { label: "Nhân Viên", class: "badge-glass primary" };
 };
 
-// --- ACTIONS ---
 const editUser = (id: number) => router.push(`/admin/staff/edit/${id}`);
 const viewProfile = (id: number) => router.push(`/admin/staff/profile/${id}`);
 
@@ -107,13 +92,12 @@ const toggleActive = async (user: any) => {
 			toast.success(
 				`${user.isActive ? "Đã kích hoạt" : "Đã vô hiệu hóa"} tài khoản`,
 			);
-		} catch (e) {
+		} catch {
 			toast.error("Lỗi cập nhật trạng thái");
 		}
 	}
 };
 
-// --- COMPUTED: STATS ---
 const totalStaff = computed(() => users.value.length);
 const activeStaff = computed(
 	() => users.value.filter((u) => u.isActive).length,
@@ -122,7 +106,6 @@ const inactiveStaff = computed(
 	() => users.value.filter((u) => !u.isActive).length,
 );
 
-// --- COMPUTED: FILTERING & PAGINATION ---
 const filteredUsers = computed(() => {
 	let result = [...users.value];
 
@@ -146,7 +129,6 @@ const filteredUsers = computed(() => {
 		result = result.filter((u) => u.isActive === wantActive);
 	}
 
-	// Sort: Admis first, then alphabetical by name
 	result.sort((a, b) => {
 		const roleA = (a.role || "").toLowerCase();
 		const roleB = (b.role || "").toLowerCase();
@@ -173,7 +155,6 @@ const handlePageChange = (page: number) => {
 	}
 };
 
-// --- IMPORT LOGIC ---
 const fileInput = ref<HTMLInputElement | null>(null);
 
 const triggerImport = () => {
@@ -198,15 +179,11 @@ const handleImport = async (event: any) => {
 		});
 
 		if (data.errors && data.errors.length > 0) {
-			console.warn("Lỗi khi import:", data.errors);
-			toast.info(
-				`Có ${data.errors.length} dòng lỗi, kiểm tra console để biết chi tiết.`,
-				{ autoClose: 5000 },
-			);
+			toast.info(`Có ${data.errors.length} dòng lỗi.`, { autoClose: 5000 });
 		}
 
 		fetchUsers();
-	} catch (e) {
+	} catch {
 		toast.update(id, {
 			render: "Lỗi khi import file Excel.",
 			type: "error",
@@ -214,14 +191,13 @@ const handleImport = async (event: any) => {
 			autoClose: 3000,
 		});
 	} finally {
-		event.target.value = ""; // Clear input
+		event.target.value = "";
 	}
 };
 </script>
 
 <template>
 	<div class="staff-list-page">
-		<!-- Premium Header -->
 		<div class="page-header">
 			<div class="header-content">
 				<div class="header-icon-box pulse-glow">
@@ -267,7 +243,6 @@ const handleImport = async (event: any) => {
 			</div>
 		</div>
 
-		<!-- Glass Stats Grid -->
 		<div class="stats-glass-grid">
 			<div class="glass-stat-card primary">
 				<div class="stat-icon-wrap">
@@ -309,14 +284,11 @@ const handleImport = async (event: any) => {
 			</div>
 		</div>
 
-		<!-- MAIN CONTENT CARD (Glassmorphism) -->
 		<div class="glass-content-card mt-4">
-			<!-- Controls Bar -->
 			<div class="glass-controls-bar">
 				<div
 					class="d-flex align-items-center flex-wrap gap-4 w-100 justify-content-between"
 				>
-					<!-- Search & Filter Tab Group -->
 					<div class="d-flex align-items-center flex-wrap gap-3">
 						<div class="glass-search">
 							<Search
@@ -377,7 +349,6 @@ const handleImport = async (event: any) => {
 						</div>
 					</div>
 
-					<!-- Secondary Filters -->
 					<div class="d-flex align-items-center gap-3">
 						<div class="glass-select-group">
 							<span class="fs-12 fw-bold text-tertiary me-2">TRẠNG THÁI:</span>
@@ -421,7 +392,6 @@ const handleImport = async (event: any) => {
 			</div>
 
 			<div class="glass-card-body pt-0">
-				<!-- LOADING STATE -->
 				<div v-if="loading" class="loading-state py-5 text-center">
 					<div class="spinner"></div>
 					<p class="mt-3 text-muted fw-semi-bold">
@@ -429,7 +399,6 @@ const handleImport = async (event: any) => {
 					</p>
 				</div>
 
-				<!-- EMPTY STATE -->
 				<div
 					v-else-if="filteredUsers.length === 0"
 					class="empty-state py-5 text-center"
@@ -447,7 +416,6 @@ const handleImport = async (event: any) => {
 					</p>
 				</div>
 
-				<!-- LIST VIEW -->
 				<div v-else-if="viewMode === 'list'" class="table-container fade-in">
 					<table class="glass-table">
 						<thead>
@@ -582,7 +550,6 @@ const handleImport = async (event: any) => {
 					</table>
 				</div>
 
-				<!-- GRID VIEW -->
 				<div v-else class="grid-layout fade-in">
 					<div
 						v-for="user in paginatedUsers"
@@ -691,7 +658,6 @@ const handleImport = async (event: any) => {
 					</div>
 				</div>
 
-				<!-- Pagination -->
 				<div v-if="totalPages > 1" class="glass-pagination mt-4">
 					<div class="pagination-info text-tertiary fs-13">
 						Đang xem
@@ -742,7 +708,6 @@ const handleImport = async (event: any) => {
 </template>
 
 <style scoped>
-/* ===== Core Typography & Animations ===== */
 .staff-list-page {
 	padding-bottom: var(--space-2xl);
 	color: var(--text-primary);
@@ -787,7 +752,6 @@ const handleImport = async (event: any) => {
 	}
 }
 
-/* ===== Premium Header ===== */
 .page-header {
 	display: flex;
 	justify-content: space-between;
@@ -874,7 +838,6 @@ const handleImport = async (event: any) => {
 	text-decoration: none;
 }
 
-/* ===== Glass Stats Grid ===== */
 .stats-glass-grid {
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
@@ -946,7 +909,6 @@ const handleImport = async (event: any) => {
 	line-height: 1.1;
 }
 
-/* Import Button Style */
 .btn-outline-glass {
 	display: inline-flex;
 	align-items: center;
@@ -970,7 +932,6 @@ const handleImport = async (event: any) => {
 	transform: translateY(-2px);
 }
 
-/* ===== Glass Content Card ===== */
 .glass-content-card {
 	background: rgba(255, 255, 255, 0.9);
 	backdrop-filter: blur(20px);
@@ -988,7 +949,6 @@ const handleImport = async (event: any) => {
 	padding: 0 32px 32px 32px;
 }
 
-/* Glass Search */
 .glass-search {
 	display: flex;
 	align-items: center;
@@ -1024,7 +984,6 @@ const handleImport = async (event: any) => {
 	font-family: inherit;
 }
 
-/* Glass Tabs Nav */
 .tabs-glass-nav {
 	display: flex;
 	gap: 8px;
@@ -1056,7 +1015,6 @@ const handleImport = async (event: any) => {
 	border: 1px solid rgba(0, 0, 0, 0.03);
 }
 
-/* Glass Select & View Toggle */
 .glass-select-group {
 	display: flex;
 	align-items: center;
@@ -1113,7 +1071,6 @@ const handleImport = async (event: any) => {
 	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
-/* ===== Table Styling (Glass) ===== */
 .table-container {
 	border: 1px solid rgba(0, 0, 0, 0.05);
 	border-radius: 20px;
@@ -1192,7 +1149,6 @@ const handleImport = async (event: any) => {
 	background: var(--danger-500);
 }
 
-/* Badge & Pill Glass */
 .badge-glass {
 	display: inline-flex;
 	align-items: center;
@@ -1249,7 +1205,6 @@ const handleImport = async (event: any) => {
 	background: var(--text-tertiary);
 }
 
-/* Ghost Buttons */
 .btn-ghost-icon {
 	width: 36px;
 	height: 36px;
@@ -1293,7 +1248,6 @@ const handleImport = async (event: any) => {
 	border-radius: 8px;
 }
 
-/* ===== Grid View Styling ===== */
 .grid-layout {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -1386,7 +1340,6 @@ const handleImport = async (event: any) => {
 	border-color: rgba(99, 102, 241, 0.2);
 }
 
-/* ===== Pagination Glass ===== */
 .glass-pagination {
 	display: flex;
 	justify-content: space-between;
@@ -1447,7 +1400,6 @@ const handleImport = async (event: any) => {
 	box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
-/* ===== States & Loaders ===== */
 .spinner {
 	width: 44px;
 	height: 44px;
@@ -1468,13 +1420,11 @@ const handleImport = async (event: any) => {
 	margin: 0 auto;
 }
 
-/* Global Lucide Override */
 .lucide,
 svg {
 	flex-shrink: 0;
 }
 
-/* Custom Scrollbar */
 .table-container::-webkit-scrollbar {
 	height: 6px;
 	width: 6px;
@@ -1490,7 +1440,6 @@ svg {
 	background: rgba(0, 0, 0, 0.2);
 }
 
-/* Responsive */
 @media (max-width: 1200px) {
 	.stats-glass-grid {
 		grid-template-columns: 1fr;
