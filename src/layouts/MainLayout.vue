@@ -597,6 +597,12 @@ import {
 	UserCog,
 	FolderOpen,
 	Route,
+	X,
+	Award,
+	GraduationCap,
+	Layout,
+	PieChart,
+	KeyRound,
 } from "lucide-vue-next";
 
 const authStore = useAuthStore();

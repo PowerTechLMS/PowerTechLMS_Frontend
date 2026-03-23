@@ -403,7 +403,10 @@
 										@seeked="onSeeked"
 									>
 										<track
-											v-if="lesson?.subtitlesPath"
+											v-if="
+												lesson?.subtitlesPath &&
+												!lesson.videoUrl?.endsWith('.m3u8')
+											"
 											kind="subtitles"
 											:src="getFullMediaUrl(lesson.subtitlesPath)"
 											srclang="vi"
@@ -1277,6 +1280,7 @@ const replyContent = ref("");
 
 let signalrConnection = null;
 let signalRCurrentLessonId = null;
+let hlsInstance = null;
 
 const availableTabs = computed(() => {
 	const baseTabs = [
@@ -1550,10 +1554,36 @@ function setupHls() {
 		return;
 	const video = videoRef.value;
 	const url = getFullMediaUrl(lesson.value.videoUrl);
+
 	if (Hls.isSupported()) {
+		if (hlsInstance) {
+			hlsInstance.destroy();
+			hlsInstance = null;
+		}
 		const hls = new Hls();
+
+		hls.on(Hls.Events.ERROR, (event, data) => {
+			if (data.fatal) {
+				switch (data.type) {
+					case Hls.ErrorTypes.NETWORK_ERROR:
+						hls.startLoad();
+						break;
+					case Hls.ErrorTypes.MEDIA_ERROR:
+						hls.recoverMediaError();
+						break;
+					default:
+						hls.destroy();
+						hlsInstance = null;
+						break;
+				}
+			}
+		});
+
+		hls.on(Hls.Events.MANIFEST_PARSED, () => {});
+
 		hls.loadSource(url);
 		hls.attachMedia(video);
+		hlsInstance = hls;
 	} else if (video.canPlayType("application/vnd.apple.mpegurl")) {
 		video.src = url;
 	}
@@ -1566,8 +1596,9 @@ async function ensureSignalRConnection() {
 	)
 		return;
 
+	const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:5100";
 	signalrConnection = new signalR.HubConnectionBuilder()
-		.withUrl("/hubs/video")
+		.withUrl(`${apiBaseUrl}/hubs/video`)
 		.withAutomaticReconnect()
 		.build();
 
@@ -1581,6 +1612,8 @@ async function ensureSignalRConnection() {
 			}
 		}
 	});
+
+	signalrConnection.on("AiProcessingCompleted", (lessonId) => {});
 
 	try {
 		await signalrConnection.start();

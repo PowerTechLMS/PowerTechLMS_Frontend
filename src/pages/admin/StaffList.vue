@@ -12,7 +12,6 @@ import {
 	Ban,
 	User as UserIcon,
 	CheckCircle,
-	CheckCircle,
 	Mail,
 	Shield,
 	Layout,
