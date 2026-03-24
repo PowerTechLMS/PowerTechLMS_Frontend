@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-	baseURL: "/api",
+	baseURL: (import.meta.env.VITE_API_URL || "") + "/api",
 	timeout: 600000,
 });
 
@@ -70,7 +70,7 @@ export const lessonAPI = {
 	deleteAttachment: (moduleId, id) =>
 		api.delete(`/modules/${moduleId}/lessons/attachments/${id}`),
 	getAttachmentUrl: (moduleId, id) =>
-		`/api/modules/${moduleId}/lessons/attachments/${id}/download`,
+		`${import.meta.env.VITE_API_URL || ""}/api/modules/${moduleId}/lessons/attachments/${id}/download`,
 };
 
 export const enrollmentAPI = {
@@ -155,12 +155,14 @@ export const documentAPI = {
 	addVersion: (id, formData) => api.post(`/documents/${id}/versions`, formData),
 	getVersions: (id) => api.get(`/documents/${id}/versions`),
 	delete: (id) => api.delete(`/documents/${id}`),
-	getDownloadUrl: (id) => `/api/documents/${id}/download`,
-	getPreviewUrl: (id) => `/api/documents/${id}/download?preview=true`,
+	getDownloadUrl: (id) =>
+		`${import.meta.env.VITE_API_URL || ""}/api/documents/${id}/download`,
+	getPreviewUrl: (id) =>
+		`${import.meta.env.VITE_API_URL || ""}/api/documents/${id}/download?preview=true`,
 	getVersionDownloadUrl: (versionId) =>
-		`/api/documents/versions/${versionId}/download`,
+		`${import.meta.env.VITE_API_URL || ""}/api/documents/versions/${versionId}/download`,
 	getVersionPreviewUrl: (versionId) =>
-		`/api/documents/versions/${versionId}/download?preview=true`,
+		`${import.meta.env.VITE_API_URL || ""}/api/documents/versions/${versionId}/download?preview=true`,
 };
 
 export const reportAPI = {
