@@ -340,6 +340,9 @@ import {
 	LayoutGrid,
 	LayoutList,
 	Lock,
+	TrendingUp,
+	BookOpen,
+	Users,
 } from "lucide-vue-next";
 
 const courses = ref([]);

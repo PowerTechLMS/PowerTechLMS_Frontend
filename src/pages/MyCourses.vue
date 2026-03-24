@@ -237,6 +237,7 @@ import {
 	Award,
 	BarChart3,
 	Play,
+	BookMarked,
 } from "lucide-vue-next";
 
 const enrollments = ref([]);

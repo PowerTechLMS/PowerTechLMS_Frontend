@@ -14,6 +14,7 @@ import {
 	Zap,
 	Trophy,
 	Star,
+	FileText,
 } from "lucide-vue-next";
 
 const authStore = useAuthStore();

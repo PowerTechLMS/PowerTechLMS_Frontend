@@ -242,6 +242,11 @@ export const dashboardAPI = {
 	getSummary: () => api.get("/dashboard/learner"),
 };
 
+export const lessonChatAPI = {
+	getAll: (lessonId) => api.get(`/lessonchat/${lessonId}`),
+	sendMessage: (data) => api.post("/lessonchat", data),
+};
+
 export const notificationAPI = {
 	getAll: (params) => api.get("/notifications", { params }),
 	markAsRead: (id) => api.post(`/notifications/${id}/read`),

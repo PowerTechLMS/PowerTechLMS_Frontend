@@ -137,6 +137,7 @@ import {
 	ExternalLink,
 	Calendar,
 	RotateCcw,
+	ShieldCheck,
 } from "lucide-vue-next";
 import { toast } from "vue3-toastify";
 

@@ -207,6 +207,7 @@ import {
 	Award,
 	Clock,
 	ChevronRight,
+	Zap,
 } from "lucide-vue-next";
 
 const router = useRouter();

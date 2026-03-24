@@ -12,6 +12,8 @@ import {
 	LayoutGrid,
 	List,
 	FileCode,
+	CheckCircle2,
+	Users,
 } from "lucide-vue-next";
 
 const documents = ref<any[]>([]);

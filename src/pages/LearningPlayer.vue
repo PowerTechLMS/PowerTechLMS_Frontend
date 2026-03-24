@@ -1018,6 +1018,21 @@
 								</div>
 
 								<div
+									v-else-if="activeTab === 'ai-chat'"
+									id="tabpanel-ai-chat"
+									class="tab-pane animate-fade-in"
+									role="tabpanel"
+									aria-labelledby="tab-ai-chat"
+									style="height: 600px"
+								>
+									<LessonChat
+										:lesson-id="lesson?.id"
+										:current-timestamp="videoCurrentTime"
+										@seek="seekVideo"
+									/>
+								</div>
+
+								<div
 									v-else-if="activeTab === 'notes'"
 									id="tabpanel-notes"
 									class="tab-pane animate-fade-in"
@@ -1198,6 +1213,7 @@ import {
 	StickyNote,
 	Trash2,
 	Download,
+	Bot,
 	X,
 	LayoutList,
 	Video,
@@ -1218,6 +1234,7 @@ import {
 	Clock,
 	ArrowRight,
 } from "lucide-vue-next";
+import LessonChat from "@/components/LessonChat.vue";
 import { toast } from "vue3-toastify";
 import { useAuthStore } from "@/stores/auth";
 import Hls from "hls.js";
@@ -1247,6 +1264,7 @@ const lastCurrentTime = ref(0);
 const isSeeking = ref(false);
 const isVideoWatchedEnough = ref(false);
 const videoDurationRef = ref(0);
+const videoCurrentTime = ref(0);
 let saveProgressInterval = null;
 
 let lastSeekWarnTime = 0;
@@ -1285,6 +1303,7 @@ let hlsInstance = null;
 const availableTabs = computed(() => {
 	const baseTabs = [
 		{ id: "overview", label: "Tổng quan", icon: Info },
+		{ id: "ai-chat", label: "Hỏi đáp AI", icon: Bot },
 		{ id: "resources", label: "Tài nguyên", icon: Paperclip },
 		{ id: "qa", label: "Hỏi đáp", icon: MessageCircle },
 		{ id: "notes", label: "Ghi chú", icon: StickyNote },
@@ -1723,6 +1742,7 @@ function onSeeked(e) {
 function onTimeUpdate(e) {
 	const video = e.target;
 	const current = video.currentTime;
+	videoCurrentTime.value = current;
 
 	if (!videoDurationRef.value && video.duration)
 		videoDurationRef.value = video.duration;
