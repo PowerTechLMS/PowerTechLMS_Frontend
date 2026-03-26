@@ -40,7 +40,6 @@ const myCourses = ref([]);
 const inProgressCourses = ref([]);
 const testPractice = ref([]);
 
-// AI Suggestion Chat
 const chatOpen = ref(false);
 const chatMessages = ref([]);
 const chatInput = ref("");

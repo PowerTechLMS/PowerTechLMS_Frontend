@@ -32,7 +32,6 @@ const loadHistory = async () => {
 		messages.value = res.data;
 		scrollToBottom();
 	} catch {
-		// Silent error
 	} finally {
 		isLoading.value = false;
 	}
@@ -46,9 +45,8 @@ const sendMessage = async () => {
 	newMessage.value = "";
 	isSending.value = true;
 
-	// Hiển thị tin nhắn người dùng ngay lập tức để tạo cảm giác mượt mà
 	const tempUserMsg = {
-		id: Date.now(), // ID tạm thời
+		id: Date.now(),
 		userMessage: messageText,
 		videoTimestamp: tempTimestamp,
 		createdAt: new Date().toISOString(),
@@ -64,7 +62,6 @@ const sendMessage = async () => {
 			currentTimestamp: tempTimestamp,
 		});
 
-		// Thay thế tin nhắn tạm bằng tin nhắn chính thức từ server (có AI response)
 		const index = messages.value.findIndex((m) => m.id === tempUserMsg.id);
 		if (index !== -1) {
 			messages.value[index] = res.data;
@@ -73,7 +70,6 @@ const sendMessage = async () => {
 		}
 		scrollToBottom();
 	} catch {
-		// Xóa tin nhắn tạm nếu gửi lỗi
 		messages.value = messages.value.filter((m) => m.id !== tempUserMsg.id);
 		toast.error("Không thể gửi tin nhắn. Vui lòng thử lại.");
 	} finally {
@@ -102,10 +98,8 @@ const formatTime = (seconds) => {
 const parseResponse = (text) => {
 	if (!text) return "";
 
-	// 1. Render Markdown using marked
 	let html = marked.parse(text);
 
-	// 2. Handle special timestamp links: [[00:00]]
 	const regex = /\[\[(\d{1,2}:?\d{0,2}:?\d{0,2})\]\]/g;
 	html = html.replace(regex, (match, timeStr) => {
 		const parts = timeStr.split(":").map(Number);
@@ -117,7 +111,6 @@ const parseResponse = (text) => {
 		return `<span class="timestamp-link" data-time="${secs}"><i class="lucide-clock"></i> ${timeStr}</span>`;
 	});
 
-	// 3. Sanitize the final HTML
 	return DOMPurify.sanitize(html);
 };
 

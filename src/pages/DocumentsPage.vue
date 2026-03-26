@@ -196,7 +196,6 @@ const getFileIcon = (fileName: string) => {
 	return { icon: FileCode, color: "#64748b", bg: "rgba(100, 116, 139, 0.1)" };
 };
 
-// AI Chatbot Logic
 const showChat = ref(false);
 const chatLoading = ref(false);
 const chatMessages = ref<any[]>([]);

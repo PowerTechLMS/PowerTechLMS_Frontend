@@ -1156,7 +1156,6 @@ const generateLessonQuizAI = async (mIdx: number, lIdx: number) => {
 			lesson.hasQuiz = true;
 			toast.success(`Đã tạo thành công ${questions.length} câu hỏi AI!`);
 		} catch (error: any) {
-			console.error("AI Quiz Error:", error);
 			toast.error(
 				"Không thể tạo câu hỏi: " +
 					(error.response?.data?.message || "Lỗi định dạng AI"),

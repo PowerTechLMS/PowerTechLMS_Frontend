@@ -567,7 +567,6 @@ const toast = ref("");
 let toastTimer = null;
 
 const isLevel1Completed = ref(false);
-// const isLoggedIn = ref(!!localStorage.getItem("token"));
 
 function showToast(msg) {
 	clearTimeout(toastTimer);
