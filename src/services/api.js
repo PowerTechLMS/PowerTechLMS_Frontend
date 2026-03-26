@@ -249,6 +249,22 @@ export const lessonChatAPI = {
 	sendMessage: (data) => api.post("/lessonchat", data),
 };
 
+export const documentChatAPI = {
+	getAll: (documentId) => api.get(`/documentchat/${documentId}`),
+	sendMessage: (data) => api.post("/documentchat", data),
+};
+
+export const aiSuggestionAPI = {
+	chat: (messages) => api.post("/AiSuggestion/chat", { messages }),
+};
+
+export const aiAPI = {
+	suggestContent: (data) => api.post("/ai/suggest-content", data),
+	generateQuiz: (data) => api.post("/ai/generate-quiz", data),
+	generateLessonQuiz: (data) => api.post("/ai/generate-lesson-quiz", data),
+	generateCourseQuiz: (data) => api.post("/ai/generate-course-quiz", data),
+};
+
 export const notificationAPI = {
 	getAll: (params) => api.get("/notifications", { params }),
 	markAsRead: (id) => api.post(`/notifications/${id}/read`),

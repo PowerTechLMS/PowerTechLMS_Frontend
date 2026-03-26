@@ -3,6 +3,8 @@ import { ref, onMounted, nextTick, watch } from "vue";
 import { Send, Bot, MessageSquare, Loader2 } from "lucide-vue-next";
 import { lessonChatAPI } from "@/services/api";
 import { toast } from "vue3-toastify";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 
 const props = defineProps({
 	lessonId: {
@@ -30,7 +32,6 @@ const loadHistory = async () => {
 		messages.value = res.data;
 		scrollToBottom();
 	} catch {
-		// Silent error
 	} finally {
 		isLoading.value = false;
 	}
@@ -44,9 +45,8 @@ const sendMessage = async () => {
 	newMessage.value = "";
 	isSending.value = true;
 
-	// Hiển thị tin nhắn người dùng ngay lập tức để tạo cảm giác mượt mà
 	const tempUserMsg = {
-		id: Date.now(), // ID tạm thời
+		id: Date.now(),
 		userMessage: messageText,
 		videoTimestamp: tempTimestamp,
 		createdAt: new Date().toISOString(),
@@ -62,7 +62,6 @@ const sendMessage = async () => {
 			currentTimestamp: tempTimestamp,
 		});
 
-		// Thay thế tin nhắn tạm bằng tin nhắn chính thức từ server (có AI response)
 		const index = messages.value.findIndex((m) => m.id === tempUserMsg.id);
 		if (index !== -1) {
 			messages.value[index] = res.data;
@@ -71,7 +70,6 @@ const sendMessage = async () => {
 		}
 		scrollToBottom();
 	} catch {
-		// Xóa tin nhắn tạm nếu gửi lỗi
 		messages.value = messages.value.filter((m) => m.id !== tempUserMsg.id);
 		toast.error("Không thể gửi tin nhắn. Vui lòng thử lại.");
 	} finally {
@@ -99,15 +97,11 @@ const formatTime = (seconds) => {
 
 const parseResponse = (text) => {
 	if (!text) return "";
-	let html = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-	html = html.replace(/^[*-]\s+(.*)/gm, "<li>$1</li>");
-	html = html.replace(/\n/g, "<br>");
-	if (html.includes("<li>")) {
-		html = html.replace(/(<li>.*<\/li>)/gs, "<ul>$1</ul>");
-	}
+
+	let html = marked.parse(text);
 
 	const regex = /\[\[(\d{1,2}:?\d{0,2}:?\d{0,2})\]\]/g;
-	return html.replace(regex, (match, timeStr) => {
+	html = html.replace(regex, (match, timeStr) => {
 		const parts = timeStr.split(":").map(Number);
 		let secs;
 		if (parts.length === 3) secs = parts[0] * 3600 + parts[1] * 60 + parts[2];
@@ -116,6 +110,8 @@ const parseResponse = (text) => {
 
 		return `<span class="timestamp-link" data-time="${secs}"><i class="lucide-clock"></i> ${timeStr}</span>`;
 	});
+
+	return DOMPurify.sanitize(html);
 };
 
 const handleChatClick = (event) => {
@@ -368,6 +364,21 @@ watch(() => props.lessonId, loadHistory);
 
 .message-body li {
 	margin-bottom: 0.25rem;
+}
+
+.message-body :deep(p) {
+	margin-bottom: 0.5rem;
+}
+.message-body :deep(ul),
+.message-body :deep(ol) {
+	margin-bottom: 0.75rem;
+	padding-left: 1.25rem;
+}
+.message-body :deep(h3) {
+	font-size: 1.1rem;
+	margin-top: 1rem;
+	margin-bottom: 0.5rem;
+	font-weight: 700;
 }
 
 .chat-input-area {
