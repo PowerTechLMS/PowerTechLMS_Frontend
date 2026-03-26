@@ -431,8 +431,8 @@
 							</div>
 							<div class="text-content-card glass shadow-sm">
 								<div
-									class="text-content-wrap custom-scrollbar"
-									v-html="lesson?.content"
+									class="text-content-wrap custom-scrollbar markdown-body"
+									v-html="renderMarkdown(lesson?.content)"
 								/>
 							</div>
 						</div>
@@ -574,6 +574,24 @@
 											>
 												<h4 class="section-title-dot">Nội dung chính</h4>
 												<div class="section-body" v-html="lesson.content" />
+											</div>
+
+											<div
+												v-if="lesson?.aiSummary"
+												class="desc-section mt-4 ai-summary-section animate-fade-in"
+											>
+												<h4 class="section-title-dot ai-glow-text">
+													<Sparkles :size="16" class="me-1" /> Tóm tắt bài giảng
+													(AI)
+												</h4>
+												<div
+													class="section-body ai-summary-content glass p-3 rounded"
+												>
+													<div
+														class="markdown-body"
+														v-html="renderMarkdown(lesson.aiSummary)"
+													/>
+												</div>
 											</div>
 										</div>
 									</div>
@@ -1239,6 +1257,8 @@ import { toast } from "vue3-toastify";
 import { useAuthStore } from "@/stores/auth";
 import Hls from "hls.js";
 import * as signalR from "@microsoft/signalr";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 
 const authStore = useAuthStore();
 const route = useRoute();
@@ -1299,6 +1319,11 @@ const replyContent = ref("");
 let signalrConnection = null;
 let signalRCurrentLessonId = null;
 let hlsInstance = null;
+
+const renderMarkdown = (text) => {
+	if (!text) return "";
+	return DOMPurify.sanitize(marked.parse(text));
+};
 
 const availableTabs = computed(() => {
 	const baseTabs = [
@@ -1632,7 +1657,7 @@ async function ensureSignalRConnection() {
 		}
 	});
 
-	signalrConnection.on("AiProcessingCompleted", (lessonId) => {});
+	signalrConnection.on("AiProcessingCompleted", () => {});
 
 	try {
 		await signalrConnection.start();

@@ -324,6 +324,7 @@
 														v-model="lesson.title"
 														type="text"
 														class="form-control"
+														placeholder="Nhập tên bài học (Nhập xong để hiện nút Gợi ý bằng AI)..."
 														required
 													/>
 												</div>
@@ -434,12 +435,44 @@
 													</div>
 												</div>
 												<div v-else class="bg-light p-3 rounded">
+													<div
+														class="d-flex justify-content-between align-items-center mb-2"
+													>
+														<label
+															class="form-label mb-0 fw-bold fs-13 text-dark"
+															>Nội dung bài học</label
+														>
+														<button
+															v-if="lesson.title"
+															type="button"
+															class="btn btn-xs btn-outline-primary fw-bold"
+															:disabled="isSuggestingContent[lesson.id]"
+															@click="suggestAIContent(mIdx, lIdx)"
+														>
+															<i
+																v-if="isSuggestingContent[lesson.id]"
+																class="fas fa-spinner fa-spin me-1"
+															></i>
+															<i v-else class="fas fa-magic me-1"></i>
+															Gợi ý bằng AI
+														</button>
+													</div>
 													<textarea
 														v-model="lesson.content"
 														class="form-control mb-2"
-														rows="4"
-														placeholder="Nhập nội dung bài đọc..."
+														rows="6"
+														placeholder="Nhập nội dung bài đọc bằng định dạng Markdown..."
 													></textarea>
+													<div v-if="lesson.content" class="mt-3">
+														<label class="fs-12 fw-bold text-muted mb-2"
+															><i class="fas fa-eye me-1"></i> Xem trước nội
+															dung</label
+														>
+														<div
+															class="markdown-preview p-3 border rounded bg-white markdown-body"
+															v-html="renderMarkdown(lesson.content)"
+														></div>
+													</div>
 													<div
 														class="row gx-2 align-items-center bg-white p-2 border rounded mx-0"
 													>
@@ -698,8 +731,28 @@
 															class="btn btn-xs btn-warning w-50 fw-bold shadow-sm"
 															@click="openImportModal('lesson', mIdx, lIdx)"
 														>
-															<i class="fas fa-file-import me-1"></i> Import từ
-															Word/Excel
+															<i class="fas fa-file-import me-1"></i> Import
+														</button>
+													</div>
+													<div class="mt-2">
+														<button
+															type="button"
+															class="btn btn-xs btn-info w-100 fw-bold shadow-sm"
+															@click="generateLessonQuizAI(mIdx, lIdx)"
+															:disabled="
+																isGeneratingQuiz[`lesson_${lesson.id}`]
+															"
+														>
+															<span
+																v-if="isGeneratingQuiz[`lesson_${lesson.id}`]"
+															>
+																<i class="fas fa-spinner fa-spin me-1"></i> Đang
+																tạo...
+															</span>
+															<span v-else>
+																<i class="fas fa-robot me-1"></i> Tạo câu hỏi
+																bằng AI
+															</span>
 														</button>
 													</div>
 												</div>
@@ -943,6 +996,24 @@
 											>
 										</div>
 									</div>
+									<div class="col-md-12 mt-3 text-center">
+										<button
+											type="button"
+											class="btn btn-outline-info w-100 py-3 fw-bold border-dashed"
+											style="border-width: 2px"
+											@click="generateCourseQuizAI"
+											:disabled="isGeneratingQuiz['course_final']"
+										>
+											<span v-if="isGeneratingQuiz['course_final']">
+												<i class="fas fa-spinner fa-spin me-2 fs-5"></i> AI ĐANG
+												PHÂN TÍCH VÀ TẠO CÂU HỎI...
+											</span>
+											<span v-else>
+												<i class="fas fa-robot me-2 fs-5"></i> TẠO ĐỀ THI TỔNG
+												HỢP BẰNG AI
+											</span>
+										</button>
+									</div>
 								</div>
 
 								<div class="text-end mt-5 border-top pt-4">
@@ -988,9 +1059,18 @@ import { useRouter, useRoute } from "vue-router";
 import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
 
-import { courseAPI, moduleAPI, lessonAPI, quizAPI } from "@/services/api";
+import {
+	courseAPI,
+	moduleAPI,
+	lessonAPI,
+	quizAPI,
+	aiAPI,
+} from "@/services/api";
 import ImportQuizModal from "@/components/ImportQuizModal.vue";
 import { toast } from "vue3-toastify";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
+import Swal from "sweetalert2";
 
 const router = useRouter();
 const route = useRoute();
@@ -999,6 +1079,199 @@ const courseId = route.params.id;
 const activeTab = ref("basic");
 const isSaving = ref(false);
 const isLoadingData = ref(true);
+const isSuggestingContent = ref<Record<number, boolean>>({});
+const isGeneratingQuiz = ref<Record<string, boolean>>({});
+
+const renderMarkdown = (text: string) => {
+	if (!text) return "";
+	return DOMPurify.sanitize(marked.parse(text) as string);
+};
+
+const generateLessonQuizAI = async (mIdx: number, lIdx: number) => {
+	const lesson = curriculum.value[mIdx].lessons[lIdx];
+
+	if (!lesson.id || lesson.id <= 0) {
+		toast.warning(
+			"Vui lòng lưu khóa học trước khi sử dụng tính năng tạo câu hỏi bằng AI cho bài học này.",
+		);
+		return;
+	}
+
+	const { value: formValues } = await Swal.fire({
+		title: "AI Quiz Generator",
+		html: `
+      <div class="text-start">
+        <p class="small text-muted mb-2">Hệ thống sẽ tự động phân tích Bản gỡ băng hoặc nội dung bài học để tạo câu hỏi.</p>
+        <label class="form-label fw-bold small mb-1">Số lượng câu hỏi muốn tạo</label>
+        <input id="swal-count" type="number" class="form-control mb-3" value="5" min="1" max="20">
+        <label class="form-label fw-bold small mb-1">Yêu cầu cụ thể (Prompt)</label>
+        <textarea id="swal-prompt" class="form-control" rows="3" placeholder="Ví dụ: Tập trung vào các khái niệm chính, độ khó nâng cao..."></textarea>
+      </div>
+    `,
+		focusConfirm: false,
+		showCancelButton: true,
+		confirmButtonText: "Bắt đầu tạo câu hỏi",
+		cancelButtonText: "Hủy",
+		confirmButtonColor: "#3085d6",
+		preConfirm: () => {
+			return {
+				count: (document.getElementById("swal-count") as HTMLInputElement)
+					.value,
+				prompt: (document.getElementById("swal-prompt") as HTMLInputElement)
+					.value,
+			};
+		},
+	});
+
+	if (formValues) {
+		const loadingId = `lesson_${lesson.id}`;
+		isGeneratingQuiz.value[loadingId] = true;
+		try {
+			const res = await aiAPI.generateLessonQuiz({
+				lessonId: lesson.id,
+				count: parseInt(formValues.count),
+				context: formValues.prompt,
+			});
+
+			const questions = JSON.parse(res.data.questionsJson);
+			if (!Array.isArray(questions))
+				throw new Error("Dữ liệu AI trả về không hợp lệ.");
+
+			questions.forEach((q: any) => {
+				lesson.quiz.questions.push({
+					id: generateId(),
+					QuestionText: q.questionText,
+					Options: {
+						A: q.optionA,
+						B: q.optionB,
+						C: q.optionC,
+						D: q.optionD,
+					},
+					CorrectAnswer: q.correctAnswer,
+					Points: 1.0,
+					Explanation: q.explanation || "",
+				});
+			});
+
+			lesson.hasQuiz = true;
+			toast.success(`Đã tạo thành công ${questions.length} câu hỏi AI!`);
+		} catch (error: any) {
+			console.error("AI Quiz Error:", error);
+			toast.error(
+				"Không thể tạo câu hỏi: " +
+					(error.response?.data?.message || "Lỗi định dạng AI"),
+			);
+		} finally {
+			isGeneratingQuiz.value[loadingId] = false;
+		}
+	}
+};
+
+const generateCourseQuizAI = async () => {
+	const allLessons = [];
+	for (const m of curriculum.value) {
+		for (const l of m.lessons) {
+			if (l.id > 0) {
+				allLessons.push({
+					id: l.id,
+					title: l.title,
+					count: 2,
+				});
+			}
+		}
+	}
+
+	if (allLessons.length === 0) {
+		toast.warning("Khóa học chưa có đủ bài giảng đã lưu để tổng hợp đề thi.");
+		return;
+	}
+
+	const htmlList = allLessons
+		.map(
+			(l, index) => `
+      <div class="d-flex align-items-center mb-2 border-bottom pb-2">
+        <div class="flex-grow-1 small text-truncate pe-2" title="${l.title}">${l.title}</div>
+        <div style="width: 80px">
+          <input type="number" id="lesson-count-${index}" class="form-control form-control-sm" value="2" min="0" max="10">
+        </div>
+      </div>
+    `,
+		)
+		.join("");
+
+	const { value: result } = await Swal.fire({
+		title: "Tạo đề thi tổng hợp",
+		width: "600px",
+		html: `
+      <div class="text-start">
+        <label class="form-label fw-bold small mb-2">Số lượng câu hỏi cho từng bài:</label>
+        <div style="max-height: 300px; overflow-y: auto;" class="mb-3 px-1">
+          ${htmlList}
+        </div>
+        <label class="form-label fw-bold small mb-1">Lưu ý chung cho đề thi (Prompt)</label>
+        <textarea id="swal-global-prompt" class="form-control" rows="2" placeholder="Ví dụ: Đề thi bao quát toàn bộ kiến thức, phong cách chuyên nghiệp..."></textarea>
+      </div>
+    `,
+		showCancelButton: true,
+		confirmButtonText: "Tạo đề thi ngay",
+		cancelButtonText: "Hủy",
+		confirmButtonColor: "#3085d6",
+		preConfirm: () => {
+			const lessons = allLessons.map((l, index) => ({
+				lessonId: l.id,
+				count: parseInt(
+					(document.getElementById(`lesson-count-${index}`) as HTMLInputElement)
+						.value,
+				),
+			}));
+			return {
+				lessons: lessons.filter((l) => l.count > 0),
+				globalPrompt: (
+					document.getElementById("swal-global-prompt") as HTMLTextAreaElement
+				).value,
+			};
+		},
+	});
+
+	if (result && result.lessons.length > 0) {
+		isGeneratingQuiz.value["course_final"] = true;
+		try {
+			const res = await aiAPI.generateCourseQuiz({
+				lessons: result.lessons,
+				globalContext: result.globalPrompt,
+			});
+
+			const questions = JSON.parse(res.data.questionsJson);
+			if (!Array.isArray(questions))
+				throw new Error("Dữ liệu AI trả về không hợp lệ.");
+
+			questions.forEach((q: any) => {
+				courseQuiz.value.questions.push({
+					id: generateId(),
+					QuestionText: q.questionText,
+					Options: {
+						A: q.optionA,
+						B: q.optionB,
+						C: q.optionC,
+						D: q.optionD,
+					},
+					CorrectAnswer: q.correctAnswer,
+					Points: 1.0,
+					Explanation: q.explanation || "",
+				});
+			});
+
+			toast.success(`Đã tổng hợp thành công ${questions.length} câu hỏi mới!`);
+		} catch (error: any) {
+			toast.error(
+				"Lỗi khi tổng hợp đề thi: " +
+					(error.response?.data?.message || "Lỗi định dạng AI"),
+			);
+		} finally {
+			isGeneratingQuiz.value["course_final"] = false;
+		}
+	}
+};
 
 type OptionKey = "A" | "B" | "C" | "D";
 const letters: OptionKey[] = ["A", "B", "C", "D"];
@@ -1167,6 +1440,7 @@ onMounted(async () => {
 								? l.videoDurationSeconds || 0
 								: l.readingDurationSeconds || 0,
 						isFreePreview: l.isFreePreview || false,
+						aiSummary: l.aiSummary || "",
 						attachments: (l.attachments || []).map((a: any) => ({
 							id: a.id,
 							fileName: a.fileName,
@@ -1335,6 +1609,44 @@ function handleImportQuestions(questions: any[]) {
 		toast.success(`Đã import ${questions.length} câu hỏi vào đề thi.`);
 	}
 }
+
+const suggestAIContent = async (mIdx: number, lIdx: number) => {
+	const lesson = curriculum.value[mIdx].lessons[lIdx];
+	if (!lesson.title) {
+		toast.warning("Vui lòng nhập tiêu đề bài học trước khi sử dụng AI!");
+		return;
+	}
+
+	isSuggestingContent.value[lesson.id] = true;
+	try {
+		const res = await aiAPI.suggestContent({
+			title: lesson.title,
+			context: lesson.content
+				? `Dựa trên nội dung đã có: ${lesson.content.substring(0, 200)}...`
+				: "",
+		});
+
+		if (lesson.content) {
+			if (
+				confirm(
+					"Nội dung hiện tại sẽ bị ghi đè bởi gợi ý từ AI. Bạn có chắc chắn?",
+				)
+			) {
+				lesson.content = res.data.content;
+			}
+		} else {
+			lesson.content = res.data.content;
+		}
+		toast.success("Đã tạo nội dung gợi ý!");
+	} catch (error: any) {
+		toast.error(
+			"Lỗi khi gợi ý nội dung: " +
+				(error.response?.data?.message || "Lỗi không xác định"),
+		);
+	} finally {
+		isSuggestingContent.value[lesson.id] = false;
+	}
+};
 
 const handleImageUpload = (e: Event) => {
 	const files = (e.target as HTMLInputElement).files;

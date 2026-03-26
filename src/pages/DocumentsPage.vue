@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
-import { documentAPI } from "@/services/api";
 import { toast } from "vue3-toastify";
 import {
 	Search,
@@ -14,7 +13,12 @@ import {
 	FileCode,
 	CheckCircle2,
 	Users,
+	Bot,
+	Send,
 } from "lucide-vue-next";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
+import { documentAPI, documentChatAPI } from "@/services/api";
 
 const documents = ref<any[]>([]);
 const loading = ref(true);
@@ -34,7 +38,7 @@ const predefinedTags = {
 	skills: {
 		label: "Kỹ năng & Chuyên môn",
 		colorClass: "tag-primary",
-		icon: "FileText",
+		icon: FileText,
 		items: [
 			"JavaScript",
 			"ASP.NET Core",
@@ -47,7 +51,7 @@ const predefinedTags = {
 	compliance: {
 		label: "Tuân thủ & Pháp lý",
 		colorClass: "tag-danger",
-		icon: "CheckCircle2",
+		icon: CheckCircle2,
 		items: [
 			"PCCC",
 			"HSE",
@@ -60,7 +64,7 @@ const predefinedTags = {
 	roles: {
 		label: "Đối tượng & Phòng ban",
 		colorClass: "tag-warning",
-		icon: "Users",
+		icon: Users,
 		items: [
 			"Sales",
 			"Engineering",
@@ -190,6 +194,72 @@ const getFileIcon = (fileName: string) => {
 			bg: "rgba(34, 197, 94, 0.1)",
 		};
 	return { icon: FileCode, color: "#64748b", bg: "rgba(100, 116, 139, 0.1)" };
+};
+
+// AI Chatbot Logic
+const showChat = ref(false);
+const chatLoading = ref(false);
+const chatMessages = ref<any[]>([]);
+const chatInput = ref("");
+const chatScrollContainer = ref<HTMLElement | null>(null);
+
+const openChat = async (doc: any) => {
+	targetDoc.value = doc;
+	showChat.value = true;
+	chatMessages.value = [];
+	chatLoading.value = true;
+	try {
+		const { data } = await documentChatAPI.getAll(doc.id);
+		chatMessages.value = data || [];
+		scrollToBottom();
+	} catch {
+		toast.error("Không thể tải lịch sử chat.");
+	} finally {
+		chatLoading.value = false;
+	}
+};
+
+const sendChatMessage = async () => {
+	if (!chatInput.value.trim() || !targetDoc.value || chatLoading.value) return;
+
+	const userMsg = chatInput.value;
+	chatInput.value = "";
+
+	chatMessages.value.push({
+		userMessage: userMsg,
+		aiResponse: "Đang suy nghĩ...",
+		isPending: true,
+		createdAt: new Date().toISOString(),
+	});
+
+	scrollToBottom();
+
+	try {
+		const { data } = await documentChatAPI.sendMessage({
+			documentId: targetDoc.value.id,
+			message: userMsg,
+		});
+		chatMessages.value[chatMessages.value.length - 1] = data;
+		scrollToBottom();
+	} catch {
+		toast.error("Lỗi khi gửi tin nhắn.");
+		chatMessages.value.pop();
+	}
+};
+
+const scrollToBottom = () => {
+	setTimeout(() => {
+		if (chatScrollContainer.value) {
+			chatScrollContainer.value.scrollTop =
+				chatScrollContainer.value.scrollHeight;
+		}
+	}, 100);
+};
+
+const renderMarkdown = (text: string) => {
+	if (!text) return "";
+	const rawHtml = marked.parse(text) as string;
+	return DOMPurify.sanitize(rawHtml);
 };
 </script>
 
@@ -342,16 +412,14 @@ const getFileIcon = (fileName: string) => {
 
 						<div class="doc-card-footer">
 							<div class="doc-meta">
-								<span class="meta-item"
-									><Download :size="12" />
-									{{ (doc.fileSize / 1024).toFixed(1) }} KB</span
-								>
-								<span class="meta-item"
-									><Clock :size="12" />
-									{{
-										new Date(doc.createdAt).toLocaleDateString("vi-VN")
-									}}</span
-								>
+								<span class="meta-item">
+									<Download :size="12" />
+									{{ (doc.fileSize / 1024).toFixed(1) }} KB
+								</span>
+								<span class="meta-item">
+									<Clock :size="12" />
+									{{ new Date(doc.createdAt).toLocaleDateString("vi-VN") }}
+								</span>
 							</div>
 							<div class="doc-actions">
 								<button
@@ -360,6 +428,14 @@ const getFileIcon = (fileName: string) => {
 									title="Tải về"
 								>
 									<Download :size="16" />
+								</button>
+								<button
+									class="action-btn chat-ai-btn premium-btn-ai"
+									@click="openChat(doc)"
+									title="Hỏi AI với Chatbot thông minh"
+								>
+									<Bot :size="16" />
+									<span class="btn-label-ai">Hỏi AI</span>
 								</button>
 								<button
 									class="action-btn"
@@ -441,6 +517,81 @@ const getFileIcon = (fileName: string) => {
 								</div>
 							</div>
 						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Document AI Chat Overlay -->
+		<div
+			v-if="showChat"
+			class="chat-overlay animate-fade-in"
+			@click.self="showChat = false"
+		>
+			<div class="chat-container glass shadow-2xl animate-slide-up">
+				<div class="chat-header">
+					<div class="d-flex align-items-center gap-3">
+						<div class="bot-avatar">
+							<Bot :size="20" />
+						</div>
+						<div>
+							<h5 class="mb-0 fs-16 fw-bold">Trợ lý AI Tài liệu</h5>
+							<p class="mb-0 fs-11 text-secondary" v-if="targetDoc">
+								Đang học từ: {{ targetDoc.title }}
+							</p>
+						</div>
+					</div>
+					<button class="btn-close-chat" @click="showChat = false">×</button>
+				</div>
+
+				<div class="chat-body" ref="chatScrollContainer">
+					<div v-if="chatLoading" class="text-center py-4">
+						<div class="premium-loader mx-auto scale-75"></div>
+					</div>
+					<div
+						v-else-if="chatMessages.length === 0"
+						class="empty-chat text-center py-5"
+					>
+						<Bot :size="40" class="text-tertiary mb-3 opacity-20" />
+						<p class="text-secondary fs-13 px-4">
+							Chào bạn! Tôi đã sẵn sàng hỗ trợ bạn tìm hiểu về tài liệu này. Hãy
+							đặt câu hỏi bất kỳ nhé.
+						</p>
+					</div>
+					<div v-else class="messages-list">
+						<div
+							v-for="(chat, index) in chatMessages"
+							:key="index"
+							class="chat-group"
+						>
+							<div class="message user">
+								<div class="bubble">{{ chat.userMessage }}</div>
+							</div>
+							<div class="message bot">
+								<div
+									class="bubble ai-bubble markdown-body"
+									v-html="renderMarkdown(chat.aiResponse)"
+								></div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="chat-footer">
+					<div class="input-wrapper">
+						<input
+							v-model="chatInput"
+							@keyup.enter="sendChatMessage"
+							placeholder="Bạn muốn hỏi gì về tài liệu này?"
+							:disabled="chatLoading"
+						/>
+						<button
+							@click="sendChatMessage"
+							class="send-btn"
+							:disabled="!chatInput.trim()"
+						>
+							<Send :size="18" />
+						</button>
 					</div>
 				</div>
 			</div>
@@ -1001,5 +1152,257 @@ const getFileIcon = (fileName: string) => {
 		flex-direction: column;
 		align-items: stretch;
 	}
+}
+
+.chat-ai-btn {
+	width: auto !important;
+	padding: 0 12px !important;
+	gap: 6px;
+	background: rgba(139, 92, 246, 0.1) !important;
+	color: #8b5cf6 !important;
+	border: 1px solid rgba(139, 92, 246, 0.2) !important;
+}
+.chat-ai-btn:hover {
+	background: #8b5cf6 !important;
+	color: white !important;
+	box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+}
+.btn-label-ai {
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.2px;
+}
+.premium-btn-ai {
+	position: relative;
+	overflow: hidden;
+}
+.premium-btn-ai::after {
+	content: "";
+	position: absolute;
+	top: -50%;
+	left: -50%;
+	width: 200%;
+	height: 200%;
+	background: linear-gradient(
+		45deg,
+		transparent,
+		rgba(255, 255, 255, 0.3),
+		transparent
+	);
+	transform: rotate(45deg);
+	animation: shine 3s infinite;
+}
+@keyframes shine {
+	0% {
+		left: -100%;
+	}
+	100% {
+		left: 100%;
+	}
+}
+
+.chat-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(15, 23, 42, 0.4);
+	backdrop-filter: blur(4px);
+	z-index: 9999;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	padding-right: 2rem;
+}
+
+.chat-container {
+	width: 440px;
+	height: 600px;
+	background: white;
+	border-radius: 24px;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.chat-header {
+	padding: 1.25rem 1.5rem;
+	background: linear-gradient(90deg, #4f46e5, #8b5cf6);
+	color: white;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.bot-avatar {
+	width: 40px;
+	height: 40px;
+	background: rgba(255, 255, 255, 0.2);
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.btn-close-chat {
+	background: rgba(255, 255, 255, 0.1);
+	border: none;
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	color: white;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 20px;
+	transition: all 0.2s;
+}
+.btn-close-chat:hover {
+	background: rgba(255, 255, 255, 0.3);
+}
+
+.chat-body {
+	flex-grow: 1;
+	overflow-y: auto;
+	padding: 1.5rem;
+	background: #f8fafc;
+}
+
+.messages-list {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
+.message {
+	display: flex;
+	flex-direction: column;
+}
+
+.message.user {
+	align-items: flex-end;
+}
+
+.message.bot {
+	align-items: flex-start;
+}
+
+.bubble {
+	max-width: 85%;
+	padding: 0.75rem 1rem;
+	border-radius: 14px;
+	font-size: 14px;
+	line-height: 1.5;
+	position: relative;
+}
+
+.message.user .bubble {
+	background: #4f46e5;
+	color: white;
+	border-bottom-right-radius: 2px;
+}
+
+.message.bot .bubble {
+	background: white;
+	color: #1e293b;
+	border: 1px solid #e2e8f0;
+	border-bottom-left-radius: 2px;
+}
+
+.ai-bubble {
+	white-space: pre-line;
+}
+
+.chat-footer {
+	padding: 1.25rem;
+	background: white;
+	border-top: 1px solid #f1f5f9;
+}
+
+.input-wrapper {
+	display: flex;
+	background: #f1f5f9;
+	border-radius: 12px;
+	padding: 4px;
+	border: 1px solid transparent;
+	transition: all 0.2s;
+}
+.input-wrapper:focus-within {
+	border-color: #4f46e5;
+	background: white;
+}
+
+.input-wrapper input {
+	flex-grow: 1;
+	border: none;
+	background: transparent;
+	padding: 0.5rem 0.75rem;
+	outline: none;
+	font-size: 14px;
+}
+
+.send-btn {
+	width: 36px;
+	height: 36px;
+	border-radius: 8px;
+	background: #4f46e5;
+	color: white;
+	border: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s;
+}
+.send-btn:hover:not(:disabled) {
+	background: #4338ca;
+	transform: scale(1.05);
+}
+.send-btn:disabled {
+	opacity: 0.5;
+	background: #94a3b8;
+}
+
+@media (max-width: 480px) {
+	.chat-overlay {
+		padding-right: 0;
+	}
+	.chat-container {
+		width: 100%;
+		height: 100%;
+		border-radius: 0;
+	}
+}
+
+/* Markdown Styles */
+.markdown-body :deep(p) {
+	margin-bottom: 0.5rem;
+}
+.markdown-body :deep(ul),
+.markdown-body :deep(ol) {
+	margin-bottom: 0.5rem;
+	padding-left: 1.25rem;
+}
+.markdown-body :deep(li) {
+	margin-bottom: 0.25rem;
+}
+.markdown-body :deep(h1),
+.markdown-body :deep(h2),
+.markdown-body :deep(h3) {
+	margin-top: 1rem;
+	margin-bottom: 0.5rem;
+	font-weight: 700;
+	font-size: 1.1rem;
+}
+.markdown-body :deep(strong) {
+	font-weight: 800;
+	color: #4f46e5;
+}
+.markdown-body :deep(code) {
+	background: rgba(0, 0, 0, 0.05);
+	padding: 0.2rem 0.4rem;
+	border-radius: 4px;
+	font-family: monospace;
 }
 </style>

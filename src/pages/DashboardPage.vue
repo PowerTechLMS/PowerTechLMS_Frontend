@@ -39,6 +39,47 @@ const weekMission = ref({
 const myCourses = ref([]);
 const inProgressCourses = ref([]);
 const testPractice = ref([]);
+
+// AI Suggestion Chat
+const chatOpen = ref(false);
+const chatMessages = ref([]);
+const chatInput = ref("");
+const chatLoading = ref(false);
+const chatScrollRef = ref(null);
+
+async function sendChat() {
+	if (!chatInput.value.trim() || chatLoading.value) return;
+
+	const userMsg = { role: "user", content: chatInput.value };
+	chatMessages.value.push(userMsg);
+	chatInput.value = "";
+	chatLoading.value = true;
+
+	try {
+		const res = await aiSuggestionAPI.chat(chatMessages.value);
+		if (res.data && res.data.message) {
+			chatMessages.value.push({ role: "assistant", content: res.data.message });
+		} else {
+			chatMessages.value.push({
+				role: "assistant",
+				content:
+					"Tôi đã tìm kiếm nhưng không thấy khóa học nào phù hợp. Bạn có thể gửi yêu cầu đề xuất lên Cấp trên nhé!",
+			});
+		}
+	} catch {
+		chatMessages.value.push({
+			role: "assistant",
+			content: "Xin lỗi, tôi đang gặp lỗi kết nối. Hãy thử lại sau nhé!",
+		});
+	} finally {
+		chatLoading.value = false;
+		nextTick(() => {
+			if (chatScrollRef.value) {
+				chatScrollRef.value.scrollTop = chatScrollRef.value.scrollHeight;
+			}
+		});
+	}
+}
 const learningProfile = ref({
 	summary: [],
 	predictedScore: 0,
@@ -73,6 +114,10 @@ const missionPct = computed(() =>
 				(weekMission.value.doneTasks / weekMission.value.totalTasks) * 100,
 			)
 		: 0,
+);
+
+const unreadMessages = computed(
+	() => hrMessages.value.filter((m) => m.unread).length,
 );
 
 onMounted(async () => {
@@ -458,6 +503,92 @@ onMounted(async () => {
 			</div>
 		</div>
 
+		<!-- AI Suggestion Dialog -->
+		<div v-if="chatOpen" class="ai-chat-overlay" @click.self="chatOpen = false">
+			<div class="ai-chat-panel">
+				<div class="chat-header">
+					<div class="header-info">
+						<Sparkles :size="20" class="text-accent" />
+						<div>
+							<h3>Trợ lý Tìm kiếm Khóa học</h3>
+							<span>AI sẽ tìm khóa học phù hợp cho bạn</span>
+						</div>
+					</div>
+					<button class="close-btn" @click="chatOpen = false">
+						<X :size="20" />
+					</button>
+				</div>
+
+				<div ref="chatScrollRef" class="chat-body">
+					<div v-if="chatMessages.length === 0" class="welcome-chat">
+						<div class="bot-icon"><Sparkles :size="32" /></div>
+						<h2>Xin chào! Bạn đang muốn nâng cao kỹ năng gì?</h2>
+						<p>
+							Hãy nhập yêu cầu của bạn, ví dụ: "Tôi muốn học về lập trình Web"
+							hoặc "Tìm khóa học kỹ năng giao tiếp".
+						</p>
+						<div class="quick-prompts">
+							<button
+								@click="
+									chatInput = 'Tìm khóa học về lập trình';
+									sendChat();
+								"
+							>
+								💻 Lập trình
+							</button>
+							<button
+								@click="
+									chatInput = 'Tôi muốn học kỹ năng mềm';
+									sendChat();
+								"
+							>
+								🤝 Kỹ năng mềm
+							</button>
+							<button
+								@click="
+									chatInput = 'Gợi ý khóa học quản lý dự án';
+									sendChat();
+								"
+							>
+								📊 Quản lý dự án
+							</button>
+						</div>
+					</div>
+
+					<div
+						v-for="(msg, idx) in chatMessages.filter(
+							(m) => m.role !== 'system',
+						)"
+						:key="idx"
+						class="chat-msg"
+						:class="msg.role"
+					>
+						<div class="msg-bubble">
+							<div class="msg-text">{{ msg.content }}</div>
+						</div>
+					</div>
+
+					<div v-if="chatLoading" class="chat-msg assistant">
+						<div class="msg-bubble typing">
+							<span class="dot"></span><span class="dot"></span
+							><span class="dot"></span>
+						</div>
+					</div>
+				</div>
+
+				<form class="chat-footer" @submit.prevent="sendChat">
+					<input
+						v-model="chatInput"
+						placeholder="Nhập yêu cầu của bạn..."
+						:disabled="chatLoading"
+					/>
+					<button type="submit" :disabled="!chatInput.trim() || chatLoading">
+						<Send :size="18" />
+					</button>
+				</form>
+			</div>
+		</div>
+
 		<div v-else class="dash-loading-screen">
 			<div class="spinner" />
 			<p>Đang tải dữ liệu học tập...</p>
@@ -528,6 +659,245 @@ onMounted(async () => {
 	margin: 0;
 }
 
+.empty-recommendation {
+	padding: 2rem;
+	text-align: center;
+	border-radius: 16px;
+	color: var(--text-sub);
+	font-size: 14px;
+	border: 1px dashed var(--border);
+}
+
+/* AI Chat Overlay */
+.ai-chat-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.5);
+	backdrop-filter: blur(4px);
+	z-index: 1000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+}
+
+.ai-chat-panel {
+	width: 100%;
+	max-width: 500px;
+	height: 600px;
+	background: var(--bg-card);
+	border-radius: 24px;
+	display: flex;
+	flex-direction: column;
+	box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+	overflow: hidden;
+	border: 1px solid var(--border);
+}
+
+.chat-header {
+	padding: 20px;
+	border-bottom: 1px solid var(--border);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background: var(--bg-main);
+}
+
+.header-info {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.header-info h3 {
+	margin: 0;
+	font-size: 16px;
+	font-weight: 700;
+}
+
+.header-info span {
+	font-size: 12px;
+	color: var(--text-sub);
+}
+
+.close-btn {
+	background: none;
+	border: none;
+	color: var(--text-sub);
+	cursor: pointer;
+	padding: 4px;
+	border-radius: 50%;
+	transition: all 0.2s;
+}
+
+.close-btn:hover {
+	background: rgba(255, 255, 255, 0.1);
+	color: var(--text-main);
+}
+
+.chat-body {
+	flex: 1;
+	overflow-y: auto;
+	padding: 24px;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.welcome-chat {
+	text-align: center;
+	padding: 40px 20px;
+}
+
+.bot-icon {
+	width: 64px;
+	height: 64px;
+	background: var(--accent);
+	color: white;
+	border-radius: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0 auto 20px;
+	box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+}
+
+.welcome-chat h2 {
+	font-size: 20px;
+	margin-bottom: 12px;
+}
+
+.welcome-chat p {
+	color: var(--text-sub);
+	font-size: 14px;
+	margin-bottom: 24px;
+}
+
+.quick-prompts {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	justify-content: center;
+}
+
+.quick-prompts button {
+	background: var(--bg-main);
+	border: 1px solid var(--border);
+	padding: 8px 16px;
+	border-radius: 99px;
+	font-size: 13px;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.quick-prompts button:hover {
+	border-color: var(--accent);
+	background: rgba(139, 92, 246, 0.1);
+}
+
+.chat-msg {
+	display: flex;
+	margin-bottom: 8px;
+}
+
+.chat-msg.user {
+	justify-content: flex-end;
+}
+
+.msg-bubble {
+	max-width: 80%;
+	padding: 12px 16px;
+	border-radius: 18px;
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.user .msg-bubble {
+	background: var(--primary);
+	color: white;
+	border-bottom-right-radius: 4px;
+}
+
+.assistant .msg-bubble {
+	background: var(--bg-main);
+	border: 1px solid var(--border);
+	border-bottom-left-radius: 4px;
+}
+
+.typing {
+	display: flex;
+	gap: 4px;
+	padding: 12px 20px;
+}
+
+.typing .dot {
+	width: 6px;
+	height: 6px;
+	background: var(--text-sub);
+	border-radius: 50%;
+	animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.typing .dot:nth-child(1) {
+	animation-delay: -0.32s;
+}
+
+.typing .dot:nth-child(2) {
+	animation-delay: -0.16s;
+}
+
+@keyframes bounce {
+	0%,
+	80%,
+	100% {
+		transform: scale(0);
+	}
+	40% {
+		transform: scale(1);
+	}
+}
+
+.chat-footer {
+	padding: 16px;
+	background: var(--bg-main);
+	border-top: 1px solid var(--border);
+	display: flex;
+	gap: 12px;
+}
+
+.chat-footer input {
+	flex: 1;
+	background: var(--bg-card);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	padding: 10px 16px;
+	color: var(--text-main);
+	outline: none;
+}
+
+.chat-footer input:focus {
+	border-color: var(--accent);
+}
+
+.chat-footer button {
+	width: 42px;
+	height: 42px;
+	border-radius: 12px;
+	background: var(--accent);
+	border: none;
+	color: white;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.chat-footer button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
 .text-primary {
 	color: var(--primary);
 }
@@ -592,10 +962,7 @@ onMounted(async () => {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	margin-bottom: 32px;
-	box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.3);
 }
-
 .banner-title {
 	display: flex;
 	align-items: center;
@@ -605,6 +972,55 @@ onMounted(async () => {
 	letter-spacing: 1px;
 	font-size: 12px;
 	margin-bottom: 8px;
+}
+
+.ai-helper-promo {
+	background: var(--bg-card);
+	border: 2px solid rgba(139, 92, 246, 0.3);
+	border-radius: 20px;
+	padding: 24px;
+	margin-bottom: 32px;
+	position: relative;
+	overflow: hidden;
+}
+.ai-helper-promo::before {
+	content: "";
+	position: absolute;
+	top: -50%;
+	left: -50%;
+	width: 200%;
+	height: 200%;
+	background: radial-gradient(
+		circle,
+		rgba(139, 92, 246, 0.05) 0%,
+		transparent 70%
+	);
+	pointer-events: none;
+}
+.promo-content {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 24px;
+}
+.promo-text h3 {
+	margin: 0 0 4px;
+	font-size: 18px;
+	font-weight: 700;
+}
+.promo-text p {
+	margin: 0;
+	color: var(--text-sub);
+	font-size: 14px;
+}
+.btn-glow {
+	box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+	border: none;
+	padding: 12px 24px;
+}
+.btn-glow:hover {
+	box-shadow: 0 0 25px rgba(139, 92, 246, 0.6);
+	transform: translateY(-2px);
 }
 
 .icon-zap {
