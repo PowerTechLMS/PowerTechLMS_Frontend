@@ -504,7 +504,7 @@ const getLevelLabel = (level: number) => {
 const getImageUrl = (url: string) => {
 	if (!url) return "";
 	if (url.startsWith("http")) return url;
-	return `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${url.startsWith("/") ? "" : "/"}${url}`;
+	return `${import.meta.env.VITE_API_URL || ""}${url.startsWith("/") ? "" : "/"}${url}`;
 };
 
 const getEmbedUrl = (url: string) => {
@@ -516,7 +516,7 @@ const getEmbedUrl = (url: string) => {
 		return ytMatch ? `https://www.youtube.com/embed/${ytMatch[1]}` : url;
 	}
 	if (url.startsWith("http")) return url;
-	return `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${url.startsWith("/") ? "" : "/"}${url}`;
+	return `${import.meta.env.VITE_API_URL || ""}${url.startsWith("/") ? "" : "/"}${url}`;
 };
 
 const totalLessonsCount = computed(() => {

@@ -66,7 +66,7 @@ const getAvatar = (name: string, avatarUrl: string | null) => {
 	if (avatarUrl) {
 		return avatarUrl.startsWith("http")
 			? avatarUrl
-			: `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${avatarUrl}`;
+			: `${import.meta.env.VITE_API_URL || ""}${avatarUrl}`;
 	}
 	return defaultAvatar + (name ? name.replace(/ /g, "+") : "User");
 };

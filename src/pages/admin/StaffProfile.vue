@@ -63,7 +63,7 @@ const getAvatarUrl = () => {
 	if (userProfile.value?.avatar) {
 		return userProfile.value.avatar.startsWith("http")
 			? userProfile.value.avatar
-			: `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${userProfile.value.avatar}`;
+			: `${import.meta.env.VITE_API_URL || ""}${userProfile.value.avatar}`;
 	}
 	return (
 		defaultAvatar + (userProfile.value?.fullName || "User").replace(/ /g, "+")
@@ -85,7 +85,6 @@ const goToEdit = () => {
 
 <template>
 	<div class="container-fluid py-4">
-		
 		<div class="row pb-4 mb-4 align-items-center">
 			<div class="col-sm-8 d-flex align-items-center gap-3">
 				<button
@@ -111,13 +110,11 @@ const goToEdit = () => {
 			</div>
 		</div>
 
-		
 		<div v-if="loading" class="text-center py-5">
 			<div class="spinner-border text-primary" role="status"></div>
 			<p class="mt-3 text-muted fw-medium">Đang tải hồ sơ nhân sự...</p>
 		</div>
 
-		
 		<div
 			v-else-if="userNotFound"
 			class="text-center py-5 card border-0 shadow-sm rounded-4 bg-white"
@@ -137,14 +134,11 @@ const goToEdit = () => {
 			</button>
 		</div>
 
-		
 		<div v-else-if="userProfile" class="row g-4">
-			
 			<div class="col-xl-4 col-lg-5">
 				<div
 					class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 bg-white"
 				>
-					
 					<div class="profile-banner position-relative">
 						<div class="banner-overlay"></div>
 					</div>
@@ -222,7 +216,6 @@ const goToEdit = () => {
 					</div>
 				</div>
 
-				
 				<div class="card border-0 shadow-sm rounded-4 bg-white">
 					<div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
 						<h6 class="fw-bold mb-0 d-flex align-items-center gap-2 text-dark">
@@ -303,7 +296,6 @@ const goToEdit = () => {
 				</div>
 			</div>
 
-			
 			<div class="col-xl-8 col-lg-7">
 				<div
 					class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden bg-white"
@@ -423,7 +415,6 @@ const goToEdit = () => {
 	border-color: var(--bs-primary) !important;
 }
 
-
 .profile-banner {
 	height: 140px;
 	background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
@@ -462,7 +453,6 @@ const goToEdit = () => {
 	bottom: 10px;
 	right: 10px;
 }
-
 
 .shadow-inner {
 	box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);

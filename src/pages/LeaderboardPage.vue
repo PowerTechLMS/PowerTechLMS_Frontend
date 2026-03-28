@@ -38,7 +38,7 @@ const getAvatarStyle = (url: string | null) => {
 	if (url) {
 		const base = url.startsWith("http")
 			? url
-			: `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${url}`;
+			: `${import.meta.env.VITE_API_URL || ""}${url}`;
 		return `background-image: url('${base}'); background-size: cover; background-position: center;`;
 	}
 	return "";

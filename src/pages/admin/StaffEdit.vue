@@ -55,7 +55,7 @@ const fetchUserData = async () => {
 		if (data.avatar) {
 			userForm.value.avatarPreview = data.avatar.startsWith("http")
 				? data.avatar
-				: `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${data.avatar}`;
+				: `${import.meta.env.VITE_API_URL || ""}${data.avatar}`;
 		}
 	} catch {
 		toast.error("Không thể tải dữ liệu nhân sự");

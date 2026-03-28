@@ -534,7 +534,7 @@ function getAvatarUrl(url) {
 		? null
 		: url.startsWith("http")
 			? url
-			: `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${url}`;
+			: `${import.meta.env.VITE_API_URL || ""}${url}`;
 }
 function getInitials(name) {
 	return !name
