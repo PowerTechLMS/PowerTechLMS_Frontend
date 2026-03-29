@@ -1640,7 +1640,7 @@ async function ensureSignalRConnection() {
 	)
 		return;
 
-	const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:5100";
+	const apiBaseUrl = import.meta.env.VITE_API_URL || "";
 	signalrConnection = new signalR.HubConnectionBuilder()
 		.withUrl(`${apiBaseUrl}/hubs/video`)
 		.withAutomaticReconnect()
@@ -1986,7 +1986,7 @@ async function downloadFile(att) {
 	if (isDownloading.value[att.id]) return;
 	isDownloading.value[att.id] = true;
 	try {
-		const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5100";
+		const baseUrl = import.meta.env.VITE_API_URL || "";
 		const absoluteUrl = `${baseUrl.replace(/\/$/, "")}/api/modules/${currentModuleId.value}/lessons/attachments/${att.id}/download`;
 		const response = await api.get(absoluteUrl, { responseType: "blob" });
 		const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
@@ -2079,9 +2079,10 @@ function isYouTubeUrl(url) {
 }
 
 function getFullMediaUrl(url) {
+	const baseUrl = import.meta.env.VITE_API_URL || "";
 	return url?.startsWith("http")
 		? url
-		: `http://localhost:5100${url?.startsWith("/") ? "" : "/"}${url}`;
+		: `${baseUrl.replace(/\/$/, "")}${url?.startsWith("/") ? "" : "/"}${url}`;
 }
 
 function getEmbedUrl(url) {

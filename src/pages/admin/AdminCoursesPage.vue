@@ -241,6 +241,17 @@ onMounted(() => {
 							>
 								{{ course.categoryName || "Chưa phân loại" }}
 							</div>
+							<div
+								class="status-badge mt-1"
+								:class="'level-' + course.level"
+								style="
+									background: rgba(255, 255, 255, 0.2);
+									border: 1px solid rgba(255, 255, 255, 0.4);
+									backdrop-filter: blur(4px);
+								"
+							>
+								Cấp {{ course.level || 3 }}
+							</div>
 						</div>
 
 						<button

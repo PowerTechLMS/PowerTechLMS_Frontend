@@ -100,7 +100,7 @@ const avatarUrl = computed(() => {
 	const url = authStore.user.avatar;
 	const base = url.startsWith("http")
 		? url
-		: `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${url}`;
+		: `${import.meta.env.VITE_API_URL || ""}${url}`;
 	return `${base}?t=${authStore.avatarUpdateTime}`;
 });
 
