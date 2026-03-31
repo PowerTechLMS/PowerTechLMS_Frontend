@@ -10,8 +10,6 @@ import {
 	ShieldAlert,
 	Globe,
 	Lock,
-	Users,
-	Briefcase,
 	Building2,
 	Loader2,
 	Filter,
