@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => {
 		plugins: [vue()],
 		server: {
 			port: 5173,
+			allowedHosts: ["powertech.io.vn"],
 			proxy: {
 				"/api": {
 					target: target,
