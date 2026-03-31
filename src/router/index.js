@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHashHistory } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 
 const APP_NAME = "EDUPOWER";
@@ -6,10 +6,10 @@ const APP_NAME = "EDUPOWER";
 const routes = [
 	{
 		path: "/",
-		name: "Index",
-		component: () => import("@/pages/index.vue"),
-		meta: { guest: true, title: `Chào mừng đến với ${APP_NAME}` },
+		name: "Root",
+		redirect: "/login",
 	},
+
 	{
 		path: "/login",
 		name: "Login",
@@ -47,22 +47,10 @@ const routes = [
 				meta: { title: `Khóa học của tôi – ${APP_NAME}` },
 			},
 			{
-				path: "learn/:courseId/:lessonId",
-				name: "LearningPlayer",
-				component: () => import("@/pages/LearningPlayer.vue"),
-				meta: { title: `Đang học – ${APP_NAME}` },
-			},
-			{
-				path: "quiz/:quizId",
-				name: "QuizPage",
-				component: () => import("@/pages/QuizPage.vue"),
-				meta: { title: `Làm bài kiểm tra – ${APP_NAME}` },
-			},
-			{
 				path: "certificates",
 				name: "Certificates",
 				component: () => import("@/pages/CertificatesPage.vue"),
-				meta: { title: `Chứng chỉ của tôi – ${APP_NAME}` },
+				meta: { title: `Chứng Chỉ Của Tôi – ${APP_NAME}` },
 			},
 			{
 				path: "learning-paths",
@@ -324,6 +312,18 @@ const routes = [
 					title: `Chỉnh sửa Tài Liệu – ${APP_NAME}`,
 				},
 			},
+			{
+				path: "learn/:courseId/:lessonId",
+				name: "LearningPlayer",
+				component: () => import("@/pages/LearningPlayer.vue"),
+				meta: { title: `Đang học – ${APP_NAME}`, requiresAuth: true },
+			},
+			{
+				path: "quiz/:quizId",
+				name: "QuizPage",
+				component: () => import("@/pages/QuizPage.vue"),
+				meta: { title: `Làm bài kiểm tra – ${APP_NAME}`, requiresAuth: true },
+			},
 		],
 	},
 	{
@@ -335,7 +335,7 @@ const routes = [
 ];
 
 const router = createRouter({
-	history: createWebHistory(),
+	history: createWebHashHistory(),
 	routes,
 	scrollBehavior(to, from, savedPosition) {
 		if (savedPosition) return savedPosition;
@@ -348,8 +348,9 @@ router.beforeEach((to, from, next) => {
 	auth.initAuth();
 
 	if (to.meta.requiresAuth && !auth.isAuthenticated) {
-		return next("/");
+		return next("/login");
 	}
+
 
 	if (to.meta.guest && auth.isAuthenticated) {
 		return next("/dashboard");

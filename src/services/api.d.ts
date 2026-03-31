@@ -1,20 +1,57 @@
-declare module '@/services/api' {
-    export const authAPI: any;
-    export const courseAPI: any;
-    export const moduleAPI: any;
-    export const lessonAPI: any;
-    export const enrollmentAPI: any;
-    export const progressAPI: any;
-    export const quizAPI: any;
-    export const certificateAPI: any;
-    export const qaAPI: any;
-    export const noteAPI: any;
-    export const leaderboardAPI: any;
-    export const documentAPI: any;
-    export const reportAPI: any;
-    export const userAPI: any;
-    export const profileAPI: any;
-    export const userGroupAPI: any;
-    export const courseGroupAPI: any;
-    export const rbacAPI: any;
+/*
+ * Type stubs for @/services/api – allows TypeScript/VS Code to resolve the module
+ * This fixes "Cannot find module '@/services/api'" errors without converting to TS
+ */
+
+declare module "@/services/api" {
+	const authAPI: any;
+	const userAPI: any;
+	const courseAPI: any;
+	const moduleAPI: any;
+	const lessonAPI: any;
+	const enrollmentAPI: any;
+	const progressAPI: any;
+	const quizAPI: any;
+	const certificateAPI: any;
+	const qaAPI: any;
+	const noteAPI: any;
+	const leaderboardAPI: any;
+	const documentAPI: any;
+	const reportAPI: any;
+	const userGroupAPI: any;
+	const rbacAPI: any;
+	const dashboardAPI: any;
+	const notificationAPI: any;
+	const courseGroupAPI: any;
+	export {
+		authAPI,
+		userAPI,
+		courseAPI,
+		moduleAPI,
+		lessonAPI,
+		enrollmentAPI,
+		progressAPI,
+		quizAPI,
+		certificateAPI,
+		qaAPI,
+		noteAPI,
+		leaderboardAPI,
+		documentAPI,
+		reportAPI,
+		userGroupAPI,
+		rbacAPI,
+		dashboardAPI,
+		notificationAPI,
+		courseGroupAPI,
+	};
+}
+
+declare module "@/components/ImportQuizModal.vue" {
+	import type { DefineComponent } from "vue";
+	const component: DefineComponent<
+		Record<string, unknown>,
+		Record<string, unknown>,
+		any
+	>;
+	export default component;
 }

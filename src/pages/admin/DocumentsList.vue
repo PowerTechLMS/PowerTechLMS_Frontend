@@ -404,7 +404,7 @@ const getFileIcon = (fileName: string) => {
 							<div class="info-icon-box">
 								<Award :size="18" />
 							</div>
-							<h6 class="fw-bold mb-0">Tình trạng kho</h6>
+							<h6 class="fw-bold mb-0">Tình trạng tài liệu</h6>
 						</div>
 						<div class="info-row-glass">
 							<span class="label">Sẵn dùng:</span>
@@ -549,7 +549,8 @@ const getFileIcon = (fileName: string) => {
 											</div>
 											<div>
 												<div
-													class="fw-bold text-dark fs-14 clickable-title"
+													class="fw-bold fs-14 clickable-title"
+													style="color: var(--text-primary)"
 													@click="viewDocument(doc.id)"
 												>
 													{{ doc.title }}
@@ -558,6 +559,7 @@ const getFileIcon = (fileName: string) => {
 													{{ doc.fileName }}
 												</div>
 											</div>
+
 										</div>
 									</td>
 									<td class="text-center">
@@ -634,26 +636,27 @@ const getFileIcon = (fileName: string) => {
 				@click="closeVersionHistory"
 			>
 				<div class="custom-modal-dialog glass-modal" @click.stop>
-					<div
-						class="modal-header border-bottom-glass py-4 px-4 align-items-start"
-					>
-						<div>
-							<h5
-								class="modal-title fw-bold d-flex align-items-center gap-2 text-dark"
-							>
-								<History :size="20" class="text-primary" /> Lịch sử Phiên bản
-							</h5>
-							<p v-if="targetDoc" class="text-tertiary fs-12 mb-0 mt-1">
+					<div class="modal-header border-bottom-glass py-4 px-4">
+						<div class="flex-grow-1">
+							<div class="d-flex align-items-center justify-content-between mb-1">
+								<h5
+									class="modal-title fw-bold d-flex align-items-center gap-2 mb-0"
+									style="color: var(--text-primary)"
+								>
+									<History :size="22" class="text-primary" /> Lịch sử Phiên bản
+								</h5>
+								<button
+									type="button"
+									class="btn-close-premium"
+									@click="closeVersionHistory"
+								>
+									<X :size="20" />
+								</button>
+							</div>
+							<p v-if="targetDoc" class="text-tertiary fs-13 mb-0">
 								Tài liệu: {{ targetDoc.title }}
 							</p>
 						</div>
-						<button
-							type="button"
-							class="btn-close-glass"
-							@click="closeVersionHistory"
-						>
-							<X :size="20" />
-						</button>
 					</div>
 
 					<div class="modal-body p-4 scroll-glass">
@@ -687,30 +690,25 @@ const getFileIcon = (fileName: string) => {
 									>
 										<span
 											class="v-tag-ui"
-											:class="
-												v.versionNumber === targetDoc?.currentVersionNumber
-													? 'current'
-													: ''
-											"
+											:class="{ current: v.versionNumber === targetDoc?.currentVersionNumber }"
 										>
-											Phiên bản {{ v.versionNumber }}.0
+											<span class="v-tag-num">Phiên bản {{ v.versionNumber }}.0</span>
 											<span
-												v-if="
-													v.versionNumber === targetDoc?.currentVersionNumber
-												"
-												class="ms-1 fw-normal"
-												>(Hiện tại)</span
+												v-if="v.versionNumber === targetDoc?.currentVersionNumber"
+												class="v-tag-label"
 											>
+												(Hiện tại)
+											</span>
 										</span>
 										<span class="v-date-ui">{{
 											new Date(v.createdAt).toLocaleDateString("vi-VN")
 										}}</span>
 									</div>
-									<h6 class="v-filename fw-bold mb-1 fs-13">
+									<h6 class="v-filename fw-bold mb-2 fs-15 text-white">
 										{{ v.fileName }}
 									</h6>
-									<p class="v-note text-tertiary fs-12 mb-3">
-										{{ v.changeNote || "Bản ghi nguyên bản" }}
+									<p class="v-note text-tertiary fs-13 mb-4">
+										{{ v.changeNote || "Phiên bản đầu tiên" }}
 									</p>
 									<button
 										class="btn-download-glass"
@@ -786,15 +784,13 @@ const getFileIcon = (fileName: string) => {
 	font-size: 32px;
 	font-weight: 800;
 	letter-spacing: -0.02em;
-	background: linear-gradient(
-		90deg,
-		var(--text-primary),
-		var(--text-secondary)
-	);
+	background: linear-gradient(90deg, var(--text-primary), var(--text-secondary));
+	background-clip: text;
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 	margin: 0 0 4px 0;
 }
+
 .page-desc {
 	color: var(--text-secondary);
 	font-size: 15px;
@@ -891,21 +887,23 @@ const getFileIcon = (fileName: string) => {
 }
 
 .glass-content-card {
-	background: rgba(255, 255, 255, 0.85);
-	backdrop-filter: blur(20px);
-	border: 1px solid rgba(0, 0, 0, 0.05);
-	border-radius: 24px;
-	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.03);
+	background: var(--bg-card);
+	backdrop-filter: blur(24px);
+	border-radius: 32px;
+	border: 1px solid var(--border-color);
+	box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1);
 }
 .glass-controls-bar {
-	padding: 20px 32px;
+	padding: 24px 32px;
+	border-bottom: 1px solid var(--border-color);
+	background: rgba(255, 255, 255, 0.02);
 }
 
 .glass-search {
 	display: flex;
 	align-items: center;
-	background: #ffffff;
-	border: 1px solid rgba(0, 0, 0, 0.08);
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
 	border-radius: 16px;
 	padding: 4px 18px;
 	transition: all 0.3s;
@@ -935,7 +933,7 @@ const getFileIcon = (fileName: string) => {
 .tabs-glass-nav {
 	display: flex;
 	gap: 8px;
-	background: rgba(0, 0, 0, 0.03);
+	background: var(--bg-secondary);
 	padding: 4px;
 	border-radius: 14px;
 }
@@ -950,7 +948,7 @@ const getFileIcon = (fileName: string) => {
 	transition: all 0.2s;
 }
 .tab-glass-btn.active {
-	background: white;
+	background: var(--bg-card);
 	color: var(--primary-600);
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
@@ -958,7 +956,7 @@ const getFileIcon = (fileName: string) => {
 .view-mode-toggle {
 	display: flex;
 	gap: 6px;
-	background: rgba(0, 0, 0, 0.03);
+	background: var(--bg-secondary);
 	padding: 4px;
 	border-radius: 14px;
 }
@@ -975,16 +973,17 @@ const getFileIcon = (fileName: string) => {
 	transition: all 0.2s;
 }
 .view-btn.active {
-	background: white;
+	background: var(--bg-card);
 	color: var(--primary-600);
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .glass-sidebar-card {
-	background: rgba(255, 255, 255, 0.7);
+	background: var(--bg-card);
 	backdrop-filter: blur(20px);
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
 	border-radius: 24px;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 	display: flex;
 }
 .sidebar-label {
@@ -1006,11 +1005,11 @@ const getFileIcon = (fileName: string) => {
 	margin-bottom: 4px;
 }
 .nav-item-glass:hover {
-	background: rgba(0, 0, 0, 0.04);
+	background: var(--bg-secondary);
 	color: var(--text-primary);
 }
 .nav-item-glass.active {
-	background: white;
+	background: var(--bg-card);
 	color: var(--primary-600);
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
@@ -1018,7 +1017,7 @@ const getFileIcon = (fileName: string) => {
 	margin-left: auto;
 	font-size: 10px;
 	font-weight: 800;
-	background: rgba(0, 0, 0, 0.05);
+	background: var(--bg-secondary);
 	padding: 2px 8px;
 	border-radius: 20px;
 	color: var(--text-tertiary);
@@ -1029,8 +1028,8 @@ const getFileIcon = (fileName: string) => {
 }
 
 .info-card-premium {
-	background: white;
-	border: 1px solid rgba(99, 102, 241, 0.1);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	border-radius: 20px;
 	padding: 20px;
 	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
@@ -1049,7 +1048,7 @@ const getFileIcon = (fileName: string) => {
 	display: flex;
 	justify-content: space-between;
 	padding: 10px 0;
-	border-bottom: 1px dashed rgba(0, 0, 0, 0.05);
+	border-bottom: 1px dashed var(--border-color);
 	font-size: 13px;
 }
 .info-row-glass .label {
@@ -1066,8 +1065,8 @@ const getFileIcon = (fileName: string) => {
 	gap: 20px;
 }
 .premium-glass-card {
-	background: white;
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	border-radius: 24px;
 	height: 100%;
 	display: flex;
@@ -1092,7 +1091,7 @@ const getFileIcon = (fileName: string) => {
 .doc-version-badge {
 	font-size: 10px;
 	font-weight: 800;
-	background: rgba(0, 0, 0, 0.05);
+	background: var(--bg-secondary);
 	padding: 4px 10px;
 	border-radius: 8px;
 }
@@ -1132,8 +1131,8 @@ const getFileIcon = (fileName: string) => {
 }
 
 .doc-card-footer-ui {
-	background: rgba(249, 250, 251, 0.5);
-	border-top: 1px solid rgba(0, 0, 0, 0.03);
+	background: var(--bg-secondary);
+	border-top: 1px solid var(--border-color);
 	border-radius: 0 0 24px 24px;
 }
 .doc-actions-grid {
@@ -1143,8 +1142,8 @@ const getFileIcon = (fileName: string) => {
 }
 .doc-act-btn {
 	height: 36px;
-	border: 1px solid rgba(0, 0, 0, 0.05);
-	background: white;
+	border: 1px solid var(--border-color);
+	background: var(--bg-card);
 	color: var(--text-tertiary);
 	border-radius: 10px;
 	display: flex;
@@ -1175,8 +1174,8 @@ const getFileIcon = (fileName: string) => {
 }
 
 .glass-table-container {
-	background: white;
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	border-radius: 20px;
 	overflow: hidden;
 }
@@ -1186,21 +1185,24 @@ const getFileIcon = (fileName: string) => {
 	border-spacing: 0;
 }
 .glass-table-ui th {
-	background: rgba(249, 250, 251, 0.5);
+	background: var(--bg-secondary);
 	padding: 16px;
 	font-size: 11px;
 	font-weight: 800;
 	color: var(--text-tertiary);
 	text-transform: uppercase;
-	border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+	border-bottom: 2px solid var(--border-color);
 }
 .glass-table-ui td {
 	padding: 16px;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+	background: var(--bg-secondary);
+	border-top: 1px solid var(--border-color);
+	border-bottom: 1px solid var(--border-color);
 	vertical-align: middle;
+	transition: background 0.2s;
 }
 .glass-table-ui tbody tr:hover td {
-	background: rgba(249, 250, 251, 0.3);
+	background: var(--bg-tertiary);
 }
 .doc-type-icon-sm {
 	width: 32px;
@@ -1211,7 +1213,7 @@ const getFileIcon = (fileName: string) => {
 	justify-content: center;
 }
 .badge-v-ui {
-	background: rgba(0, 0, 0, 0.05);
+	background: var(--bg-secondary);
 	padding: 4px 10px;
 	border-radius: 10px;
 	font-size: 10px;
@@ -1231,7 +1233,7 @@ const getFileIcon = (fileName: string) => {
 	transition: all 0.2s;
 }
 .btn-ghost-icon:hover {
-	background: rgba(0, 0, 0, 0.04);
+	background: var(--bg-secondary);
 	transform: scale(1.1);
 }
 .btn-ghost-icon.primary:hover {
@@ -1262,7 +1264,7 @@ const getFileIcon = (fileName: string) => {
 .custom-modal-dialog {
 	width: 100%;
 	max-width: 500px;
-	background: rgba(255, 255, 255, 0.98);
+	background: var(--bg-card);
 	backdrop-filter: blur(20px);
 	border-radius: 28px;
 	box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
@@ -1286,23 +1288,19 @@ const getFileIcon = (fileName: string) => {
 .border-bottom-glass {
 	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
-.btn-close-glass {
-	background: rgba(0, 0, 0, 0.05);
+.btn-close-premium {
+	background: transparent;
 	border: none;
-	width: 36px;
-	height: 36px;
-	border-radius: 50%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	color: var(--text-secondary);
+	color: var(--text-tertiary);
 	transition: all 0.2s;
 	cursor: pointer;
+	padding: 5px;
+	border-radius: 8px;
+	display: flex;
 }
-.btn-close-glass:hover {
-	background: rgba(239, 68, 68, 0.1);
-	color: var(--danger-600);
-	transform: rotate(90deg);
+.btn-close-premium:hover {
+	color: var(--text-primary);
+	background: rgba(255, 255, 255, 0.05);
 }
 
 .scroll-glass {
@@ -1335,42 +1333,66 @@ const getFileIcon = (fileName: string) => {
 }
 .timeline-marker {
 	position: absolute;
-	left: -24px;
+	left: -27px;
 	top: 8px;
-	width: 10px;
-	height: 10px;
+	width: 14px;
+	height: 14px;
 	border-radius: 50%;
-	background: #cbd5e1;
-	border: 2px solid white;
+	background: transparent;
+	border: 3.5px solid rgba(255, 255, 255, 0.2);
 	z-index: 2;
 }
 .timeline-step.active .timeline-marker {
-	background: var(--primary-500);
-	box-shadow: 0 0 10px var(--primary-300);
+	border-color: var(--white);
+	background: transparent;
+	box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
-.timeline-glass-card {
-	background: white;
-	border: 1px solid rgba(0, 0, 0, 0.05);
-	border-radius: 16px;
-	padding: 16px;
-	transition: all 0.2s;
+.glass-modal {
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
+	border-radius: 28px;
+	box-shadow: var(--shadow-2xl);
+	overflow: hidden;
 }
+
 .timeline-step.active .timeline-glass-card {
 	border-color: var(--primary-200);
 	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
 }
 
+.timeline-glass-card {
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid var(--border-color);
+	border-radius: 20px;
+	padding: 24px;
+	transition: all 0.3s;
+}
+
 .v-tag-ui {
-	font-size: 10px;
-	font-weight: 800;
-	color: var(--text-secondary);
-	background: rgba(0, 0, 0, 0.05);
-	padding: 3px 8px;
-	border-radius: 6px;
+	font-size: 11px;
+	padding: 5px 16px;
+	border-radius: var(--radius-full, 100px);
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	white-space: nowrap;
+	background: rgba(255, 255, 255, 0.05);
+	color: var(--text-tertiary);
 }
 .v-tag-ui.current {
-	color: var(--primary-600);
-	background: var(--primary-50);
+	background: #ffffff;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+.v-tag-ui.current .v-tag-num {
+	color: #1e293b;
+	font-weight: 800;
+}
+.v-tag-ui.current .v-tag-label {
+	color: #64748b;
+	font-weight: 500;
+}
+.v-tag-num {
+	font-weight: 700;
 }
 .v-date-ui {
 	font-size: 11px;
@@ -1600,4 +1622,63 @@ const getFileIcon = (fileName: string) => {
 		width: 100%;
 	}
 }
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .doc-title-ui {
+	color: #f8fafc !important;
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .clickable-title {
+	color: #f8fafc !important;
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .text-dark {
+	color: #f8fafc !important;
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .glass-table-ui th {
+	border-bottom-color: var(--border-color);
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .nav-item-glass {
+	color: var(--text-tertiary);
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .nav-item-glass:hover {
+	background: var(--bg-tertiary);
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .premium-glass-card {
+	background: var(--bg-secondary);
+	border-color: var(--border-color);
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .glass-modal {
+	background: var(--bg-card);
+	border-color: var(--border-color);
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .border-bottom-glass {
+	border-bottom-color: var(--border-color);
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .timeline-glass-card {
+	background: var(--bg-tertiary);
+	border-color: var(--border-color);
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .preview-header {
+	background: var(--bg-card);
+	border-bottom-color: var(--border-color);
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .preview-body {
+	background: #1e293b;
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .tag-glass-ui {
+	background: var(--bg-tertiary);
+	border-color: var(--border-color);
+	color: var(--text-secondary);
+}
 </style>
+

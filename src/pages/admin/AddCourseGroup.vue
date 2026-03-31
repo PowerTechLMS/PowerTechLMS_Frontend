@@ -437,22 +437,23 @@ const cancel = () => router.push("/admin/coursegroup");
 }
 
 .glass-card {
-	background: rgba(255, 255, 255, 0.9);
+	background: var(--bg-card);
 	backdrop-filter: blur(20px);
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-2xl);
 	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.03);
 	overflow: hidden;
 }
 
 .glass-card-banner {
-	background: rgba(249, 250, 251, 0.5);
+	background: var(--bg-secondary);
 	padding: 20px 24px;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+	border-bottom: 1px solid var(--border-color);
 	display: flex;
 	align-items: center;
 	gap: 16px;
 }
+
 .banner-icon-bg {
 	width: 40px;
 	height: 40px;
@@ -495,16 +496,17 @@ const cancel = () => router.push("/admin/coursegroup");
 	position: relative;
 	display: flex;
 	align-items: center;
-	background: rgba(249, 250, 251, 0.5);
+	background: var(--bg-tertiary);
 	border-radius: 12px;
-	border: 1px solid rgba(0, 0, 0, 0.06);
+	border: 1px solid var(--border-color);
 	transition: all 0.3s;
 }
 .glass-input-group:focus-within {
-	background: #ffffff;
+	background: var(--bg-card);
 	border-color: var(--primary-400);
 	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 }
+
 .glass-input-group.textarea-group {
 	align-items: flex-start;
 }
@@ -548,13 +550,14 @@ const cancel = () => router.push("/admin/coursegroup");
 .glass-search.inline {
 	display: flex;
 	align-items: center;
-	background: #ffffff;
-	border: 1px solid rgba(0, 0, 0, 0.1);
+	background: var(--bg-tertiary);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-full);
 	padding: 4px 16px;
 	width: 250px;
 	transition: all 0.3s;
 }
+
 .glass-search.inline:focus-within {
 	border-color: var(--primary-400);
 	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
@@ -582,14 +585,15 @@ const cancel = () => router.push("/admin/coursegroup");
 	align-items: center;
 	gap: 12px;
 	padding: 10px;
-	background: white;
-	border: 1px solid rgba(0, 0, 0, 0.08);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	border-radius: 16px;
 	cursor: pointer;
 	transition: all 0.2s;
 	position: relative;
 	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
 }
+
 
 .glass-course-select-card:hover {
 	border-color: var(--primary-300);
@@ -609,7 +613,7 @@ const cancel = () => router.push("/admin/coursegroup");
 	right: -8px;
 	width: 24px;
 	height: 24px;
-	background: white;
+	background: var(--bg-card);
 	border: 2px solid var(--border-color);
 	border-radius: 50%;
 	display: flex;
@@ -619,6 +623,7 @@ const cancel = () => router.push("/admin/coursegroup");
 	transition: all 0.2s;
 	z-index: 5;
 }
+
 
 .glass-course-select-card.selected .card-check-circle {
 	background: var(--primary-500);
@@ -677,11 +682,12 @@ const cancel = () => router.push("/admin/coursegroup");
 }
 
 .glass-footer-bar {
-	background: rgba(255, 255, 255, 0.9);
+	background: var(--bg-secondary);
 	backdrop-filter: blur(20px);
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
 	box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.02);
 }
+
 
 .btn-cancel,
 .btn-submit {
@@ -798,4 +804,9 @@ svg {
 		width: 100%;
 	}
 }
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .glass-course-select-card.selected {
+	background: rgba(99, 102, 241, 0.2);
+}
 </style>
+

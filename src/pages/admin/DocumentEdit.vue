@@ -291,7 +291,7 @@ const handleSave = async () => {
 					<div v-show="activeTab === 'general'" class="fade-in row g-5">
 						<div class="col-lg-6">
 							<div class="form-group mb-4">
-								<label class="fw-bold text-dark fs-13 text-uppercase mb-2"
+								<label class="fw-bold fs-13 text-uppercase mb-2" style="color: var(--text-primary)"
 									>Tên tài liệu <span class="text-danger">*</span></label
 								>
 								<input
@@ -303,7 +303,7 @@ const handleSave = async () => {
 							</div>
 
 							<div class="form-group mb-4">
-								<label class="fw-bold text-dark fs-13 text-uppercase mb-2"
+								<label class="fw-bold fs-13 text-uppercase mb-2" style="color: var(--text-primary)"
 									>Mô tả nội dung</label
 								>
 								<textarea
@@ -313,9 +313,10 @@ const handleSave = async () => {
 								></textarea>
 							</div>
 
+
 							<div class="row g-3 mb-4">
 								<div class="col-md-6">
-									<label class="fw-bold text-dark fs-13 text-uppercase mb-2"
+									<label class="fw-bold fs-13 text-uppercase mb-2" style="color: var(--text-primary)"
 										>Mở truy cập từ ngày</label
 									>
 									<input
@@ -325,7 +326,7 @@ const handleSave = async () => {
 									/>
 								</div>
 								<div class="col-md-6">
-									<label class="fw-bold text-dark fs-13 text-uppercase mb-2"
+									<label class="fw-bold fs-13 text-uppercase mb-2" style="color: var(--text-primary)"
 										>Khóa vào ngày</label
 									>
 									<input
@@ -336,12 +337,14 @@ const handleSave = async () => {
 								</div>
 							</div>
 
-							<div class="form-group border-top pt-4">
+
+							<div class="form-group border-top pt-4" style="border-color: var(--border-color) !important">
 								<label
-									class="fw-bold text-dark fs-13 text-uppercase mb-3 text-primary d-flex align-items-center gap-2"
+									class="fw-bold fs-13 text-uppercase mb-3 text-primary d-flex align-items-center gap-2"
 								>
 									<UploadCloud :size="16" /> Tải lên Phiên bản mới
 								</label>
+
 								<p class="fs-12 text-tertiary mb-3">
 									Nếu bạn muốn thay thế file cũ, hãy tải file mới lên đây. Hệ
 									thống sẽ tự động tạo Version mới (Lịch sử các file cũ vẫn được
@@ -365,7 +368,7 @@ const handleSave = async () => {
 										class="text-primary mb-2"
 									/>
 									<UploadCloud v-else :size="32" class="text-tertiary mb-2" />
-									<h6 class="fw-bold text-dark">
+									<h6 class="fw-bold" style="color: var(--text-primary)">
 										{{
 											selectedFile ? selectedFile.name : "Nhấp để chọn file mới"
 										}}
@@ -376,6 +379,7 @@ const handleSave = async () => {
 											: "Hỗ trợ: PDF, Word, Excel"
 									}}</span>
 								</label>
+
 
 								<div v-if="selectedFile" class="mt-3">
 									<label class="fs-12 fw-bold text-tertiary mb-1"
@@ -391,12 +395,14 @@ const handleSave = async () => {
 							</div>
 						</div>
 
-						<div class="col-lg-6 border-start-glass">
+						<div class="col-lg-6 border-start-glass" style="border-color: var(--border-color) !important">
 							<label
-								class="fw-bold text-dark fs-13 text-uppercase mb-3 d-flex align-items-center gap-2"
+								class="fw-bold fs-13 text-uppercase mb-3 d-flex align-items-center gap-2"
+								style="color: var(--text-primary)"
 							>
 								<Filter :size="16" class="text-primary" /> Phân loại Thẻ (Tags)
 							</label>
+
 
 							<div class="selected-tags-box mb-3 p-3 rounded-3">
 								<div
@@ -441,12 +447,13 @@ const handleSave = async () => {
 							</div>
 
 							<div
-								class="tag-dictionary p-4 rounded-4 bg-white border shadow-sm custom-scrollbar"
-								style="max-height: 380px; overflow-y: auto"
+								class="tag-dictionary p-4 rounded-4 shadow-sm custom-scrollbar"
+								style="max-height: 380px; overflow-y: auto; background: var(--bg-tertiary); border: 1px solid var(--border-color);"
 							>
 								<h6 class="fw-bold fs-12 text-tertiary mb-3 text-uppercase">
 									Thư viện thẻ hệ thống
 								</h6>
+
 								<div
 									class="mb-4"
 									v-for="(group, key) in predefinedTags"
@@ -666,12 +673,14 @@ const handleSave = async () => {
 	justify-content: center;
 }
 .glass-content-card {
-	background: rgba(255, 255, 255, 0.9);
+	background: var(--bg-card);
 	backdrop-filter: blur(20px);
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
 	border-radius: 24px;
-	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
+	box-shadow: var(--shadow-sm);
 }
+
+
 .tabs-glass-nav {
 	display: flex;
 	gap: 24px;
@@ -701,28 +710,31 @@ const handleSave = async () => {
 .glass-input {
 	width: 100%;
 	padding: 12px 16px;
-	background: rgba(249, 250, 251, 0.5);
-	border: 1px solid rgba(0, 0, 0, 0.06);
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
 	border-radius: 12px;
 	font-size: 14px;
 	transition: all 0.3s;
 	outline: none;
+	color: var(--text-primary);
 }
 .glass-input:focus {
-	background: white;
+	background: var(--bg-card);
 	border-color: var(--primary-400);
 	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 }
 
+
 .upload-area {
-	border: 2px dashed rgba(99, 102, 241, 0.3);
+	border: 2px dashed var(--border-color);
 	transition: all 0.3s;
-	background: rgba(249, 250, 251, 0.5);
+	background: var(--bg-tertiary);
 }
 .upload-area:hover {
 	border-color: var(--primary-500);
 	background: rgba(99, 102, 241, 0.05);
 }
+
 .cursor-pointer {
 	cursor: pointer;
 }
@@ -760,12 +772,13 @@ const handleSave = async () => {
 .glass-search {
 	display: flex;
 	align-items: center;
-	background: #ffffff;
-	border: 1px solid rgba(0, 0, 0, 0.1);
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-full);
 	padding: 4px 16px;
 	width: 100%;
 }
+
 .search-input-premium {
 	flex: 1;
 	border: none;

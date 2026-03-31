@@ -66,7 +66,7 @@ const getAvatar = (name: string, avatarUrl: string | null) => {
 	if (avatarUrl) {
 		return avatarUrl.startsWith("http")
 			? avatarUrl
-			: `${import.meta.env.VITE_API_URL || ""}${avatarUrl}`;
+			: `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${avatarUrl}`;
 	}
 	return defaultAvatar + (name ? name.replace(/ /g, "+") : "User");
 };
@@ -445,9 +445,10 @@ const handleImport = async (event: any) => {
 											></span>
 										</div>
 										<div class="user-info">
-											<div class="user-name text-dark fw-bold">
+											<div class="user-name fw-bold">
 												{{ user.fullName }}
 											</div>
+
 											<div class="user-metadata fs-11 text-tertiary">
 												#{{ user.id }} • Tham gia:
 												{{
@@ -483,9 +484,10 @@ const handleImport = async (event: any) => {
 								</td>
 								<td>
 									<div
-										class="d-flex align-items-center fs-14 text-dark font-medium"
+										class="d-flex align-items-center fs-14 font-medium"
 										v-if="user.groupName"
 									>
+
 										<Layout
 											:size="14"
 											class="me-2 text-tertiary"
@@ -600,9 +602,10 @@ const handleImport = async (event: any) => {
 										:class="user.isActive ? 'active' : 'inactive'"
 									></span>
 								</div>
-								<h5 class="fw-bold text-dark mb-1 text-truncate px-2">
+								<h5 class="fw-bold mb-1 text-truncate px-2">
 									{{ user.fullName }}
 								</h5>
+
 								<div class="fs-12 text-tertiary mb-3 text-truncate">
 									{{ user.email }}
 								</div>
@@ -759,8 +762,9 @@ const handleImport = async (event: any) => {
 	margin-bottom: 20px;
 	flex-wrap: wrap;
 	gap: var(--space-lg);
-	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+	border-bottom: 1px solid var(--border-color);
 }
+
 .header-content {
 	display: flex;
 	align-items: flex-start;
@@ -791,15 +795,13 @@ const handleImport = async (event: any) => {
 	font-size: 32px;
 	font-weight: 800;
 	letter-spacing: -0.02em;
-	background: linear-gradient(
-		90deg,
-		var(--text-primary),
-		var(--text-secondary)
-	);
+	background: linear-gradient(90deg, var(--text-primary), var(--text-secondary));
+	background-clip: text;
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 	margin: 0 0 4px 0;
 }
+
 .page-desc {
 	font-size: var(--font-size-base);
 	color: var(--text-secondary);
@@ -849,12 +851,13 @@ const handleImport = async (event: any) => {
 	border-radius: 24px;
 	display: flex;
 	align-items: center;
-	background: rgba(255, 255, 255, 0.8);
+	background: var(--bg-card);
 	backdrop-filter: blur(10px);
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
 	transition: all 0.3s ease;
-	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+	box-shadow: var(--shadow-sm);
 }
+
 .glass-stat-card:hover {
 	transform: translateY(-5px);
 	box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06);
@@ -880,17 +883,18 @@ const handleImport = async (event: any) => {
 	flex-shrink: 0;
 }
 .glass-stat-card.primary .stat-icon-wrap {
-	background: var(--primary-50);
-	color: var(--primary-600);
+	background: rgba(99, 102, 241, 0.15);
+	color: var(--primary-500);
 }
 .glass-stat-card.success .stat-icon-wrap {
-	background: var(--success-50);
-	color: var(--success-600);
+	background: rgba(16, 185, 129, 0.15);
+	color: var(--success-500);
 }
 .glass-stat-card.danger .stat-icon-wrap {
-	background: var(--danger-50);
-	color: var(--danger-600);
+	background: rgba(239, 68, 68, 0.15);
+	color: var(--danger-500);
 }
+
 
 .stat-label {
 	margin: 0 0 6px 0;
@@ -914,10 +918,11 @@ const handleImport = async (event: any) => {
 	justify-content: center;
 	height: 44px;
 	padding: 0 20px;
-	background: rgba(255, 255, 255, 0.8);
+	background: var(--bg-secondary);
 	backdrop-filter: blur(10px);
-	border: 1px solid rgba(0, 0, 0, 0.1);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-full);
+
 	font-weight: 700;
 	font-size: 14px;
 	color: var(--text-secondary);
@@ -932,18 +937,19 @@ const handleImport = async (event: any) => {
 }
 
 .glass-content-card {
-	background: rgba(255, 255, 255, 0.9);
-	backdrop-filter: blur(20px);
-	-webkit-backdrop-filter: blur(20px);
-	border: 1px solid rgba(0, 0, 0, 0.05);
-	border-radius: 24px;
-	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.03);
+	background: var(--bg-card);
+	backdrop-filter: blur(24px);
+	border-radius: 32px;
+	border: 1px solid var(--border-color);
+	box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.1);
 	overflow: hidden;
 }
 .glass-controls-bar {
 	padding: 24px 32px;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+	border-bottom: 1px solid var(--border-color);
+	background: rgba(255, 255, 255, 0.02);
 }
+
 .glass-card-body {
 	padding: 0 32px 32px 32px;
 }
@@ -951,8 +957,8 @@ const handleImport = async (event: any) => {
 .glass-search {
 	display: flex;
 	align-items: center;
-	background: #ffffff;
-	border: 1px solid rgba(0, 0, 0, 0.08);
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-full);
 	padding: 4px 18px;
 	box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.01);
@@ -986,10 +992,10 @@ const handleImport = async (event: any) => {
 .tabs-glass-nav {
 	display: flex;
 	gap: 8px;
-	background: rgba(249, 250, 251, 0.6);
+	background: var(--bg-secondary);
 	padding: 6px;
 	border-radius: 16px;
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
 }
 .tab-glass-btn {
 	border: none;
@@ -1005,13 +1011,13 @@ const handleImport = async (event: any) => {
 }
 .tab-glass-btn:hover:not(.active) {
 	color: var(--text-primary);
-	background: rgba(255, 255, 255, 0.5);
+	background: var(--bg-tertiary);
 }
 .tab-glass-btn.active {
-	background: white;
+	background: var(--bg-card);
 	color: var(--primary-600);
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-	border: 1px solid rgba(0, 0, 0, 0.03);
+	border: 1px solid var(--border-color);
 }
 
 .glass-select-group {
@@ -1020,10 +1026,10 @@ const handleImport = async (event: any) => {
 }
 .glass-select-ui {
 	padding: 7px 32px 7px 16px;
-	background: white
+	background: var(--bg-card)
 		url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%236366f1' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e")
 		no-repeat right 12px center/10px 10px;
-	border: 1px solid rgba(0, 0, 0, 0.08);
+	border: 1px solid var(--border-color);
 	border-radius: 12px;
 	font-size: 13px;
 	font-weight: 700;
@@ -1031,18 +1037,20 @@ const handleImport = async (event: any) => {
 	appearance: none;
 	outline: none;
 	cursor: pointer;
-	transition: all 0.2s;
-	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+	transition: all 0.3s;
+	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
 }
 .glass-select-ui:focus {
 	border-color: var(--primary-400);
 	box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+	background-color: var(--bg-tertiary);
 }
+
 
 .glass-view-toggle {
 	display: flex;
-	background: rgba(249, 250, 251, 0.8);
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
 	border-radius: 12px;
 	padding: 4px;
 	gap: 4px;
@@ -1062,19 +1070,18 @@ const handleImport = async (event: any) => {
 }
 .view-btn:hover:not(.active) {
 	color: var(--text-primary);
-	background: rgba(255, 255, 255, 0.5);
+	background: var(--bg-tertiary);
 }
 .view-btn.active {
-	background: white;
+	background: var(--bg-card);
 	color: var(--primary-600);
 	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
 .table-container {
-	border: 1px solid rgba(0, 0, 0, 0.05);
 	border-radius: 20px;
-	overflow-x: auto;
-	background: white;
+	overflow: hidden;
+	background: transparent;
 }
 .glass-table {
 	width: 100%;
@@ -1083,24 +1090,25 @@ const handleImport = async (event: any) => {
 	min-width: 900px;
 }
 .glass-table th {
-	padding: 18px 16px;
-	background: rgba(249, 250, 251, 0.5);
+	padding: 20px 16px;
+	background: rgba(255, 255, 255, 0.03);
 	text-align: left;
 	font-size: 11px;
-	font-weight: 700;
+	font-weight: 800;
 	text-transform: uppercase;
-	letter-spacing: 0.1em;
+	letter-spacing: 0.12em;
 	color: var(--text-tertiary);
-	border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+	border-bottom: 1px solid var(--border-color);
 }
 .glass-table td {
-	padding: 16px;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+	padding: 18px 12px;
+	background: transparent;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 	vertical-align: middle;
-	transition: background 0.2s;
+	transition: all 0.2s ease;
 }
 .glass-table tbody tr:hover td {
-	background: rgba(249, 250, 251, 0.4);
+	background: rgba(255, 255, 255, 0.03);
 }
 .glass-table tbody tr:last-child td {
 	border-bottom: none;
@@ -1113,12 +1121,16 @@ const handleImport = async (event: any) => {
 .avatar-glass {
 	width: 44px;
 	height: 44px;
-	border-radius: 50%;
-	border: 2px solid white;
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+	border-radius: 16px;
+	border: 2px solid rgba(255, 255, 255, 0.1);
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 	object-fit: cover;
 	aspect-ratio: 1/1;
 	flex-shrink: 0;
+	transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.avatar-glass:hover {
+	transform: scale(1.1) rotate(2deg);
 }
 .avatar-glass.xl {
 	width: 80px;
@@ -1126,12 +1138,13 @@ const handleImport = async (event: any) => {
 }
 .status-indicator {
 	position: absolute;
-	bottom: 2px;
-	right: 2px;
-	width: 12px;
-	height: 12px;
+	bottom: -2px;
+	right: -2px;
+	width: 14px;
+	height: 14px;
 	border-radius: 50%;
-	border: 2px solid white;
+	border: 3px solid var(--bg-secondary);
+	z-index: 2;
 }
 .status-indicator.xl {
 	width: 18px;
@@ -1253,9 +1266,9 @@ const handleImport = async (event: any) => {
 	gap: 24px;
 }
 .premium-glass-card {
-	background: white;
+	background: var(--bg-card);
 	border-radius: 24px;
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
 	overflow: hidden;
 	transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
@@ -1301,9 +1314,10 @@ const handleImport = async (event: any) => {
 }
 
 .user-card-info {
-	background: rgba(249, 250, 251, 0.5);
+	background: var(--bg-secondary);
 	border-radius: 16px;
 	padding: 12px;
+
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
@@ -1324,8 +1338,9 @@ const handleImport = async (event: any) => {
 	align-items: center;
 	justify-content: center;
 	height: 38px;
-	border: 1px solid rgba(0, 0, 0, 0.08);
-	background: white;
+	border: 1px solid var(--border-color);
+	background: var(--bg-secondary);
+
 	border-radius: 12px;
 	font-size: 13px;
 	font-weight: 700;
@@ -1346,8 +1361,9 @@ const handleImport = async (event: any) => {
 	flex-wrap: wrap;
 	gap: 20px;
 	padding: 24px;
-	border-top: 1px solid rgba(0, 0, 0, 0.05);
+	border-top: 1px solid var(--border-color);
 }
+
 .pagination-controls {
 	display: flex;
 	align-items: center;
@@ -1359,8 +1375,8 @@ const handleImport = async (event: any) => {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	border: 1px solid rgba(0, 0, 0, 0.08);
-	background: white;
+	border: 1px solid var(--border-color);
+	background: rgba(255, 255, 255, 0.05);
 	border-radius: 12px;
 	color: var(--text-tertiary);
 	cursor: pointer;
@@ -1369,7 +1385,8 @@ const handleImport = async (event: any) => {
 .page-nav-btn:hover:not(:disabled) {
 	color: var(--primary-600);
 	border-color: var(--primary-300);
-	shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+	background: var(--bg-card);
+	shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 .page-nav-btn:disabled {
 	opacity: 0.4;
@@ -1390,9 +1407,10 @@ const handleImport = async (event: any) => {
 	transition: all 0.2s;
 }
 .page-number-btn:hover:not(.active) {
-	background: rgba(249, 250, 251, 0.8);
+	background: var(--bg-tertiary);
 	color: var(--text-primary);
 }
+
 .page-number-btn.active {
 	background: var(--primary-600);
 	color: white;
@@ -1412,7 +1430,8 @@ const handleImport = async (event: any) => {
 	width: 100px;
 	height: 100px;
 	border-radius: 50%;
-	background: rgba(249, 250, 251, 0.8);
+	background: var(--bg-secondary);
+
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -1480,4 +1499,6 @@ svg {
 		text-align: center;
 	}
 }
+
 </style>
+

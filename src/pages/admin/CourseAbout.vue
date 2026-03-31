@@ -201,9 +201,12 @@
 															<FileText v-else :size="18" class="text-info" />
 														</div>
 														<div class="lesson-text">
-															<span class="lesson-title fw-semibold">{{
-																lesson.title
-															}}</span>
+															<span
+																class="lesson-title fw-semibold cursor-pointer"
+																@click="goToLesson(lesson)"
+																>{{ lesson.title }}</span
+															>
+
 															<div class="d-flex gap-2 mt-1 flex-wrap">
 																<span
 																	v-if="lesson.documents.length > 0"
@@ -226,16 +229,20 @@
 
 													<div class="lesson-actions-box">
 														<button
-															v-if="
-																lesson.isFreePreview &&
-																lesson.type === 'Video' &&
-																lesson.videoUrl
-															"
+															v-if="isEnrolled"
 															class="badge-neon success me-3"
-															@click="openPreview(lesson)"
+															@click="goToLesson(lesson)"
 														>
-															HỌC THỬ
+															VÀO HỌC
 														</button>
+														<button
+															v-else
+															class="badge-neon warning me-3"
+															@click="handleAction"
+														>
+															ĐĂNG KÝ
+														</button>
+
 														<span class="lesson-duration"
 															><Clock :size="14" />
 															{{ formatDuration(lesson.durationSeconds) }}</span
@@ -306,8 +313,24 @@
 								</div>
 							</div>
 
-							<button class="btn-neon lg w-100 mb-4" @click="enrollCourse">
-								<GraduationCap :size="20" /> GHI DANH NGAY
+							<button class="btn-neon lg w-100 mb-4" @click="handleAction">
+								<component
+									:is="
+										isEnrolled
+											? PlayCircle
+											: isElective
+												? Bookmark
+												: GraduationCap
+									"
+									:size="20"
+								/>
+								{{
+									isEnrolled
+										? "VÀO HỌC NGAY"
+										: isElective
+											? "ĐĂNG KÝ KHÓA HỌC"
+											: "GHI DANH NGAY"
+								}}
 							</button>
 
 							<div class="info-list-glass">
@@ -447,6 +470,11 @@ const courseId = route.params.id as string;
 
 const isLoading = ref(true);
 const courseData = ref<any>(null);
+const isEnrolled = ref(false);
+
+const isElective = computed(() => {
+	return courseData.value?.level === 3;
+});
 
 interface DocumentFile {
 	id: number;
@@ -504,19 +532,7 @@ const getLevelLabel = (level: number) => {
 const getImageUrl = (url: string) => {
 	if (!url) return "";
 	if (url.startsWith("http")) return url;
-	return `${import.meta.env.VITE_API_URL || ""}${url.startsWith("/") ? "" : "/"}${url}`;
-};
-
-const getEmbedUrl = (url: string) => {
-	if (!url) return "";
-	if (url.includes("youtube.com") || url.includes("youtu.be")) {
-		const ytMatch = url.match(
-			/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/,
-		);
-		return ytMatch ? `https://www.youtube.com/embed/${ytMatch[1]}` : url;
-	}
-	if (url.startsWith("http")) return url;
-	return `${import.meta.env.VITE_API_URL || ""}${url.startsWith("/") ? "" : "/"}${url}`;
+	return `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${url.startsWith("/") ? "" : "/"}${url}`;
 };
 
 const totalLessonsCount = computed(() => {
@@ -536,13 +552,6 @@ const totalDurationFormatted = computed(() => {
 });
 
 const previewData = ref({ title: "", videoUrl: "", isYoutube: false });
-
-const openPreview = (lesson: Lesson) => {
-	previewData.value.title = lesson.title;
-	previewData.value.videoUrl = getEmbedUrl(lesson.videoUrl);
-	previewData.value.isYoutube =
-		lesson.videoUrl.includes("youtube") || lesson.videoUrl.includes("youtu.be");
-};
 
 onMounted(async () => {
 	isLoading.value = true;
@@ -598,6 +607,16 @@ onMounted(async () => {
 				courseData.value.finalQuiz = resQuiz.data;
 			} catch {}
 		}
+
+		// Kiểm tra trạng thái ghi danh
+		try {
+			const enrollRes = await enrollmentAPI.getByCourse(courseId);
+			if (enrollRes.data) {
+				isEnrolled.value = true;
+			}
+		} catch {
+			isEnrolled.value = false;
+		}
 	} catch (error: any) {
 		toast.error("Không tìm thấy khóa học này!");
 		if (error.response && error.response.status === 404) {
@@ -608,13 +627,32 @@ onMounted(async () => {
 	}
 });
 
+const handleAction = async () => {
+	if (isEnrolled.value) {
+		router.push(`/learn/${courseId}`);
+		return;
+	}
+
+	await enrollCourse();
+};
+
+const goToLesson = (lesson: any) => {
+	if (isEnrolled.value) {
+		router.push(`/learn/${courseId}?lessonId=${lesson.id}`);
+	} else {
+		toast.info("Vui lòng đăng ký khóa học để bắt đầu bài học này.");
+	}
+};
+
 const enrollCourse = async () => {
 	try {
 		await enrollmentAPI.enroll(courseId);
-		toast.success("Đã ghi danh thành công!");
+		isEnrolled.value = true;
+		toast.success("Đăng ký khóa học thành công!");
+		// Sau khi đăng ký xong mới cho vào học
 		router.push(`/learn/${courseId}`);
 	} catch (error: any) {
-		toast.error(error.response?.data?.message || "Đã xảy ra lỗi khi ghi danh.");
+		toast.error(error.response?.data?.message || "Đã xảy ra lỗi khi đăng ký.");
 	}
 };
 
@@ -636,14 +674,14 @@ const isModuleExpanded = (moduleId: number, index: number) => {
 }
 
 .glass {
-	background: rgba(255, 255, 255, 0.7);
+	background: var(--bg-card);
 	backdrop-filter: blur(20px);
 	-webkit-backdrop-filter: blur(20px);
-	border: 1px solid rgba(255, 255, 255, 0.4);
+	border: 1px solid var(--border-color);
 }
 
 .title-gradient {
-	background: linear-gradient(90deg, #1e293b, #4f46e5, #a855f7);
+	background: linear-gradient(90deg, var(--text-primary), #4f46e5, #a855f7);
 	background-clip: text;
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
@@ -678,8 +716,9 @@ const isModuleExpanded = (moduleId: number, index: number) => {
 }
 .badge-glass.success {
 	background: rgba(16, 185, 129, 0.1);
-	color: #059669;
+	color: #10b981;
 }
+
 .badge-glass.warning {
 	background: rgba(245, 158, 11, 0.1);
 	color: #b45309;
@@ -717,16 +756,41 @@ const isModuleExpanded = (moduleId: number, index: number) => {
 	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 	gap: 15px;
 }
+.meta-item.doc-tag {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 3px 10px;
+	background: rgba(99, 102, 241, 0.1);
+	color: #6366f1;
+	border-radius: 6px;
+	font-size: 11px;
+	font-weight: 700;
+	border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .doc-tag {
+	background: rgba(99, 102, 241, 0.2) !important;
+	color: #818cf8 !important;
+	border-color: rgba(99, 102, 241, 0.4) !important;
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .doc-tag.bg-warning-light {
+	background: rgba(245, 158, 11, 0.15) !important;
+	color: #fbbf24 !important;
+	border-color: rgba(245, 158, 11, 0.3) !important;
+}
 .meta-item-glass {
 	display: flex;
 	align-items: center;
 	gap: 12px;
 	padding: 15px;
-	background: rgba(255, 255, 255, 0.5);
-	border: 1px solid rgba(255, 255, 255, 0.8);
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
 	border-radius: 16px;
 	backdrop-filter: blur(10px);
 }
+
 .m-icon {
 	width: 36px;
 	height: 36px;
@@ -758,7 +822,7 @@ const isModuleExpanded = (moduleId: number, index: number) => {
 .m-value {
 	font-size: 13px;
 	font-weight: 700;
-	color: #1e293b;
+	color: var(--text-primary);
 }
 
 .page-header-premium {
@@ -779,8 +843,8 @@ const isModuleExpanded = (moduleId: number, index: number) => {
 	width: 50px;
 	height: 50px;
 	border-radius: 16px;
-	background: white;
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -793,10 +857,11 @@ const isModuleExpanded = (moduleId: number, index: number) => {
 	list-style: none;
 	margin: 0;
 	padding: 6px 16px;
-	background: rgba(255, 255, 255, 0.6);
+	background: var(--bg-card);
 	border-radius: 30px;
-	border: 1px solid white;
+	border: 1px solid var(--border-color);
 }
+
 .breadcrumb-item a {
 	color: #64748b;
 	font-weight: 600;
@@ -946,12 +1011,16 @@ const isModuleExpanded = (moduleId: number, index: number) => {
 	align-items: center;
 }
 .lesson-duration {
-	color: #94a3b8;
-	font-size: 0.8rem;
+	font-size: 12px;
 	font-weight: 700;
+	color: var(--text-tertiary);
 	display: flex;
 	align-items: center;
 	gap: 4px;
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .lesson-duration {
+	color: var(--text-secondary) !important;
 }
 
 .sidebar-sticky {
@@ -981,14 +1050,19 @@ const isModuleExpanded = (moduleId: number, index: number) => {
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	color: #64748b;
-	font-weight: 700;
-	font-size: 0.85rem;
+	color: var(--text-secondary);
+	font-weight: 600;
 }
 .info-value {
-	color: #1e293b;
-	font-weight: 800;
-	font-size: 0.9rem;
+	color: var(--text-primary);
+	font-weight: 700;
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .info-label {
+	color: #94a3b8 !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .info-value {
+	color: #f8fafc !important;
 }
 
 .btn-neon {
@@ -1030,6 +1104,40 @@ const isModuleExpanded = (moduleId: number, index: number) => {
 	background: #0f172a;
 	border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .doc-tag {
+	background: rgba(99, 102, 241, 0.2) !important;
+	color: #818cf8 !important;
+	border-color: rgba(99, 102, 241, 0.4) !important;
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .doc-tag.bg-warning-light {
+	background: rgba(245, 158, 11, 0.15) !important;
+	color: #fbbf24 !important;
+	border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"])
+	.stat-card-premium
+	.text-muted {
+	color: #a5b4fc !important;
+	opacity: 0.8;
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .meta-item-glass {
+	background: rgba(30, 41, 59, 0.6);
+	border-color: rgba(255, 255, 255, 0.08);
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .module-glass-card {
+	background: var(--bg-secondary) !important;
+	border-color: var(--border-color) !important;
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .lesson-glass-item:hover {
+	background: var(--bg-tertiary);
+}
+
 .glass-modal-header {
 	display: flex;
 	justify-content: space-between;

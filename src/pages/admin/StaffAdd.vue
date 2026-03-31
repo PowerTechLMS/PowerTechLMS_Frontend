@@ -11,14 +11,13 @@ import {
 	Eye,
 	EyeOff,
 	Camera,
-	Shield,
-	Save,
 	CheckCircle2,
 	Layout,
+	Shield,
 } from "lucide-vue-next";
 import { toast } from "vue3-toastify";
 import { onMounted } from "vue";
-import { userGroupAPI } from "@/services/api";
+import { userGroupAPI, rbacAPI } from "@/services/api";
 
 const router = useRouter();
 const submitting = ref(false);
@@ -30,17 +29,23 @@ const userForm = ref({
 	confirmPassword: "",
 	role: "Employee",
 	groupId: null as number | null,
+	position: "",
 	avatarFile: null as File | null,
 	avatarPreview: "",
 	isActive: true,
 });
 
 const departments = ref<any[]>([]);
+const roles = ref<any[]>([]);
 
 onMounted(async () => {
 	try {
-		const res = await userGroupAPI.getAll();
-		departments.value = res.data.items || res.data;
+		const [deptRes, roleRes] = await Promise.all([
+			userGroupAPI.getAll(),
+			rbacAPI.getRoles(),
+		]);
+		departments.value = deptRes.data.items || deptRes.data;
+		roles.value = roleRes.data || [];
 	} catch {}
 });
 
@@ -82,6 +87,7 @@ const submitForm = async () => {
 			payload.append("Email", userForm.value.email);
 			payload.append("Password", userForm.value.password);
 			payload.append("Role", userForm.value.role);
+			payload.append("Position", userForm.value.position);
 			payload.append("IsActive", String(userForm.value.isActive));
 			if (userForm.value.groupId) {
 				payload.append("GroupId", String(userForm.value.groupId));
@@ -93,6 +99,7 @@ const submitForm = async () => {
 				email: userForm.value.email,
 				password: userForm.value.password,
 				role: userForm.value.role,
+				position: userForm.value.position,
 				isActive: userForm.value.isActive,
 				groupId: userForm.value.groupId,
 			};
@@ -280,6 +287,35 @@ const submitForm = async () => {
 								accept="image/*"
 								@change="handleAvatarChange"
 							/>
+						</div>
+
+						<div class="form-group mb-4">
+							<label class="dp-label"
+								>Vai trò hệ thống <span class="text-danger">*</span></label
+							>
+							<div class="role-grid">
+								<div
+									class="role-card"
+									:class="{ 'active-danger': userForm.role === 'Admin' }"
+									@click="userForm.role = 'Admin'"
+								>
+									<span class="role-text">Quản trị viên</span>
+								</div>
+								<div
+									class="role-card"
+									:class="{ 'active-info': userForm.role === 'Instructor' }"
+									@click="userForm.role = 'Instructor'"
+								>
+									<span class="role-text">Giảng viên</span>
+								</div>
+								<div
+									class="role-card"
+									:class="{ 'active-primary': userForm.role === 'Employee' }"
+									@click="userForm.role = 'Employee'"
+								>
+									<span class="role-text">Nhân viên</span>
+								</div>
+							</div>
 						</div>
 
 						<div class="form-group mb-4">
@@ -472,14 +508,15 @@ const submitForm = async () => {
 }
 
 .dp-card {
-	background: var(--bg-primary);
+	background: var(--bg-card);
 	border-radius: var(--radius-2xl);
-	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+	box-shadow: var(--shadow-sm);
 	border: 1px solid var(--border-color);
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
 }
+
 .dp-card-body {
 	padding: 40px;
 }
@@ -492,13 +529,14 @@ const submitForm = async () => {
 	border-bottom: 1px solid var(--border-color);
 }
 .dp-card-banner.info {
-	background: var(--info-50);
-	border-bottom-color: var(--info-100);
+	background: var(--bg-secondary);
+	border-bottom-color: var(--border-color);
 }
 .dp-card-banner.warning {
-	background: var(--warning-50);
-	border-bottom-color: var(--warning-100);
+	background: var(--bg-secondary);
+	border-bottom-color: var(--border-color);
 }
+
 .banner-icon-wrap {
 	width: 44px;
 	height: 44px;
@@ -604,8 +642,9 @@ const submitForm = async () => {
 }
 
 .dp-input:focus {
-	background: white;
+	background: var(--bg-tertiary);
 }
+
 .dp-input:focus ~ .dp-input-icon {
 	color: var(--primary-500);
 }
@@ -637,9 +676,10 @@ const submitForm = async () => {
 	height: 100%;
 	border-radius: 50%;
 	object-fit: cover;
-	border: 4px solid white;
-	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+	border: 4px solid var(--bg-card);
+	box-shadow: var(--shadow-sm);
 }
+
 .avatar-placeholder {
 	width: 100%;
 	height: 100%;
@@ -669,8 +709,9 @@ const submitForm = async () => {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	border: 3px solid white;
+	border: 3px solid var(--bg-card);
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
 	z-index: 2;
 	transition: all 0.3s;
 }
@@ -709,7 +750,8 @@ const submitForm = async () => {
 	padding: 16px;
 	border-radius: 12px;
 	border: 1px solid var(--border-color);
-	background: var(--bg-primary);
+	background: var(--bg-secondary);
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 	text-align: center;
 	cursor: pointer;
 	transition: all 0.2s;
@@ -718,37 +760,41 @@ const submitForm = async () => {
 	justify-content: center;
 }
 .role-card:hover {
-	background: var(--bg-secondary);
-	border-color: #cbd5e1;
+	background: var(--bg-tertiary);
+	border-color: var(--text-tertiary);
 }
+
 .role-text {
 	font-size: 14px;
 	font-weight: 700;
-	color: var(--text-secondary);
-	transition: color 0.2s;
+	color: var(--text-primary);
+	transition: all 0.2s;
 }
 
 .role-card.active-primary {
-	background: var(--primary-50);
+	background: rgba(99, 102, 241, 0.1);
 	border-color: var(--primary-400);
-	box-shadow: 0 4px 10px rgba(59, 130, 246, 0.1);
+	box-shadow: 0 4px 10px rgba(99, 102, 241, 0.1);
 }
+
 .role-card.active-primary .role-text {
 	color: var(--primary-700);
 }
 .role-card.active-info {
-	background: var(--info-50);
+	background: rgba(14, 165, 233, 0.1);
 	border-color: var(--info-400);
 	box-shadow: 0 4px 10px rgba(14, 165, 233, 0.1);
 }
+
 .role-card.active-info .role-text {
 	color: var(--info-700);
 }
 .role-card.active-danger {
-	background: var(--danger-50);
+	background: rgba(239, 68, 68, 0.1);
 	border-color: var(--danger-400);
 	box-shadow: 0 4px 10px rgba(239, 68, 68, 0.1);
 }
+
 .role-card.active-danger .role-text {
 	color: var(--danger-700);
 }
@@ -763,9 +809,10 @@ const submitForm = async () => {
 	border: 1px solid transparent;
 }
 .status-box.active {
-	background: var(--success-50);
-	border-color: var(--success-200);
+	background: rgba(16, 185, 129, 0.1);
+	border-color: var(--success-400);
 }
+
 .status-box.inactive {
 	background: var(--bg-secondary);
 	border-color: var(--border-color);
@@ -816,9 +863,10 @@ const submitForm = async () => {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background-color: #cbd5e1;
+	background-color: var(--border-color);
 	transition: 0.4s;
 }
+
 .slider:before {
 	position: absolute;
 	content: "";

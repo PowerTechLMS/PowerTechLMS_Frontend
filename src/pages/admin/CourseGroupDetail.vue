@@ -71,14 +71,16 @@ onMounted(async () => {
 				</div>
 			</div>
 
-			<h5 class="fw-bold text-dark mb-4 d-flex align-items-center">
+			<h5 class="fw-bold mb-4 d-flex align-items-center path-title">
 				<Layers :size="22" class="text-primary me-2" />
 				Bản đồ Khóa học
 				<span
-					class="badge bg-light text-primary border ms-2 rounded-pill px-3 py-1 fs-12"
+					class="badge text-primary border border-primary ms-2 rounded-pill px-3 py-1 fs-12"
+					style="background: rgba(99, 102, 241, 0.1);"
 					>{{ learningPath.courses?.length || 0 }} chặng</span
 				>
 			</h5>
+
 
 			<div class="roadmap-container">
 				<div
@@ -111,9 +113,10 @@ onMounted(async () => {
 									class="d-flex justify-content-between align-items-start flex-wrap gap-3"
 								>
 									<div>
-										<h5 class="fw-bold text-dark mb-2 fs-16">
+										<h5 class="fw-bold mb-2 fs-16 card-title">
 											{{ course.title }}
 										</h5>
+
 										<p class="text-muted fs-14 mb-3" style="max-width: 600px">
 											{{
 												course.description ||
@@ -260,8 +263,9 @@ onMounted(async () => {
 	font-size: 16px;
 	z-index: 2;
 	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-	border: 2px solid white;
+	border: 2px solid var(--bg-card);
 }
+
 .tl-line {
 	width: 2px;
 	flex-grow: 1;
@@ -272,13 +276,13 @@ onMounted(async () => {
 }
 
 .glass-course-card {
-	background: rgba(255, 255, 255, 0.8);
-	backdrop-filter: blur(20px);
-	border: 1px solid rgba(0, 0, 0, 0.06);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	border-radius: 20px;
 	transition: all 0.3s;
 	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
 }
+
 .glass-course-card:hover {
 	transform: translateY(-2px) translateX(4px);
 	box-shadow: 0 10px 25px rgba(99, 102, 241, 0.08);
@@ -323,11 +327,28 @@ onMounted(async () => {
 
 .empty-roadmap {
 	padding: 40px;
-	background: white;
-	border: 1px dashed rgba(0, 0, 0, 0.2);
+	background: var(--bg-secondary);
+	border: 1px dashed var(--border-color);
 	border-radius: 20px;
 	text-align: center;
 	color: var(--text-tertiary);
 	font-style: italic;
 }
+
+.path-title, .card-title {
+	color: var(--text-primary);
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .badge-info-glass {
+	background: rgba(14, 165, 233, 0.15);
+	color: #38bdf8;
+	border-color: rgba(14, 165, 233, 0.3);
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .badge-success-glass {
+	background: rgba(16, 185, 129, 0.15);
+	color: #34d399;
+	border-color: rgba(16, 185, 129, 0.3);
+}
+
 </style>

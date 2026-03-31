@@ -42,9 +42,10 @@
 									x="0.798584"
 									width="63.0726"
 									height="55.8871"
-									fill="#1a56db"
+									fill="currentColor"
 								/>
 							</g>
+
 							<defs>
 								<pattern
 									id="patternLogin"
@@ -127,9 +128,10 @@
 									x="0.798584"
 									width="63.0726"
 									height="55.8871"
-									fill="#1a56db"
+									fill="currentColor"
 								/>
 							</g>
+
 							<defs>
 								<pattern
 									id="patternM"
@@ -154,31 +156,8 @@
 				</div>
 
 				<div class="form-header">
-					<h2>{{ isRegister ? "Đăng ký tài khoản" : "Chào mừng trở lại" }}</h2>
-					<p>
-						{{
-							isRegister
-								? "Tạo tài khoản mới để tham gia khóa học."
-								: "Đăng nhập để tiếp tục quản lý hệ thống đào tạo."
-						}}
-					</p>
-				</div>
-
-				<div class="tab-switch">
-					<button
-						:class="{ active: !isRegister }"
-						type="button"
-						@click="isRegister = false"
-					>
-						Đăng nhập
-					</button>
-					<button
-						:class="{ active: isRegister }"
-						type="button"
-						@click="isRegister = true"
-					>
-						Đăng ký
-					</button>
+					<h2>Chào mừng trở lại</h2>
+					<p>Đăng nhập để tiếp tục quản lý hệ thống đào tạo.</p>
 				</div>
 
 				<div
@@ -186,7 +165,8 @@
 					class="alert alert-danger"
 					style="
 						color: #dc3545;
-						background-color: #f8d7da;
+						background-color: var(--primary-light);
+						border: 1px solid rgba(220, 53, 69, 0.2);
 						border-radius: 8px;
 						padding: 12px;
 						font-size: 14px;
@@ -196,36 +176,8 @@
 					<i class="fa fa-exclamation-circle me-2" /> {{ error }}
 				</div>
 
-				<form class="login-form" @submit.prevent="handleSubmit">
-					<div v-if="isRegister" class="field-group">
-						<label for="fullName">Họ và tên</label>
-						<div class="input-wrap">
-							<span class="input-icon">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="16"
-									height="16"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								>
-									<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-									<circle cx="12" cy="7" r="4" />
-								</svg>
-							</span>
-							<input
-								id="fullName"
-								v-model="form.fullName"
-								type="text"
-								placeholder="Nguyễn Văn A"
-								:required="isRegister"
-							/>
-						</div>
-					</div>
 
+				<form class="login-form" @submit.prevent="handleSubmit">
 					<div class="field-group">
 						<label for="email">Tài khoản Email</label>
 						<div class="input-wrap">
@@ -327,9 +279,9 @@
 						</div>
 					</div>
 
-					<div v-if="!isRegister" class="form-meta">
+					<div class="form-meta">
 						<label class="remember-label">
-							<input id="remember" type="checkbox" />
+							<input id="remember" v-model="rememberMe" type="checkbox" />
 							<span class="checkmark" />
 							<span>Ghi nhớ đăng nhập</span>
 						</label>
@@ -338,55 +290,48 @@
 
 					<button type="submit" class="btn-signin" :disabled="loading">
 						<span v-if="loading">Đang chờ...</span>
-						<span v-else>{{ isRegister ? "Đăng ký" : "Đăng nhập" }}</span>
+						<span v-else>Đăng nhập</span>
 						<span v-if="!loading" style="margin-left: 8px">&rarr;</span>
 					</button>
 				</form>
-
-				<div class="form-footer">
-					<p v-if="!isRegister">
-						Chưa có tài khoản?
-						<a href="#" @click.prevent="isRegister = true">Đăng ký ngay</a>
-					</p>
-					<p v-else>
-						Đã có tài khoản?
-						<a href="#" @click.prevent="isRegister = false">Đăng nhập</a>
-					</p>
-				</div>
 			</div>
 		</div>
 	</div>
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 
 const router = useRouter();
 const authStore = useAuthStore();
 
-const isRegister = ref(false);
 const loading = ref(false);
 const error = ref("");
 const show = ref(false);
+const rememberMe = ref(false);
 
-const form = reactive({ fullName: "", email: "", password: "" });
+const form = reactive({ email: "", password: "" });
+
+onMounted(() => {
+	const getCookie = (name) => {
+		const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+		if (match) return match[2];
+		return null;
+	};
+	const savedEmail = getCookie("lms_remembered_email");
+	if (savedEmail) {
+		form.email = savedEmail;
+		rememberMe.value = true;
+	}
+});
 
 async function handleSubmit() {
 	loading.value = true;
 	error.value = "";
 	try {
-		if (isRegister.value) {
-			await authStore.register(
-				form.fullName,
-				form.email,
-				form.password,
-				"Employee",
-			);
-		} else {
-			await authStore.login(form.email, form.password);
-		}
+		await authStore.login(form.email, form.password, rememberMe.value);
 		router.push("/dashboard");
 	} catch (e) {
 		error.value =
@@ -401,23 +346,36 @@ async function handleSubmit() {
 @import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=DM+Sans:ital,wght@0,400;0,500;1,400&display=swap");
 
 .login-root {
-	--primary: #1a56db;
-	--primary-light: rgba(26, 86, 219, 0.1);
-	--primary-mid: rgba(26, 86, 219, 0.18);
+	--primary: #6366f1;
+	--primary-light: rgba(99, 102, 241, 0.1);
+	--primary-mid: rgba(99, 102, 241, 0.18);
 	--text-dark: #1e293b;
 	--text-muted: #64748b;
 	--border: #e2e8f0;
-	--bg-page: #f4f7fb;
+	--bg-page: #f8fafc;
 	--bg-card: #ffffff;
-	--bg-panel: #eef3fd;
+	--bg-panel: #f5f7ff;
 	--shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.07);
-	--shadow-md: 0 4px 16px rgba(26, 86, 219, 0.1);
+	--shadow-md: 0 4px 16px rgba(99, 102, 241, 0.1);
+	color: var(--text-dark);
 
 	display: flex;
 	min-height: 100vh;
 	font-family: "DM Sans", sans-serif;
 	background: var(--bg-page);
 }
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .login-root {
+	--text-dark: #e2e8f0;
+	--text-muted: #94a3b8;
+	--border: rgba(255, 255, 255, 0.1);
+	--bg-page: #0f172a;
+	--bg-card: #1e293b;
+	--bg-panel: #111827;
+	--shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.4);
+	--shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
 
 .brand-panel {
 	position: relative;
@@ -516,10 +474,11 @@ async function handleSubmit() {
 .brand-content {
 	position: relative;
 	z-index: 2;
-	color: var(--text-dark);
+	color: inherit;
 	max-width: 440px;
 	animation: slideUp 0.65s ease both;
 }
+
 @keyframes slideUp {
 	from {
 		opacity: 0;
@@ -677,7 +636,8 @@ async function handleSubmit() {
 	padding: 0 48px 0 44px;
 	font-size: 0.97rem;
 	font-family: "DM Sans", sans-serif;
-	background: #fafbfe;
+	background: var(--bg-page);
+
 	color: var(--text-dark);
 	transition:
 		border-color 0.18s,
@@ -686,7 +646,8 @@ async function handleSubmit() {
 	outline: none;
 }
 .input-wrap input:focus {
-	background: #fff;
+	background: var(--bg-card);
+
 	border-color: var(--primary);
 	box-shadow: 0 0 0 3px var(--primary-light);
 }
@@ -744,7 +705,8 @@ async function handleSubmit() {
 }
 
 .tab-switch button.active {
-	background: white;
+	background: var(--bg-card);
+
 	color: var(--primary);
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -826,6 +788,7 @@ async function handleSubmit() {
 	font-size: 0.87rem;
 	color: var(--text-muted);
 }
+
 .form-footer a {
 	color: var(--primary);
 	font-weight: 700;

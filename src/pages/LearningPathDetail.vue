@@ -73,11 +73,11 @@ const goToCourse = (courseId: number) => {
 				</div>
 			</div>
 
-			<h5 class="fw-bold text-dark mb-4 d-flex align-items-center">
+			<h5 class="fw-bold mb-4 d-flex align-items-center">
 				<Layers :size="22" class="text-primary me-2" />
 				Bản đồ Khóa học
 				<span
-					class="badge bg-light text-primary border ms-2 rounded-pill px-3 py-1 fs-12"
+					class="badge text-primary border ms-2 rounded-pill px-3 py-1 fs-12"
 					>{{ learningPath.courses?.length || 0 }} chặng</span
 				>
 			</h5>
@@ -110,15 +110,16 @@ const goToCourse = (courseId: number) => {
 									class="d-flex justify-content-between align-items-start flex-wrap gap-3"
 								>
 									<div class="flex-grow-1">
-										<h5 class="fw-bold text-dark mb-2 fs-16">
+										<h5 class="fw-bold mb-2 fs-16 card-title">
 											{{ course.title }}
 										</h5>
-										<p class="text-muted fs-14 mb-3" style="max-width: 600px">
+										<p class="fs-14 mb-3 card-desc" style="max-width: 600px">
 											{{
 												course.description ||
 												"Khóa học đào tạo kỹ năng chuyên sâu trong lộ trình."
 											}}
 										</p>
+
 
 										<div
 											class="d-flex flex-wrap gap-3 fs-13 text-tertiary fw-medium mt-2"
@@ -159,7 +160,7 @@ const goToCourse = (courseId: number) => {
 
 .btn-back {
 	background: transparent;
-	color: #64748b;
+	color: var(--text-secondary);
 	transition: all 0.2s;
 	font-weight: 600;
 }
@@ -167,6 +168,24 @@ const goToCourse = (courseId: number) => {
 	color: #4f46e5;
 	transform: translateX(-4px);
 }
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .glass-course-card {
+	background: #16182d !important;
+	border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .tl-number {
+	border-color: #16182d !important;
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .card-title {
+	color: #f8fafc !important;
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .card-desc {
+	color: #94a3b8 !important;
+}
+
 
 .spinner {
 	width: 40px;
@@ -260,8 +279,9 @@ const goToCourse = (courseId: number) => {
 	font-size: 16px;
 	z-index: 2;
 	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
-	border: 2px solid white;
+	border: 2px solid var(--bg-card);
 }
+
 .tl-line {
 	width: 2px;
 	flex-grow: 1;
@@ -272,11 +292,11 @@ const goToCourse = (courseId: number) => {
 }
 
 .glass-course-card {
-	background: white;
-	border: 1px solid rgba(0, 0, 0, 0.06);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	border-radius: 20px;
 	transition: all 0.3s;
-	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+	box-shadow: var(--shadow-sm);
 }
 .glass-course-card:hover {
 	transform: translateY(-3px) translateX(4px);
@@ -297,11 +317,38 @@ const goToCourse = (courseId: number) => {
 	display: inline-flex;
 	align-items: center;
 	padding: 6px 14px;
-	background: rgba(16, 185, 129, 0.08);
-	color: #047857;
+	background: rgba(16, 185, 129, 0.1);
+	color: #10b981;
 	border-radius: 12px;
-	border: 1px solid rgba(16, 185, 129, 0.1);
+	border: 1px solid rgba(16, 185, 129, 0.2);
 }
+
+.card-title {
+	color: var(--text-primary);
+}
+.card-desc {
+	color: var(--text-secondary);
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .badge-info-glass {
+	background: rgba(14, 165, 233, 0.15);
+	color: #38bdf8;
+	border-color: rgba(14, 165, 233, 0.3);
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .badge-success-glass {
+	background: rgba(16, 185, 129, 0.2);
+	color: #34d399;
+	border-color: rgba(16, 185, 129, 0.3);
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .btn-back {
+	color: var(--text-tertiary);
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .btn-back:hover {
+	color: var(--primary-400);
+}
+
 
 .btn-primary {
 	background: #4f46e5;
@@ -322,11 +369,11 @@ const goToCourse = (courseId: number) => {
 
 .empty-roadmap {
 	padding: 50px;
-	background: #f8fafc;
-	border: 2px dashed #e2e8f0;
+	background: var(--bg-tertiary);
+	border: 2px dashed var(--border-color);
 	border-radius: 24px;
 	text-align: center;
-	color: #64748b;
+	color: var(--text-secondary);
 	font-weight: 500;
 }
 </style>

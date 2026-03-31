@@ -540,9 +540,10 @@ function getStatusIcon(status) {
 	display: flex;
 }
 .glass-tabs {
-	background: #ffffff;
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-full);
+
 	padding: 6px;
 	display: inline-flex;
 	position: relative;
@@ -588,10 +589,11 @@ function getStatusIcon(status) {
 	min-height: 500px;
 }
 .glass-card {
-	background: #ffffff;
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-2xl);
-	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+	box-shadow: var(--shadow-sm);
+
 	padding: var(--space-2xl);
 	overflow: hidden;
 }
@@ -629,21 +631,23 @@ function getStatusIcon(status) {
 	color: var(--text-tertiary);
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
-	border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+	border-bottom: 2px solid var(--border-color);
 	white-space: nowrap;
 	position: sticky;
 	top: 0;
 	z-index: 10;
-	background: #ffffff;
+	background: var(--bg-card);
 }
+
 .glass-table td {
 	padding: 16px;
 	font-size: var(--font-size-sm);
-	background: rgba(249, 250, 251, 0.6);
-	border-top: 1px solid rgba(0, 0, 0, 0.02);
-	border-bottom: 1px solid rgba(0, 0, 0, 0.02);
+	background: var(--bg-secondary);
+	border-top: 1px solid var(--border-color);
+	border-bottom: 1px solid var(--border-color);
 	transition: all 0.3s;
 }
+
 .glass-table td:first-child {
 	border-left: 1px solid rgba(0, 0, 0, 0.02);
 	border-top-left-radius: 12px;
@@ -658,8 +662,9 @@ function getStatusIcon(status) {
 	transition: all 0.3s;
 }
 .glass-table tbody tr:hover td {
-	background: #ffffff;
+	background: var(--bg-tertiary);
 	transform: translateY(-2px);
+
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 	border-color: rgba(99, 102, 241, 0.1);
 }
@@ -722,10 +727,11 @@ function getStatusIcon(status) {
 .progress-bar-bg {
 	flex: 1;
 	height: 8px;
-	background: rgba(0, 0, 0, 0.05);
+	background: var(--bg-tertiary);
 	border-radius: 10px;
 	overflow: hidden;
 }
+
 .progress-bar-fill {
 	height: 100%;
 	border-radius: 10px;

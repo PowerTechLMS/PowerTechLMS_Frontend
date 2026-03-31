@@ -135,7 +135,8 @@
 					<div class="empty-icon-box mb-4">
 						<Award :size="64" class="opacity-20 animate-pulse" />
 					</div>
-					<h5 class="fw-bold text-dark">Chưa có chứng chỉ nào</h5>
+					<h5 class="fw-bold text-primary">Chưa có chứng chỉ nào</h5>
+
 					<p class="text-tertiary fs-14 mb-0">
 						Hệ thống chưa ghi nhận dữ liệu khớp điều kiện.
 					</p>
@@ -171,9 +172,13 @@
 											{{ cert.studentName?.charAt(0) }}
 										</div>
 										<div>
-											<div class="fw-bold text-dark fs-14">
+											<div
+												class="fw-bold fs-14"
+												style="color: var(--text-primary)"
+											>
 												{{ cert.studentName }}
 											</div>
+
 											<div class="fs-12 text-tertiary">
 												<IdCard :size="12" /> {{ cert.certificateCode }}
 											</div>
@@ -532,10 +537,11 @@ const confirmRevoke = async () => {
 	display: flex;
 	align-items: center;
 	list-style: none;
-	background: rgba(255, 255, 255, 0.5);
+	background: var(--bg-secondary);
 	padding: 8px 20px;
 	border-radius: 14px;
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
+
 	gap: 0;
 }
 .breadcrumb-item {
@@ -622,26 +628,30 @@ const confirmRevoke = async () => {
 }
 
 .glass-content-card {
-	background: rgba(255, 255, 255, 0.9);
+	background: var(--bg-card);
 	backdrop-filter: blur(20px);
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
 	border-radius: 28px;
-	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.03);
+	box-shadow: var(--shadow-sm);
 	overflow: hidden;
 }
+
 .border-bottom-glass {
-	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+	border-bottom: 1px solid var(--border-color);
 }
+
 .border-top-glass {
-	border-top: 1px solid rgba(0, 0, 0, 0.05);
+	border-top: 1px solid var(--border-color);
 }
+
 
 .tabs-glass-nav {
 	display: flex;
 	gap: 6px;
-	background: rgba(0, 0, 0, 0.04);
+	background: var(--bg-secondary);
 	padding: 6px;
 	border-radius: 16px;
+
 	height: 48px;
 	align-items: center;
 }
@@ -661,18 +671,20 @@ const confirmRevoke = async () => {
 	white-space: nowrap;
 }
 .tab-glass-btn.active {
-	background: white;
+	background: var(--bg-card);
 	color: var(--primary-600);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+	box-shadow: var(--shadow-sm);
 }
+
 
 .glass-search {
 	display: flex;
 	align-items: center;
-	background: white;
-	border: 1px solid rgba(0, 0, 0, 0.1);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	border-radius: 16px;
 	padding: 0 18px;
+
 	width: 300px;
 	height: 48px;
 	transition: all 0.3s;
@@ -698,25 +710,29 @@ const confirmRevoke = async () => {
 	border-spacing: 0;
 }
 .glass-table-ui th {
-	background: rgba(249, 250, 251, 0.5);
+	background: var(--bg-secondary);
+
 	padding: 16px;
 	font-size: 11px;
 	font-weight: 800;
 	color: var(--text-tertiary);
 	text-transform: uppercase;
-	border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+	border-bottom: 2px solid var(--border-color);
 }
+
 .glass-table-ui td {
 	padding: 18px 16px;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+	border-bottom: 1px solid var(--border-color);
 	vertical-align: middle;
 }
+
 .glass-table-ui tbody tr {
 	transition: all 0.2s;
 }
 .glass-table-ui tbody tr:hover td {
-	background: rgba(249, 250, 251, 0.4);
+	background: var(--bg-tertiary);
 }
+
 .revoked-row td {
 	opacity: 0.6;
 }

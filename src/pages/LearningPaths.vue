@@ -19,7 +19,7 @@
 
 			<div class="row g-4 mb-5 animate-slide-up" style="animation-delay: 0.1s">
 				<div class="col-md-3">
-					<div class="glass-stat-card primary">
+					<div class="glass-stat-card primary h-100">
 						<div class="stat-icon">
 							<Layers :size="24" />
 						</div>
@@ -32,7 +32,7 @@
 					</div>
 				</div>
 				<div class="col-md-3">
-					<div class="glass-stat-card info">
+					<div class="glass-stat-card info h-100">
 						<div class="stat-icon">
 							<BookOpen :size="24" />
 						</div>
@@ -45,7 +45,7 @@
 					</div>
 				</div>
 				<div class="col-md-3">
-					<div class="glass-stat-card success">
+					<div class="glass-stat-card success h-100">
 						<div class="stat-icon">
 							<Award :size="24" />
 						</div>
@@ -58,7 +58,7 @@
 					</div>
 				</div>
 				<div class="col-md-3">
-					<div class="glass-stat-card secondary">
+					<div class="glass-stat-card secondary h-100">
 						<div class="stat-icon">
 							<Zap :size="24" />
 						</div>
@@ -75,10 +75,7 @@
 				<p class="mt-3 text-muted fw-bold">Đang tải lộ trình của bạn...</p>
 			</div>
 
-			<div
-				v-else-if="learningPaths.length === 0"
-				class="empty-state text-center py-5 glass animate-slide-up"
-			>
+			<div v-else-if="learningPaths.length === 0" class="empty-state text-center py-5 glass animate-slide-up">
 				<div class="empty-icon mb-4">
 					<Route :size="64" class="opacity-20" />
 				</div>
@@ -92,28 +89,21 @@
 			</div>
 
 			<div v-else class="paths-grid row g-4">
-				<div
-					v-for="(path, index) in learningPaths"
-					:key="path.id"
-					class="col-lg-6 col-xl-4 animate-slide-up"
-					:style="{ animationDelay: 0.2 + index * 0.1 + 's' }"
-				>
-					<div class="path-card glass" @click="viewPathDetail(path.id)">
+				<div v-for="(path, index) in learningPaths" :key="path.id" class="col-lg-6 col-xl-4 animate-slide-up"
+					:style="{ animationDelay: 0.2 + index * 0.1 + 's' }">
+					<div class="path-card glass h-100 d-flex flex-column" @click="viewPathDetail(path.id)">
 						<div class="path-card-header">
 							<div class="path-icon-wrap">
 								<div class="path-icon">
 									<Route :size="24" />
 								</div>
 							</div>
-							<div
-								class="path-badge"
-								:class="index % 2 === 0 ? 'primary' : 'info'"
-							>
+							<div class="path-badge" :class="index % 2 === 0 ? 'primary' : 'info'">
 								LỘ TRÌNH {{ index + 1 }}
 							</div>
 						</div>
 
-						<div class="path-card-body p-4">
+						<div class="path-card-body p-4 d-flex flex-column flex-grow-1">
 							<h3 class="path-title mb-2">
 								{{ path.name }}
 							</h3>
@@ -124,10 +114,8 @@
 								}}
 							</p>
 
-							<div class="path-meta mt-4 py-3 border-top border-bottom">
-								<div
-									class="d-flex justify-content-between align-items-center mb-3"
-								>
+							<div class="path-meta mt-auto py-3 border-top border-bottom">
+								<div class="d-flex justify-content-between align-items-center mb-3">
 									<span class="meta-label">
 										<BookOpen :size="14" class="me-1" />
 										<strong>{{ path.courseCount || 0 }}</strong> Khóa học
@@ -139,47 +127,25 @@
 								</div>
 
 								<div class="path-progress-wrap">
-									<div
-										class="d-flex justify-content-between fs-12 fw-bold mb-2"
-									>
-										<span class="text-muted text-uppercase tracking-wider"
-											>TIẾN ĐỘ HOÀN THÀNH</span
-										>
-										<span class="text-primary"
-											>{{ getPathProgress(path) }}%</span
-										>
+									<div class="d-flex justify-content-between fs-12 fw-bold mb-2">
+										<span class="text-muted text-uppercase tracking-wider">TIẾN ĐỘ HOÀN THÀNH</span>
+										<span class="text-primary">{{ getPathProgress(path) }}%</span>
 									</div>
 									<div class="premium-progress-bar">
-										<div
-											class="progress-fill"
-											:style="{ width: getPathProgress(path) + '%' }"
-										/>
+										<div class="progress-fill" :style="{ width: getPathProgress(path) + '%' }" />
 									</div>
 								</div>
 							</div>
 
-							<div
-								class="path-card-footer mt-4 d-flex align-items-center justify-content-between"
-							>
+							<div class="path-card-footer mt-4 d-flex align-items-center justify-content-between">
 								<div class="avatars-group d-flex">
-									<div
-										v-for="i in 3"
-										:key="i"
-										class="mini-avatar"
-										:style="{
-											zIndex: 4 - i,
-											transform: `translateX(${(i - 1) * -10}px)`,
-										}"
-									>
-										<img
-											:src="`https://i.pravatar.cc/100?u=${path.id + i}`"
-											alt="user"
-										/>
+									<div v-for="i in 3" :key="i" class="mini-avatar" :style="{
+										zIndex: 4 - i,
+										transform: `translateX(${(i - 1) * -10}px)`,
+									}">
+										<img :src="`https://i.pravatar.cc/100?u=${path.id + i}`" alt="user" />
 									</div>
-									<div
-										class="plus-more"
-										:style="{ transform: `translateX(-20px)` }"
-									>
+									<div class="plus-more" :style="{ transform: `translateX(-20px)` }">
 										+12
 									</div>
 								</div>
@@ -266,12 +232,12 @@ const viewPathDetail = (id) => {
 <style scoped>
 .learning-paths-page {
 	min-height: 100vh;
-	background: #f8fafc;
+	background: transparent;
 	padding-bottom: 5rem;
 }
 
 .title-gradient {
-	background: linear-gradient(90deg, #1e293b, #4f46e5, #a855f7);
+	background: linear-gradient(90deg, var(--text-primary), #4f46e5, #a855f7);
 	-webkit-background-clip: text;
 	background-clip: text;
 	-webkit-text-fill-color: transparent;
@@ -280,11 +246,12 @@ const viewPathDetail = (id) => {
 	letter-spacing: -1px;
 }
 
+
 .header-icon-box {
 	width: 64px;
 	height: 64px;
 	border-radius: 20px;
-	background: white;
+	background: var(--bg-card);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -300,9 +267,11 @@ const viewPathDetail = (id) => {
 	0% {
 		box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.2);
 	}
+
 	50% {
 		box-shadow: 0 0 0 15px rgba(79, 70, 229, 0);
 	}
+
 	100% {
 		box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
 	}
@@ -324,18 +293,18 @@ const viewPathDetail = (id) => {
 
 .page-desc {
 	font-size: 1.1rem;
-	color: #64748b;
+	color: var(--text-secondary);
 	max-width: 600px;
 }
 
 .glass-stat-card {
-	background: white;
+	background: var(--bg-card);
 	padding: 1.5rem;
 	border-radius: 24px;
 	display: flex;
 	align-items: center;
 	gap: 1.5rem;
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -352,39 +321,47 @@ const viewPathDetail = (id) => {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	flex-shrink: 0;
 }
 
 .glass-stat-card.primary .stat-icon {
 	background: rgba(79, 70, 229, 0.1);
 	color: #4f46e5;
 }
+
 .glass-stat-card.info .stat-icon {
 	background: rgba(14, 165, 233, 0.1);
 	color: #0ea5e9;
 }
+
 .glass-stat-card.success .stat-icon {
 	background: rgba(16, 185, 129, 0.1);
 	color: #10b981;
 }
 
+.glass-stat-card.secondary .stat-icon {
+	background: rgba(245, 158, 11, 0.1);
+	color: #f59e0b;
+}
+
 .stat-label {
 	font-size: 0.75rem;
 	font-weight: 800;
-	color: #94a3b8;
+	color: var(--text-tertiary);
 	letter-spacing: 1px;
 }
 
 .stat-value {
 	font-size: 1.5rem;
 	font-weight: 900;
-	color: #1e293b;
+	color: var(--text-primary);
 }
 
 .path-card {
-	background: white;
+	background: var(--bg-card);
 	border-radius: 28px;
 	overflow: hidden;
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
 	transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 	cursor: pointer;
 	position: relative;
@@ -398,7 +375,7 @@ const viewPathDetail = (id) => {
 
 .path-card-header {
 	height: 80px;
-	background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+	background: var(--gradient-card);
 	padding: 1.5rem 2rem;
 	display: flex;
 	justify-content: space-between;
@@ -408,14 +385,14 @@ const viewPathDetail = (id) => {
 .path-icon-wrap {
 	width: 50px;
 	height: 50px;
-	background: white;
+	background: var(--bg-card);
 	border-radius: 14px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-	margin-top: 2rem;
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	margin-top: 0.5rem;
+	border: 1px solid var(--border-color);
 }
 
 .path-icon {
@@ -434,6 +411,7 @@ const viewPathDetail = (id) => {
 	background: #4f46e5;
 	color: white;
 }
+
 .path-badge.info {
 	background: #0ea5e9;
 	color: white;
@@ -442,13 +420,13 @@ const viewPathDetail = (id) => {
 .path-title {
 	font-size: 1.5rem;
 	font-weight: 800;
-	color: #1e293b;
+	color: var(--text-primary);
 	letter-spacing: -0.5px;
 }
 
 .path-desc {
 	font-size: 0.95rem;
-	color: #64748b;
+	color: var(--text-secondary);
 	line-height: 1.6;
 }
 
@@ -462,14 +440,14 @@ const viewPathDetail = (id) => {
 
 .meta-label {
 	font-size: 0.85rem;
-	color: #64748b;
+	color: var(--text-secondary);
 	display: flex;
 	align-items: center;
 }
 
 .premium-progress-bar {
 	height: 8px;
-	background: #f1f5f9;
+	background: var(--bg-tertiary);
 	border-radius: 10px;
 	overflow: hidden;
 }
@@ -482,11 +460,16 @@ const viewPathDetail = (id) => {
 	transition: width 1s ease-out;
 }
 
+:is([data-bs-theme="dark"], [data-theme="dark"]) .path-icon-wrap {
+	border-color: rgba(255, 255, 255, 0.05);
+}
+
+
 .mini-avatar {
 	width: 32px;
 	height: 32px;
 	border-radius: 50%;
-	border: 2px solid white;
+	border: 2px solid var(--bg-card);
 	overflow: hidden;
 }
 
@@ -500,24 +483,24 @@ const viewPathDetail = (id) => {
 	width: 32px;
 	height: 32px;
 	border-radius: 50%;
-	background: #f1f5f9;
-	color: #64748b;
+	background: var(--bg-tertiary);
+	color: var(--text-secondary);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	font-size: 10px;
 	font-weight: 800;
-	border: 2px solid white;
+	border: 2px solid var(--bg-card);
 }
 
 .btn-path-action {
-	background: #f8fafc;
-	border: 1px solid rgba(0, 0, 0, 0.08);
+	background: var(--bg-tertiary);
+	border: 1px solid var(--border-color);
 	padding: 8px 16px;
 	border-radius: 12px;
 	font-weight: 800;
 	font-size: 12px;
-	color: #1e293b;
+	color: var(--text-primary);
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -535,6 +518,7 @@ const viewPathDetail = (id) => {
 		opacity: 0;
 		transform: translateY(30px);
 	}
+
 	to {
 		opacity: 1;
 		transform: translateY(0);
@@ -563,9 +547,10 @@ const viewPathDetail = (id) => {
 .empty-state {
 	border-radius: 30px;
 	padding: 4rem;
-	background: rgba(255, 255, 255, 0.5);
-	border: 1px dashed rgba(0, 0, 0, 0.1);
+	background: var(--bg-secondary);
+	border: 1px dashed var(--border-color);
 }
+
 
 .btn-neon {
 	background: #4f46e5;

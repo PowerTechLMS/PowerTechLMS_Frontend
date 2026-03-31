@@ -186,7 +186,10 @@
 									><Play :size="11" class="me-1" />
 									{{ course.lessonCount || 0 }} bài</span
 								>
-								<span class="badge-level level-3">Tự chọn</span>
+								<span class="badge-level" :class="'level-' + (course.level || 3)">
+									{{ getLevelBadgeLabel(course.level) }}
+								</span>
+
 							</div>
 							<div class="card-hover-info">
 								<div v-if="isLocked(course)" class="lock-overlay">
@@ -250,7 +253,10 @@
 									}}
 									bài học</span
 								>
-								<span class="badge-level level-3 sm">Tự chọn</span>
+								<span class="badge-level sm" :class="'level-' + (course.level || 3)">
+									{{ getLevelBadgeLabel(course.level) }}
+								</span>
+
 							</div>
 							<h3
 								class="list-title"
@@ -415,6 +421,7 @@ async function fetchCourses() {
 			level: 3,
 		};
 
+
 		const { data } = await courseAPI.getAll(params);
 		courses.value = data.items;
 		totalPages.value = Math.ceil(data.totalCount / 12);
@@ -444,7 +451,20 @@ async function fetchUserProgress() {
 	} catch {}
 }
 
+function getLevelBadgeLabel(level) {
+	switch (level) {
+		case 1:
+			return "Bắt buộc";
+		case 2:
+			return "Phòng ban";
+		case 3:
+		default:
+			return "Tự chọn";
+	}
+}
+
 function isLocked(course) {
+
 	if (authStore.isInstructor || authStore.isAdmin) return false;
 
 	if (course.level !== 2) return false;
@@ -495,14 +515,13 @@ onMounted(async () => {
 	padding-bottom: 5rem;
 	max-width: var(--content-max-width, 1400px);
 	margin: 0 auto;
-	font-family: "Plus Jakarta Sans", sans-serif;
 }
 
 .glass {
-	background: rgba(255, 255, 255, 0.75);
+	background: var(--bg-card);
 	backdrop-filter: blur(16px);
 	-webkit-backdrop-filter: blur(16px);
-	border: 1px solid rgba(255, 255, 255, 0.5);
+	border: 1px solid var(--border-color);
 }
 
 .badge-glass {
@@ -573,7 +592,7 @@ onMounted(async () => {
 	font-weight: 900;
 	line-height: 1.05;
 	margin-bottom: 1.25rem;
-	color: #1e293b;
+	color: var(--text-primary);
 	letter-spacing: -2px;
 }
 .hero-title .highlight {
@@ -585,7 +604,7 @@ onMounted(async () => {
 
 .hero-subtitle {
 	font-size: 1rem;
-	color: #64748b;
+	color: var(--text-secondary);
 	line-height: 1.7;
 	margin-bottom: 2rem;
 	max-width: 480px;
@@ -603,13 +622,13 @@ onMounted(async () => {
 .hstat-val {
 	font-size: 1.6rem;
 	font-weight: 900;
-	color: #1e293b;
+	color: var(--text-primary);
 	letter-spacing: -1px;
 }
 .hstat-lbl {
 	font-size: 11px;
 	font-weight: 600;
-	color: #94a3b8;
+	color: var(--text-tertiary);
 	text-transform: uppercase;
 	letter-spacing: 1px;
 }
@@ -653,7 +672,7 @@ onMounted(async () => {
 .search-panel-label {
 	font-size: 13px;
 	font-weight: 700;
-	color: #94a3b8;
+	color: var(--text-tertiary);
 	letter-spacing: 1px;
 	text-transform: uppercase;
 	margin: 0;
@@ -664,8 +683,8 @@ onMounted(async () => {
 	align-items: center;
 	padding: 6px 6px 6px 14px;
 	border-radius: 16px;
-	border: 1.5px solid #e2e8f0;
-	background: white;
+	border: 1.5px solid var(--border-color);
+	background: var(--bg-tertiary);
 	transition: all 0.3s;
 	gap: 8px;
 }
@@ -674,7 +693,7 @@ onMounted(async () => {
 	box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
 }
 .search-icon {
-	color: #94a3b8;
+	color: var(--text-tertiary);
 	flex-shrink: 0;
 }
 .hero-search-input {
@@ -682,7 +701,7 @@ onMounted(async () => {
 	background: transparent;
 	border: none;
 	outline: none;
-	color: #1e293b;
+	color: var(--text-primary);
 	font-size: 0.95rem;
 	font-weight: 500;
 }
@@ -712,12 +731,12 @@ onMounted(async () => {
 	flex-wrap: wrap;
 }
 .tag-label {
-	color: #94a3b8;
+	color: var(--text-tertiary);
 	font-weight: 600;
 	flex-shrink: 0;
 }
 .tag-item {
-	color: #64748b;
+	color: var(--text-secondary);
 	cursor: pointer;
 	font-weight: 600;
 	transition: color 0.2s;
@@ -731,14 +750,14 @@ onMounted(async () => {
 	gap: 8px;
 	flex-wrap: wrap;
 	padding-top: 0.25rem;
-	border-top: 1px solid #f1f5f9;
+	border-top: 1px solid var(--border-color);
 }
 .quick-cat-btn {
 	padding: 5px 14px;
 	border-radius: 30px;
-	border: 1.5px solid #e2e8f0;
-	background: white;
-	color: #64748b;
+	border: 1.5px solid var(--border-color);
+	background: var(--bg-tertiary);
+	color: var(--text-secondary);
 	font-size: 12px;
 	font-weight: 700;
 	cursor: pointer;
@@ -779,12 +798,12 @@ onMounted(async () => {
 	font-weight: 800;
 	letter-spacing: 2px;
 	text-transform: uppercase;
-	color: #94a3b8;
+	color: var(--text-tertiary);
 	margin-bottom: 0.9rem;
 }
 .sb-divider {
 	height: 1px;
-	background: #f1f5f9;
+	background: var(--border-color);
 	margin: 0.25rem 0;
 }
 
@@ -801,7 +820,7 @@ onMounted(async () => {
 	border-radius: 12px;
 	border: none;
 	background: transparent;
-	color: #64748b;
+	color: var(--text-secondary);
 	font-size: 13px;
 	font-weight: 600;
 	cursor: pointer;
@@ -825,7 +844,7 @@ onMounted(async () => {
 }
 .sb-cat-arrow {
 	margin-left: auto;
-	color: #cbd5e1;
+	color: var(--text-tertiary);
 }
 .sb-cat-btn.active .sb-cat-arrow {
 	color: #4f46e5;
@@ -844,7 +863,7 @@ onMounted(async () => {
 	border-radius: 12px;
 	border: none;
 	background: transparent;
-	color: #64748b;
+	color: var(--text-secondary);
 	font-size: 13px;
 	font-weight: 600;
 	cursor: pointer;
@@ -872,7 +891,7 @@ onMounted(async () => {
 	gap: 10px;
 	font-size: 13px;
 	font-weight: 600;
-	color: #64748b;
+	color: var(--text-secondary);
 	cursor: pointer;
 }
 .sb-checkbox input {
@@ -882,8 +901,8 @@ onMounted(async () => {
 	width: 16px;
 	height: 16px;
 	border-radius: 5px;
-	border: 2px solid #e2e8f0;
-	background: white;
+	border: 2px solid var(--border-color);
+	background: var(--bg-primary);
 	flex-shrink: 0;
 	transition: all 0.2s;
 }
@@ -896,9 +915,9 @@ onMounted(async () => {
 	margin-top: 1.25rem;
 	padding: 10px;
 	border-radius: 12px;
-	border: 1.5px solid #e2e8f0;
+	border: 1.5px solid var(--border-color);
 	background: transparent;
-	color: #64748b;
+	color: var(--text-secondary);
 	font-size: 13px;
 	font-weight: 700;
 	cursor: pointer;
@@ -925,9 +944,9 @@ onMounted(async () => {
 	align-items: center;
 	margin-bottom: 1.5rem;
 	padding: 0.75rem 1.25rem;
-	background: rgba(255, 255, 255, 0.7);
+	background: var(--bg-card);
 	border-radius: 14px;
-	border: 1px solid rgba(255, 255, 255, 0.5);
+	border: 1px solid var(--border-color);
 	backdrop-filter: blur(10px);
 }
 .toolbar-info {
@@ -938,15 +957,15 @@ onMounted(async () => {
 .result-count {
 	font-size: 14px;
 	font-weight: 800;
-	color: #1e293b;
+	color: var(--text-primary);
 }
 .result-sep {
-	color: #cbd5e1;
+	color: var(--text-tertiary);
 }
 .result-label {
 	font-size: 13px;
 	font-weight: 600;
-	color: #64748b;
+	color: var(--text-secondary);
 }
 .view-toggle {
 	display: flex;
@@ -956,9 +975,9 @@ onMounted(async () => {
 	width: 34px;
 	height: 34px;
 	border-radius: 10px;
-	border: 1.5px solid #e2e8f0;
-	background: white;
-	color: #94a3b8;
+	border: 1.5px solid var(--border-color);
+	background: var(--bg-primary);
+	color: var(--text-tertiary);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -983,9 +1002,9 @@ onMounted(async () => {
 }
 
 .course-card.glass-hover {
-	background: rgba(255, 255, 255, 0.88);
+	background: var(--bg-card);
 	backdrop-filter: blur(12px);
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 	border-radius: 20px;
 	display: flex;
 	flex-direction: column;
@@ -1047,8 +1066,8 @@ onMounted(async () => {
 	opacity: 1;
 }
 .btn-white {
-	background: white;
-	color: #1e293b;
+	background: var(--bg-primary);
+	color: var(--text-primary);
 	border: none;
 	border-radius: 10px;
 	padding: 0.55rem 1.1rem;
@@ -1071,7 +1090,7 @@ onMounted(async () => {
 	font-size: 1.05rem;
 	font-weight: 800;
 	margin-bottom: 0.6rem;
-	color: #1e293b;
+	color: var(--text-primary);
 	line-height: 1.4;
 	display: -webkit-box;
 	-webkit-line-clamp: 2;
@@ -1081,7 +1100,7 @@ onMounted(async () => {
 }
 .card-desc {
 	font-size: 0.88rem;
-	color: #64748b;
+	color: var(--text-secondary);
 	line-height: 1.6;
 	margin-bottom: 1.25rem;
 	display: -webkit-box;
@@ -1096,7 +1115,7 @@ onMounted(async () => {
 	justify-content: space-between;
 	align-items: center;
 	padding-top: 1rem;
-	border-top: 1px solid #f1f5f9;
+	border-top: 1px solid var(--border-color);
 }
 .author-info {
 	display: flex;
@@ -1104,7 +1123,7 @@ onMounted(async () => {
 	gap: 8px;
 	font-size: 0.88rem;
 	font-weight: 600;
-	color: #475569;
+	color: var(--text-primary);
 }
 .mini-avatar {
 	width: 26px;
@@ -1125,7 +1144,7 @@ onMounted(async () => {
 	gap: 5px;
 	font-size: 0.88rem;
 	font-weight: 600;
-	color: #94a3b8;
+	color: var(--text-tertiary);
 }
 
 .courses-list {
@@ -1136,9 +1155,9 @@ onMounted(async () => {
 }
 
 .course-list-item {
-	background: rgba(255, 255, 255, 0.88);
+	background: var(--bg-card);
 	backdrop-filter: blur(12px);
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 	border-radius: 18px;
 	display: flex;
 	align-items: stretch;
@@ -1181,7 +1200,7 @@ onMounted(async () => {
 .list-title {
 	font-size: 1rem;
 	font-weight: 800;
-	color: #1e293b;
+	color: var(--text-primary);
 	margin-bottom: 5px;
 	line-height: 1.35;
 	white-space: nowrap;
@@ -1190,7 +1209,7 @@ onMounted(async () => {
 }
 .list-desc {
 	font-size: 13px;
-	color: #64748b;
+	color: var(--text-secondary);
 	line-height: 1.55;
 	margin-bottom: 0.75rem;
 	display: -webkit-box;
@@ -1213,9 +1232,9 @@ onMounted(async () => {
 .list-go-btn {
 	padding: 8px 16px;
 	border-radius: 12px;
-	border: 1.5px solid #e2e8f0;
-	background: white;
-	color: #64748b;
+	border: 1.5px solid var(--border-color);
+	background: var(--bg-primary);
+	color: var(--text-secondary);
 	font-size: 13px;
 	font-weight: 700;
 	cursor: pointer;
@@ -1233,14 +1252,14 @@ onMounted(async () => {
 
 .course-card-skeleton {
 	border-radius: 20px;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 	overflow: hidden;
 	height: 360px;
-	background: white;
+	background: var(--bg-primary);
 }
 .skeleton-cover {
 	height: 180px;
-	background: linear-gradient(90deg, #f1f5f9, #e2e8f0, #f1f5f9);
+	background: linear-gradient(90deg, var(--bg-tertiary), var(--border-color), var(--bg-tertiary));
 	background-size: 200% 100%;
 	animation: shimmer 2s infinite;
 }
@@ -1249,7 +1268,7 @@ onMounted(async () => {
 }
 .line {
 	border-radius: 4px;
-	background: #e2e8f0;
+	background: var(--border-color);
 }
 .h-4 {
 	height: 1rem;
@@ -1280,10 +1299,10 @@ onMounted(async () => {
 	justify-content: center;
 	text-align: center;
 	padding: 5rem 2rem;
-	background: rgba(255, 255, 255, 0.65);
+	background: var(--bg-card);
 	backdrop-filter: blur(12px);
 	border-radius: 24px;
-	border: 1px solid rgba(255, 255, 255, 0.8);
+	border: 1px solid var(--border-color);
 	box-shadow: 0 8px 30px rgba(0, 0, 0, 0.02);
 }
 .empty-illustration {
@@ -1306,7 +1325,7 @@ onMounted(async () => {
 	font-weight: 800;
 }
 .text-secondary {
-	color: #64748b;
+	color: var(--text-secondary);
 }
 
 .pagination-wrap {
@@ -1328,9 +1347,9 @@ onMounted(async () => {
 	align-items: center;
 	justify-content: center;
 	border-radius: 12px;
-	border: 1.5px solid #e2e8f0;
-	background: rgba(255, 255, 255, 0.85);
-	color: #475569;
+	border: 1.5px solid var(--border-color);
+	background: var(--bg-card);
+	color: var(--text-primary);
 	font-weight: 700;
 	font-size: 13px;
 	transition: all 0.2s;
@@ -1442,14 +1461,14 @@ onMounted(async () => {
 	margin-left: 0;
 }
 .badge-level.level-1 {
-	background: #fef2f2;
-	color: #dc2626;
-	border: 1px solid #fee2e2;
+	background: rgba(239, 68, 68, 0.1);
+	color: #ef4444;
+	border: 1px solid rgba(239, 68, 68, 0.2);
 }
 .badge-level.level-2 {
-	background: #f0fdf4;
-	color: #16a34a;
-	border: 1px solid #dcfce7;
+	background: rgba(34, 197, 94, 0.1);
+	color: #22c55e;
+	border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
 .lock-overlay {
@@ -1479,6 +1498,6 @@ onMounted(async () => {
 	pointer-events: none;
 }
 .text-muted {
-	color: #94a3b8 !important;
+	color: var(--text-tertiary) !important;
 }
 </style>

@@ -1,978 +1,1181 @@
+<script lang="ts" setup>
+import { ref, onMounted, computed } from "vue";
+import { enrollmentAPI, courseAPI, userAPI } from "@/services/api";
+import { toast } from "vue3-toastify";
+import {
+	Search,
+	Filter,
+	CheckCircle,
+	XCircle,
+	UserPlus,
+	Calendar,
+	BookOpen,
+	Clock,
+	Check,
+	X,
+	LayoutGrid,
+	List,
+	RotateCcw,
+	Plus,
+} from "lucide-vue-next";
+
+const enrollments = ref<any[]>([]);
+const courses = ref<any[]>([]);
+const users = ref<any[]>([]);
+const loading = ref(true);
+const searchQuery = ref("");
+const statusFilter = ref("all");
+const viewMode = ref<"table" | "grid">("table");
+
+// Manual enrollment form
+const isModalOpen = ref(false);
+const submitting = ref(false);
+const form = ref({
+	userId: "",
+	courseId: "",
+});
+
+// Rejection modal
+const isRejectModalOpen = ref(false);
+const rejectReason = ref("");
+const currentRejectId = ref<number | null>(null);
+const rejecting = ref(false);
+
+const fetchData = async () => {
+	loading.value = true;
+	try {
+		const [enrollRes, courseRes, userRes] = await Promise.all([
+			enrollmentAPI.getAll({ page: 1, pageSize: 1000 }),
+			courseAPI.getAll({ page: 1, pageSize: 1000 }),
+			userAPI.getAll({ page: 1, pageSize: 1000 }),
+		]);
+
+		enrollments.value = enrollRes.data.items || enrollRes.data || [];
+		courses.value = courseRes.data.items || courseRes.data || [];
+		users.value = userRes.data.items || userRes.data || [];
+	} finally {
+		loading.value = false;
+	}
+};
+
+let pollInterval: any = null;
+
+onMounted(async () => {
+	await fetchData();
+	// Auto-refresh every 30 seconds to catch new enrollments from learners
+	pollInterval = setInterval(fetchData, 30000);
+});
+
+import { onUnmounted } from "vue";
+onUnmounted(() => {
+	if (pollInterval) clearInterval(pollInterval);
+});
+
+const handleRefresh = () => {
+	fetchData();
+	toast.info("Đã cập nhật danh sách ghi danh mới nhất.");
+};
+
+const filteredEnrollments = computed(() => {
+	const query = searchQuery.value.toLowerCase();
+	return enrollments.value.filter((e) => {
+		const userName = (
+			e.fullName ||
+			e.userFullName ||
+			e.user?.fullName ||
+			""
+		).toLowerCase();
+		const courseTitle = (e.courseTitle || e.course?.title || "").toLowerCase();
+
+		const matchesSearch =
+			!query || userName.includes(query) || courseTitle.includes(query);
+
+		const status = (e.status || "").toLowerCase();
+		const matchesStatus =
+			statusFilter.value === "all" ||
+			(statusFilter.value === "pending" && status === "pending") ||
+			(statusFilter.value === "approved" && status === "approved");
+
+		return matchesSearch && matchesStatus;
+	});
+});
+
+const stats = computed(() => {
+	const total = enrollments.value.length;
+	const pending = enrollments.value.filter(
+		(e) => (e.status || "").toLowerCase() === "pending",
+	).length;
+	const approved = enrollments.value.filter(
+		(e) => (e.status || "").toLowerCase() === "approved",
+	).length;
+	return { total, pending, approved };
+});
+
+const handleApprove = async (id: number) => {
+	try {
+		await enrollmentAPI.approve(id, true);
+		toast.success("Đã phê duyệt yêu cầu ghi danh.");
+		fetchData();
+	} catch {
+		toast.error("Không thể phê duyệt yêu cầu.");
+	}
+};
+
+const handleReject = (id: number) => {
+	currentRejectId.value = id;
+	rejectReason.value = "";
+	isRejectModalOpen.value = true;
+};
+
+const confirmReject = async () => {
+	if (!currentRejectId.value) return;
+	if (!rejectReason.value.trim()) {
+		toast.warn("Vui lòng nhập lý do từ chối.");
+		return;
+	}
+
+	rejecting.value = true;
+	try {
+		await enrollmentAPI.approve(
+			currentRejectId.value,
+			false,
+			rejectReason.value,
+		);
+		toast.success("Đã từ chối yêu cầu ghi danh.");
+		isRejectModalOpen.value = false;
+		fetchData();
+	} catch (error: any) {
+		toast.error(error.response?.data?.message || "Lỗi khi từ chối yêu cầu.");
+	} finally {
+		rejecting.value = false;
+	}
+};
+
+const openManualModal = () => {
+	form.value = { userId: "", courseId: "" };
+	isModalOpen.value = true;
+};
+
+const handleManualEnroll = async () => {
+	if (!form.value.userId || !form.value.courseId) {
+		toast.warn("Vui lòng chọn đầy đủ người dùng và khóa học.");
+		return;
+	}
+	submitting.value = true;
+	try {
+		await enrollmentAPI.adminEnroll(form.value);
+		toast.success("Ghi danh thành công.");
+		isModalOpen.value = false;
+		fetchData();
+	} catch (error: any) {
+		toast.error(error.response?.data?.message || "Lỗi khi ghi danh.");
+	} finally {
+		submitting.value = false;
+	}
+};
+
+const getStatusBadge = (status: string) => {
+	const s = (status || "").toLowerCase();
+	if (s === "approved") {
+		return { label: "Đã duyệt", class: "approved" };
+	}
+	if (s === "rejected") {
+		return { label: "Từ chối", class: "rejected" };
+	}
+	return { label: "Chờ duyệt", class: "pending" };
+};
+</script>
+
 <template>
-	<div class="enrollments-page p-4">
-		<div class="page-header-premium mb-5">
-			<div class="header-inner">
-				<div class="header-icon-box pulse-glow">
-					<BookUp :size="32" class="animated-icon" />
+	<div class="enrollments-management-page">
+		<!-- Header Section -->
+		<div class="page-header mb-5">
+			<div class="header-content-box">
+				<div class="header-icon-glass pulse-glow">
+					<UserPlus :size="32" class="text-primary" />
 				</div>
-				<div class="header-info">
-					<div class="d-flex align-items-center gap-2 mb-1">
-						<span class="badge-glass primary">QUẢN TRỊ VIÊN</span>
+				<div class="header-titles">
+					<div class="breadcrumb-glass mb-2">
+						<span class="badge-glass primary">HỆ THỐNG</span>
+						<ChevronRight :size="14" class="separator" />
+						<span class="curr-page">Quản lý Ghi danh</span>
 					</div>
-					<h1 class="title-gradient">Quản lý Ghi danh</h1>
-					<p class="desc-text">
-						Duyệt thẻ đăng ký, kiểm soát số lượng học viên và phân công đào tạo
-						sự vụ.
+					<h1 class="page-main-title-gradient">Phê duyệt Ghi danh</h1>
+					<p class="secondary-desc">
+						Thực hiện phê duyệt yêu cầu học hoặc chủ động ghi danh cho học viên.
 					</p>
+				</div>
+			</div>
+
+			<div class="header-actions d-flex gap-3">
+				<button
+					@click="handleRefresh"
+					class="btn-glass-secondary px-4 me-2"
+					:disabled="loading"
+					title="Làm mới dữ liệu"
+				>
+					<RotateCcw :size="20" :class="{ spin: loading }" />
+				</button>
+				<button @click="openManualModal" class="btn-premium-gradient">
+					<Plus :size="20" class="me-2" /> Ghi danh học viên
+				</button>
+			</div>
+		</div>
+
+		<!-- Stats Cards -->
+		<div class="stats-glass-grid mb-5">
+			<div class="glass-stat-card">
+				<div class="stat-icon-box blue">
+					<BookOpen :size="24" />
+				</div>
+				<div class="stat-info">
+					<h3 class="stat-value">{{ stats.total }}</h3>
+					<p class="stat-label">Tổng lượt đăng ký</p>
+				</div>
+				<div class="stat-progress-line blue" :style="{ width: '100%' }"></div>
+			</div>
+
+			<div class="glass-stat-card">
+				<div class="stat-icon-box warning">
+					<Clock :size="24" />
+				</div>
+				<div class="stat-info">
+					<h3 class="stat-value">{{ stats.pending }}</h3>
+					<p class="stat-label">Chờ phê duyệt</p>
+				</div>
+				<div
+					class="stat-progress-line warning"
+					:style="{
+						width: stats.total
+							? (stats.pending / stats.total) * 100 + '%'
+							: '0%',
+					}"
+				></div>
+			</div>
+
+			<div class="glass-stat-card">
+				<div class="stat-icon-box success">
+					<CheckCircle :size="24" />
+				</div>
+				<div class="stat-info">
+					<h3 class="stat-value">{{ stats.approved }}</h3>
+					<p class="stat-label">Đã cấp quyền</p>
+				</div>
+				<div
+					class="stat-progress-line success"
+					:style="{
+						width: stats.total
+							? (stats.approved / stats.total) * 100 + '%'
+							: '0%',
+					}"
+				></div>
+			</div>
+		</div>
+
+		<!-- Main Content Card -->
+		<div class="glass-content-card">
+			<div class="glass-controls-bar">
+				<div class="filters-left">
+					<div class="glass-search-box">
+						<Search :size="18" class="search-icon" />
+						<input
+							type="text"
+							v-model="searchQuery"
+							placeholder="Tìm tên học viên hoặc tên khóa học..."
+							class="glass-search-input"
+						/>
+					</div>
+
+					<div class="status-tabs-glass">
+						<button
+							class="status-tab-btn"
+							:class="{ active: statusFilter === 'all' }"
+							@click="statusFilter = 'all'"
+						>
+							Tất cả
+						</button>
+						<button
+							class="status-tab-btn"
+							:class="{ active: statusFilter === 'pending' }"
+							@click="statusFilter = 'pending'"
+						>
+							Đang chờ
+						</button>
+						<button
+							class="status-tab-btn"
+							:class="{ active: statusFilter === 'approved' }"
+							@click="statusFilter = 'approved'"
+						>
+							Đã duyệt
+						</button>
+					</div>
+				</div>
+
+				<div class="view-mode-toggle shadow-sm">
+					<button
+						class="toggle-btn"
+						:class="{ active: viewMode === 'table' }"
+						@click="viewMode = 'table'"
+					>
+						<List :size="18" />
+					</button>
+					<button
+						class="toggle-btn"
+						:class="{ active: viewMode === 'grid' }"
+						@click="viewMode = 'grid'"
+					>
+						<LayoutGrid :size="18" />
+					</button>
+				</div>
+			</div>
+
+			<div class="glass-card-body">
+				<div v-if="loading" class="loading-overlay-glass py-5">
+					<div class="premium-spinner"></div>
+					<p class="mt-3 text-tertiary fw-bold">Đang đồng bộ dữ liệu...</p>
+				</div>
+
+				<template v-else-if="filteredEnrollments.length">
+					<!-- Table View -->
+					<div v-if="viewMode === 'table'" class="table-container-fixed">
+						<table class="glass-table-premium">
+							<thead>
+								<tr>
+									<th class="ps-4">Thông tin học viên</th>
+									<th>Khóa học đăng ký</th>
+									<th>Thời gian</th>
+									<th class="text-center">Trạng thái</th>
+									<th class="text-end pe-4">Thao tác</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for="e in filteredEnrollments" :key="e.id">
+									<td class="ps-4">
+										<div class="user-profile-cell">
+											<div class="user-meta-info">
+												<div class="name-text fw-bold">
+													{{
+														e.fullName ||
+														e.userFullName ||
+														e.user?.fullName ||
+														"---"
+													}}
+												</div>
+												<div class="email-text text-tertiary fs-11">
+													{{
+														e.email || e.userName || e.user?.userName || "---"
+													}}
+												</div>
+											</div>
+										</div>
+									</td>
+									<td>
+										<div class="course-profile-cell">
+											<div class="course-title-text fw-bold">
+												{{ e.courseTitle || e.course?.title || "Khóa học" }}
+											</div>
+											<div class="course-id-text fs-11 text-tertiary">
+												Mã: {{ e.courseId }}
+											</div>
+										</div>
+									</td>
+									<td>
+										<div class="time-cell d-flex align-items-center gap-2">
+											<Calendar :size="14" class="text-tertiary" />
+											<span class="fs-12 text-secondary">{{
+												new Date(e.enrolledAt).toLocaleDateString("vi-VN")
+											}}</span>
+										</div>
+									</td>
+									<td class="text-center">
+										<span
+											class="glass-status-badge"
+											:class="getStatusBadge(e.status).class"
+										>
+											<span class="dot"></span>
+											{{ getStatusBadge(e.status).label }}
+										</span>
+										<div
+											v-if="e.status === 'Rejected' && e.rejectionReason"
+											class="rejection-reason-text text-danger fs-10 mt-1"
+										>
+											Lý do: {{ e.rejectionReason }}
+										</div>
+									</td>
+									<td class="text-end pe-4">
+										<div class="action-cell-buttons">
+											<template
+												v-if="(e.status || '').toLowerCase() === 'pending'"
+											>
+												<button
+													class="action-btn approve-btn"
+													@click="handleApprove(e.id)"
+													title="Duyệt tham gia"
+												>
+													<Check :size="18" />
+												</button>
+												<button
+													class="action-btn reject-btn"
+													@click="handleReject(e.id)"
+													title="Từ chối"
+												>
+													<X :size="18" />
+												</button>
+											</template>
+											<div
+												v-else-if="
+													(e.status || '').toLowerCase() === 'approved'
+												"
+												class="approved-tag text-success fw-bold fs-12"
+											>
+												<CheckCircle :size="14" /> ĐÃ DUYỆT
+											</div>
+											<div v-else class="text-danger fw-bold fs-12">
+												<XCircle :size="14" /> TỪ CHỐI
+											</div>
+										</div>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+					<!-- Grid View -->
+					<div v-else class="grid-container-premium p-4">
+						<div class="card-grid-layout">
+							<div
+								v-for="e in filteredEnrollments"
+								:key="e.id"
+								class="enrollment-card-glass"
+							>
+								<div class="card-header">
+									<span class="v-date">{{
+										new Date(e.enrolledAt).toLocaleDateString("vi-VN")
+									}}</span>
+									<div
+										class="card-status"
+										:class="getStatusBadge(e.status).class"
+									></div>
+								</div>
+
+								<div class="card-user-profile mb-4">
+									<div class="member-avatar-glass primary shadow-glow-sm">
+										{{ (e.fullName || "U")[0].toUpperCase() }}
+									</div>
+									<div class="ms-3 overflow-hidden">
+										<h4 class="member-name-text text-truncate mb-0">
+											{{ e.fullName || "---" }}
+										</h4>
+										<div
+											class="member-email-text text-tertiary fs-11 text-truncate"
+										>
+											{{ e.email || "---" }}
+										</div>
+									</div>
+								</div>
+
+								<div class="course-info-glass mt-3 p-3 rounded-4">
+									<div class="course-label-tag mb-1">
+										Cung cấp quyền truy cập:
+									</div>
+									<div class="course-title-bold text-truncate">
+										{{ e.courseTitle || e.course?.title || "KH" }}
+									</div>
+								</div>
+
+								<div class="card-footer-actions">
+									<template v-if="(e.status || '').toLowerCase() === 'pending'">
+										<button
+											class="grid-card-btn primary"
+											@click="handleApprove(e.id)"
+										>
+											<Check :size="16" /> Phê duyệt ngay
+										</button>
+										<button
+											class="grid-card-btn outline"
+											@click="handleReject(e.id)"
+										>
+											<X :size="16" /> Từ chối
+										</button>
+									</template>
+									<div
+										v-else-if="(e.status || '').toLowerCase() === 'approved'"
+										class="grid-approved-state"
+									>
+										<CheckCircle :size="18" /> Đã ghi danh thành công
+									</div>
+									<div
+										v-else
+										class="grid-rejected-state text-danger fw-bold fs-13 d-flex flex-column align-items-center justify-content-center gap-1"
+									>
+										<div class="d-flex align-items-center gap-2">
+											<XCircle :size="18" /> Đã từ chối
+										</div>
+										<div
+											v-if="e.rejectionReason"
+											class="reason-tooltip-glass fs-10 text-tertiary fw-medium"
+										>
+											Lý do: {{ e.rejectionReason }}
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</template>
+
+				<div v-else class="glass-empty-state py-5">
+					<div class="empty-icon-container mb-4">
+						<BookOpen :size="64" class="text-tertiary opacity-25" />
+					</div>
+					<h4 class="fw-bold text-secondary">Không tìm thấy bản ghi</h4>
+					<p class="text-tertiary fs-14">
+						Hiện không có yêu cầu ghi danh nào khớp với tiêu chí của bạn.
+					</p>
+					<button
+						class="btn-glass-outline mt-4"
+						@click="
+							searchQuery = '';
+							statusFilter = 'all';
+						"
+					>
+						Xóa bộ lọc
+					</button>
 				</div>
 			</div>
 		</div>
 
-		<div class="tabs-premium-nav mb-5">
-			<button
-				class="nav-tab-btn"
-				:class="{ active: activeTab === 'pending' }"
-				@click="activeTab = 'pending'"
-			>
+		<!-- Rejection Reason Modal -->
+		<teleport to="body">
+			<transition name="fade">
 				<div
-					class="tab-index"
-					:class="{ 'warning-pulse': pendingList.length > 0 }"
+					v-if="isRejectModalOpen"
+					class="modal-glass-overlay"
+					@click="isRejectModalOpen = false"
 				>
-					<ClipboardList v-if="pendingList.length === 0" :size="16" />
-					<span v-else>{{ pendingList.length }}</span>
-				</div>
-				<div class="tab-label">
-					<span>Chờ phê duyệt</span>
-					<small>Yêu cầu từ học viên</small>
-				</div>
-			</button>
-			<button
-				class="nav-tab-btn"
-				:class="{ active: activeTab === 'assign' }"
-				@click="activeTab = 'assign'"
-			>
-				<div class="tab-index success">
-					<UserPlus :size="16" />
-				</div>
-				<div class="tab-label">
-					<span>Phân công đào tạo</span>
-					<small>Gán khóa học bắt buộc</small>
-				</div>
-			</button>
-		</div>
-
-		<div class="main-content">
-			<transition name="fade-slide" mode="out-in">
-				<div v-if="activeTab === 'pending'" key="pending" class="glass-panel">
-					<div
-						class="panel-header-glass d-flex justify-content-between align-items-center mb-4"
-					>
-						<h5
-							class="fw-800 text-secondary mb-0 d-flex align-items-center gap-2"
-						>
-							<div class="s-icon-mini warning">
-								<ClipboardList :size="16" />
+					<div class="modal-glass-container alert-style" @click.stop>
+						<div class="modal-glass-header border-bottom-secondary p-4">
+							<div class="d-flex align-items-center justify-content-between">
+								<h5
+									class="m-0 fw-bold d-flex align-items-center gap-2 text-danger"
+								>
+									<XCircle :size="22" /> Từ chối yêu cầu ghi danh
+								</h5>
+								<button
+									class="btn-close-transparent"
+									@click="isRejectModalOpen = false"
+								>
+									<X :size="20" />
+								</button>
 							</div>
-							Danh sách chờ duyệt
-						</h5>
-						<button class="btn-ghost-glass" @click="loadPending">
-							<RefreshCw :size="14" :class="{ spin: loadingPending }" /> Làm mới
-						</button>
-					</div>
-
-					<div class="panel-body-glass">
-						<div v-if="loadingPending" class="loading-state-luxe py-5">
-							<div class="luxe-spinner" />
-							<p>Đang tải dữ liệu ghi danh...</p>
 						</div>
 
-						<div
-							v-else-if="!pendingList.length"
-							class="empty-state-premium py-5"
-						>
-							<div class="empty-icon-glass shadow-sm">
-								<CheckCircle2 :size="48" class="text-success" />
+						<div class="modal-glass-body p-4">
+							<div class="rejection-warning mb-4">
+								<div class="warning-icon">
+									<Filter :size="20" />
+								</div>
+								<div class="warning-msg">
+									Bạn đang thực hiện từ chối yêu cầu tham gia khóa học. Học viên
+									sẽ nhận được thông báo kèm lý do bạn cung cấp dưới đây.
+								</div>
 							</div>
-							<h3 class="mt-4 fw-800">Tất cả đã hoàn tất!</h3>
-							<p class="text-secondary">
-								Không có yêu cầu đăng ký nào đang chờ duyệt lúc này.
+
+							<div class="form-row-glass mb-2">
+								<label class="form-label-premium"
+									>Lý do từ chối <span class="text-danger">*</span></label
+								>
+								<textarea
+									v-model="rejectReason"
+									class="glass-input-premium textarea-fixed"
+									placeholder="VD: Bạn không thuộc đối tượng của khóa học này, vui lòng hoàn thành khóa cơ bản trước..."
+									rows="4"
+								></textarea>
+							</div>
+							<p class="fs-11 text-tertiary italic">
+								Lưu ý: Lý do này sẽ được gửi đến email và thông báo của học
+								viên.
 							</p>
 						</div>
 
-						<div v-else class="data-table-glass">
-							<table class="table-premium">
-								<thead>
-									<tr>
-										<th>HỌC VIÊN</th>
-										<th>KHÓA HỌC YÊU CẦU</th>
-										<th>THỜI GIAN ĐĂNG KÝ</th>
-										<th class="text-end">PHÊ DUYỆT</th>
-									</tr>
-								</thead>
-								<tbody>
-									<tr v-for="item in pendingList" :key="item.id">
-										<td>
-											<div class="user-request-cell">
-												<div class="avatar-glass shadow-sm">
-													<img
-														v-if="item.avatarUrl"
-														:src="item.avatarUrl"
-														:alt="item.fullName"
-														class="avatar-img"
-													/>
-													<span v-else>{{
-														item.fullName?.charAt(0)?.toUpperCase() || "U"
-													}}</span>
-												</div>
-												<div class="user-info">
-													<div class="user-name fw-700 text-dark">
-														{{ item.fullName || "Người dùng ẩn" }}
-													</div>
-													<div class="user-id text-secondary fs-12">
-														{{ item.departmentName || "Phòng ban ẩn" }} • Mã NV:
-														{{ item.userId }}
-													</div>
-												</div>
-											</div>
-										</td>
-										<td>
-											<div class="course-badge-glass shadow-sm">
-												<BookOpen :size="14" />
-												<span class="fw-600">{{
-													item.courseTitle || "Khóa học không xác định"
-												}}</span>
-											</div>
-										</td>
-										<td>
-											<div class="date-badge-glass">
-												<Calendar :size="14" />
-												<span class="fw-600">{{
-													item.enrolledAt
-														? new Date(item.enrolledAt).toLocaleDateString(
-																"vi-VN",
-															)
-														: "N/A"
-												}}</span>
-											</div>
-										</td>
-										<td>
-											<div class="actions-cell justify-content-end">
-												<button
-													class="btn-action-glow approve shadow-sm"
-													title="Phê duyệt"
-													@click="handleApprove(item.id, true)"
-												>
-													<Check :size="16" /> Phê duyệt
-												</button>
-												<button
-													class="btn-action-glow reject shadow-sm"
-													title="Từ chối"
-													@click="handleApprove(item.id, false)"
-												>
-													<X :size="16" /> Từ chối
-												</button>
-											</div>
-										</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
-					</div>
-				</div>
-
-				<div
-					v-else-if="activeTab === 'assign'"
-					key="assign"
-					class="glass-panel"
-				>
-					<div
-						class="panel-header-glass d-flex justify-content-between align-items-center mb-4"
-					>
-						<h5
-							class="fw-800 text-secondary mb-0 d-flex align-items-center gap-2"
+						<div
+							class="modal-glass-footer p-4 border-top-secondary d-flex justify-content-end gap-3"
 						>
-							<div class="s-icon-mini success">
-								<UserPlus :size="16" />
-							</div>
-							Giao nhiệm vụ học tập
-						</h5>
-					</div>
-
-					<div class="assign-studio-wrapper py-4">
-						<div class="assign-form-card shadow-lg p-5">
-							<div class="text-center mb-5">
-								<div class="s-icon-large mx-auto shadow-sm mb-3">
-									<UserPlus :size="32" class="text-primary" />
-								</div>
-								<h4 class="fw-900">Phân công đào tạo nội bộ</h4>
-								<p class="text-secondary small">
-									Gán thông tin khóa học trực tiếp cho tài khoản nhân sự.
-								</p>
-							</div>
-
-							<div class="glass-input-group mb-4">
-								<label
-									>Chọn Nhân sự (Học viên)
-									<span class="text-danger">*</span></label
-								>
-								<div class="input-ico-wrap luxe-select-no-ico-wrap">
-									<v-select
-										v-model="assignForm.userId"
-										:options="userOptions"
-										:reduce="(user) => user.id"
-										label="fullName"
-										placeholder="Tìm tên hoặc email nhân viên..."
-										class="luxe-v-select"
-									>
-										<template #option="option">
-											<div>
-												<div class="fw-700 fs-13">
-													{{ option.fullName }}
-												</div>
-												<div class="text-secondary fs-11">
-													{{ option.email }}
-												</div>
-											</div>
-										</template>
-									</v-select>
-								</div>
-							</div>
-
-							<div class="glass-input-group mb-4">
-								<label
-									>Chọn Khóa học (Giáo trình)
-									<span class="text-danger">*</span></label
-								>
-								<div class="input-ico-wrap luxe-select-no-ico-wrap">
-									<v-select
-										v-model="assignForm.courseId"
-										:options="courseOptions"
-										:reduce="(course) => course.id"
-										label="title"
-										placeholder="Chọn khóa học..."
-										class="luxe-v-select"
-									>
-										<template #option="option">
-											<div>
-												<div class="fw-700 fs-13">
-													{{ option.title }}
-												</div>
-												<div class="text-secondary fs-11">
-													Cấp độ: {{ option.level }}
-												</div>
-											</div>
-										</template>
-									</v-select>
-								</div>
-							</div>
-
 							<button
-								class="btn-premium-action lg w-100 justify-content-center shadow-primary"
-								:disabled="
-									assigning || !assignForm.userId || !assignForm.courseId
-								"
-								@click="adminAssign"
+								class="btn-glass-secondary px-4"
+								@click="isRejectModalOpen = false"
 							>
-								<div
-									v-if="assigning"
-									class="spinner-border spinner-border-sm me-2"
-								/>
-								<UserPlus v-else :size="18" class="me-2" />
-								{{ assigning ? "ĐANG PHÂN CÔNG..." : "THỰC HIỆN PHÂN CÔNG" }}
+								Hủy bỏ
 							</button>
-
-							<transition name="fade">
-								<div
-									v-if="assignSuccess"
-									class="assign-success-alert shadow-sm mt-4"
-								>
-									<div class="success-icon-badge">
-										<CheckCircle2 :size="18" />
-									</div>
-									<div class="success-text fw-700">
-										Đã gán khóa học thành công!
-									</div>
-								</div>
-							</transition>
+							<button
+								class="btn-danger-premium px-5"
+								:disabled="rejecting || !rejectReason.trim()"
+								@click="confirmReject"
+							>
+								<span
+									v-if="rejecting"
+									class="spinner-border spinner-border-sm me-2"
+								></span>
+								Xác nhận từ chối
+							</button>
 						</div>
 					</div>
 				</div>
 			</transition>
-		</div>
+		</teleport>
+
+		<!-- Manual Enrollment Modal -->
+
+		<teleport to="body">
+			<transition name="fade">
+				<div
+					v-if="isModalOpen"
+					class="modal-glass-overlay"
+					@click="isModalOpen = false"
+				>
+					<div class="modal-glass-container" @click.stop>
+						<div class="modal-glass-header border-bottom-secondary p-4">
+							<div class="d-flex align-items-center justify-content-between">
+								<h5 class="m-0 fw-bold d-flex align-items-center gap-2">
+									<UserPlus :size="22" class="text-primary" /> Ghi danh thủ công
+								</h5>
+								<button
+									class="btn-close-transparent"
+									@click="isModalOpen = false"
+								>
+									<X :size="20" />
+								</button>
+							</div>
+						</div>
+
+						<div class="modal-glass-body p-4">
+							<div class="form-row-glass mb-4">
+								<label class="form-label-premium">Chọn thành viên</label>
+								<select v-model="form.userId" class="glass-input-premium">
+									<option value="">-- Tìm kiếm thành viên --</option>
+									<option v-for="u in users" :key="u.id" :value="u.id">
+										{{ u.fullName }} ({{ u.userName }})
+									</option>
+								</select>
+							</div>
+
+							<div class="form-row-glass mb-4">
+								<label class="form-label-premium">Chọn khóa học</label>
+								<select v-model="form.courseId" class="glass-input-premium">
+									<option value="">-- Tìm kiếm khóa học --</option>
+									<option v-for="c in courses" :key="c.id" :value="c.id">
+										{{ c.title }}
+									</option>
+								</select>
+							</div>
+
+							<div class="system-note-glass">
+								<Clock :size="16" class="mt-1" />
+								<span
+									>Lưu ý: Thao tác này sẽ tự động bỏ qua bước phê duyệt và cho
+									phép người dùng truy cập khóa học ngay lập tức.</span
+								>
+							</div>
+						</div>
+
+						<div
+							class="modal-glass-footer p-4 border-top-secondary d-flex justify-content-end gap-3"
+						>
+							<button
+								class="btn-glass-secondary px-4"
+								@click="isModalOpen = false"
+							>
+								Hủy bỏ
+							</button>
+							<button
+								class="btn-primary-premium-gradient px-5"
+								:disabled="submitting"
+								@click="handleManualEnroll"
+							>
+								<span
+									v-if="submitting"
+									class="spinner-border spinner-border-sm me-2"
+								></span>
+								Cấp quyền truy cập
+							</button>
+						</div>
+					</div>
+				</div>
+			</transition>
+		</teleport>
 	</div>
 </template>
 
-<script setup>
-import { ref, reactive, onMounted } from "vue";
-import { enrollmentAPI, userAPI, courseAPI } from "@/services/api";
-import vSelect from "vue-select";
-import "vue-select/dist/vue-select.css";
-import {
-	BookOpen,
-	BookUp,
-	Calendar,
-	UserPlus,
-	CheckCircle2,
-	ClipboardList,
-	Check,
-	X,
-	RefreshCw,
-} from "lucide-vue-next";
-
-const activeTab = ref("pending");
-const pendingList = ref([]);
-const loadingPending = ref(false);
-
-const userOptions = ref([]);
-const courseOptions = ref([]);
-const loadingOptions = ref(false);
-
-const assigning = ref(false);
-const assignSuccess = ref(false);
-const assignForm = reactive({
-	userId: null,
-	courseId: null,
-	deadline: "",
-	isMandatory: true,
-});
-
-async function loadPending() {
-	loadingPending.value = true;
-	try {
-		const { data } = await enrollmentAPI.getPending();
-		pendingList.value = data;
-	} catch {}
-	loadingPending.value = false;
-}
-
-async function handleApprove(id, isApproved) {
-	if (
-		!confirm(
-			`Bạn chắc chắn muốn ${isApproved ? "duyệt" : "từ chối"} ghi danh này?`,
-		)
-	)
-		return;
-	try {
-		await enrollmentAPI.approve(id, isApproved);
-		loadPending();
-	} catch (e) {
-		alert(e.response?.data?.message || "Lỗi duyệt thẻ");
-	}
-}
-
-async function loadAssignmentData() {
-	loadingOptions.value = true;
-	try {
-		const userRes = await userAPI.getAll({ pageSize: 1000 });
-		userOptions.value = userRes.data.items.filter((u) => u.isActive);
-
-		const courseRes = await courseAPI.getAll({
-			pageSize: 1000,
-			isPublished: true,
-		});
-		courseOptions.value = courseRes.data.items;
-	} catch {}
-	loadingOptions.value = false;
-}
-
-async function adminAssign() {
-	if (!assignForm.userId || !assignForm.courseId) return;
-	assigning.value = true;
-	assignSuccess.value = false;
-	try {
-		await enrollmentAPI.adminEnroll({
-			userId: assignForm.userId,
-			courseId: assignForm.courseId,
-			deadline: null,
-			isMandatory: assignForm.isMandatory,
-		});
-		assignSuccess.value = true;
-		Object.assign(assignForm, {
-			userId: null,
-			courseId: null,
-			deadline: "",
-			isMandatory: true,
-		});
-		setTimeout(() => (assignSuccess.value = false), 3000);
-	} catch (e) {
-		alert(e.response?.data?.message || "Lỗi gán");
-	} finally {
-		assigning.value = false;
-	}
-}
-
-onMounted(() => {
-	loadPending();
-	loadAssignmentData();
-});
-</script>
-
 <style scoped>
-.enrollments-page {
-	min-height: 100vh;
-	animation: fadeIn 0.5s ease-out;
-	background: #f8fafc;
-	color: #1e293b;
-	font-family: "Inter", sans-serif;
-}
-@keyframes fadeIn {
-	from {
-		opacity: 0;
-		transform: translateY(10px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
+.enrollments-management-page {
+	padding-bottom: 4rem;
+	animation: fadeIn 0.4s ease-out;
 }
 
-.page-header-premium {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-}
-.header-inner {
-	display: flex;
-	align-items: center;
-	gap: 20px;
-}
-.header-icon-box {
-	width: 64px;
-	height: 64px;
-	border-radius: 20px;
-	background: rgba(99, 102, 241, 0.1);
-	color: #6366f1;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border: 1px solid rgba(99, 102, 241, 0.2);
-}
-.pulse-glow {
-	animation: pulse 3s infinite;
-}
-@keyframes pulse {
-	0% {
-		box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
-	}
-	70% {
-		box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
-	}
-	100% {
-		box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
-	}
-}
-.title-gradient {
-	font-size: 32px;
+.page-main-title-gradient {
+	font-size: 36px;
 	font-weight: 800;
-	background: linear-gradient(90deg, #1e293b, #6366f1);
+	letter-spacing: -0.02em;
+	background: linear-gradient(135deg, var(--text-primary), var(--primary-600));
+	background-clip: text;
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
-	margin: 0;
+	margin-bottom: 8px;
 }
-.desc-text {
-	color: #64748b;
-	margin-top: 4px;
+
+.header-content-box {
+	display: flex;
+	align-items: center;
+	gap: 24px;
+}
+
+.header-icon-glass {
+	width: 64px;
+	height: 64px;
+	background: rgba(255, 255, 255, 0.05);
+	border: 1px solid var(--border-color);
+	border-radius: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+}
+
+.breadcrumb-glass {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 12px;
+}
+.curr-page {
+	color: var(--text-tertiary);
 	font-weight: 500;
 }
-.badge-glass {
-	padding: 4px 12px;
-	border-radius: 20px;
-	font-size: 10px;
-	font-weight: 900;
-	letter-spacing: 0.5px;
-}
-.badge-glass.primary {
-	background: rgba(99, 102, 241, 0.1);
-	color: #6366f1;
+
+.stats-glass-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 24px;
 }
 
-.tabs-premium-nav {
-	display: grid;
-	grid-template-columns: repeat(2, 1fr);
-	gap: 20px;
-	max-width: 800px;
-}
-.nav-tab-btn {
-	background: rgba(255, 255, 255, 0.7);
-	backdrop-filter: blur(10px);
-	border: 1px solid white;
-	border-radius: 20px;
-	padding: 16px 24px;
+.glass-stat-card {
+	background: var(--bg-card);
+	backdrop-filter: blur(24px);
+	border-radius: 24px;
+	border: 1px solid var(--border-color);
+	padding: 24px;
 	display: flex;
 	align-items: center;
-	gap: 16px;
-	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-	text-align: left;
+	gap: 20px;
 	position: relative;
 	overflow: hidden;
-	box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
-}
-.nav-tab-btn:hover {
-	border-color: #6366f1;
-	transform: translateY(-2px);
-}
-.nav-tab-btn.active {
-	border-color: transparent;
-	background: linear-gradient(135deg, #ffffff, #f5f3ff);
-	box-shadow: 0 15px 35px -5px rgba(99, 102, 241, 0.2);
-}
-
-.tab-index {
-	width: 44px;
-	height: 44px;
-	border-radius: 14px;
-	background: #f1f5f9;
-	color: #64748b;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-weight: 900;
-	font-size: 16px;
 	transition: all 0.3s;
 }
-.nav-tab-btn.active .tab-index {
-	background: #6366f1;
-	color: white;
-	box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-}
-.nav-tab-btn.active .tab-index.success {
-	background: #10b981;
-	color: white;
-	box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-.tab-index.warning-pulse {
-	background: #fef3c7;
-	color: #d97706;
-	animation: warningPulse 2s infinite;
-}
-@keyframes warningPulse {
-	0% {
-		box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
-	}
-	70% {
-		box-shadow: 0 0 0 6px rgba(245, 158, 11, 0);
-	}
-	100% {
-		box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
-	}
+.glass-stat-card:hover {
+	transform: translateY(-5px);
+	border-color: var(--primary-400);
+	box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.1);
 }
 
-.tab-label span {
-	display: block;
-	font-weight: 800;
-	font-size: 16px;
-	color: #334155;
-	line-height: 1.2;
-}
-.tab-label small {
-	font-size: 13px;
-	color: #94a3b8;
-	font-weight: 600;
-}
-.nav-tab-btn.active .tab-label span {
-	color: #6366f1;
-}
-
-.glass-panel {
-	background: rgba(255, 255, 255, 0.85);
-	backdrop-filter: blur(12px);
-	border-radius: 32px;
-	border: 1px solid white;
-	box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.05);
-	padding: 32px;
-}
-.s-icon-mini {
-	width: 32px;
-	height: 32px;
-	border-radius: 10px;
+.stat-icon-box {
+	width: 56px;
+	height: 56px;
+	border-radius: 16px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 }
-.s-icon-mini.warning {
-	background: rgba(245, 158, 11, 0.1);
-	color: #d97706;
+.stat-icon-box.blue {
+	background: rgba(59, 130, 246, 0.1);
+	color: #3b82f6;
 }
-.s-icon-mini.success {
+.stat-icon-box.warning {
+	background: rgba(245, 158, 11, 0.1);
+	color: #f59e0b;
+}
+.stat-icon-box.success {
 	background: rgba(16, 185, 129, 0.1);
 	color: #10b981;
 }
 
-.btn-ghost-glass {
-	padding: 8px 16px;
+.stat-value {
+	font-size: 28px;
+	font-weight: 800;
+	color: var(--text-primary);
+	line-height: 1;
+}
+.stat-label {
+	font-size: 13px;
+	color: var(--text-tertiary);
+	margin-top: 4px;
+}
+
+.stat-progress-line {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	height: 3px;
+	opacity: 0.6;
+}
+.stat-progress-line.blue {
+	background: #3b82f6;
+}
+.stat-progress-line.warning {
+	background: #f59e0b;
+}
+.stat-progress-line.success {
+	background: #10b981;
+}
+
+.glass-content-card {
+	background: var(--bg-card);
+	backdrop-filter: blur(24px);
+	border-radius: 32px;
+	border: 1px solid var(--border-color);
+	overflow: hidden;
+	box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.1);
+}
+
+.glass-controls-bar {
+	padding: 24px 32px;
+	border-bottom: 1px solid var(--border-color);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background: rgba(255, 255, 255, 0.02);
+}
+
+.filters-left {
+	display: flex;
+	align-items: center;
+	gap: 24px;
+	flex: 1;
+}
+
+.glass-search-box {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	background: rgba(255, 255, 255, 0.03);
+	border: 1.5px solid var(--border-color);
+	padding: 0 18px;
+	border-radius: 18px;
+	width: 100%;
+	max-width: 400px;
+	transition: all 0.2s;
+}
+.glass-search-box:focus-within {
+	border-color: var(--primary-400);
+	background: var(--bg-card);
+	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.08);
+}
+.glass-search-input {
+	border: none;
+	background: transparent;
+	padding: 14px 0;
+	width: 100%;
+	color: var(--text-primary);
+	outline: none;
+	font-size: 14px;
+}
+
+.status-tabs-glass {
+	display: flex;
+	padding: 4px;
+	background: rgba(255, 255, 255, 0.03);
+	border: 1.5px solid var(--border-color);
+	border-radius: 16px;
+}
+.status-tab-btn {
+	padding: 10px 24px;
 	border-radius: 12px;
-	border: 1px solid #e2e8f0;
-	background: white;
+	border: none;
+	background: transparent;
+	color: var(--text-tertiary);
 	font-size: 13px;
 	font-weight: 700;
-	color: #64748b;
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	transition: 0.3s;
-	cursor: pointer;
+	transition: all 0.2s;
 }
-.btn-ghost-glass:hover {
-	background: #f8fafc;
-	color: #1e293b;
-	border-color: #cbd5e1;
-}
-
-.loading-state-luxe,
-.empty-state-premium {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	text-align: center;
-}
-.loading-state-luxe p {
-	margin-top: 16px;
-	font-weight: 600;
-	color: #64748b;
-}
-.luxe-spinner {
-	width: 40px;
-	height: 40px;
-	border: 4px solid rgba(99, 102, 241, 0.2);
-	border-top-color: #6366f1;
-	border-radius: 50%;
-	animation: spin 1s linear infinite;
-}
-@keyframes spin {
-	100% {
-		transform: rotate(360deg);
-	}
-}
-
-.empty-icon-glass {
-	width: 90px;
-	height: 90px;
-	border-radius: 50%;
-	background: linear-gradient(
-		135deg,
-		rgba(16, 185, 129, 0.1),
-		rgba(16, 185, 129, 0.05)
-	);
-	border: 1px solid rgba(16, 185, 129, 0.2);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.data-table-glass {
-	overflow-x: auto;
+.status-tab-btn.active {
 	background: white;
-	border-radius: 24px;
-	border: 1px solid #f1f5f9;
-	padding: 10px;
+	color: var(--primary-600);
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
-.table-premium {
+
+.table-container-fixed {
+	padding: 8px;
+}
+.glass-table-premium {
 	width: 100%;
 	border-collapse: separate;
-	border-spacing: 0 8px;
+	border-spacing: 0;
 }
-.table-premium th {
-	padding: 12px 20px;
+.glass-table-premium th {
+	padding: 20px 16px;
+	color: var(--text-tertiary);
 	font-size: 11px;
 	font-weight: 800;
-	color: #94a3b8;
-	letter-spacing: 0.5px;
-	border-bottom: 2px solid #f8fafc;
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+	border-bottom: 2px solid var(--border-color);
 }
-.table-premium td {
-	padding: 16px 20px;
-	background: #fafafa;
-	transition: 0.3s;
+.glass-table-premium td {
+	padding: 20px 16px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+	vertical-align: middle;
+	background: transparent;
 }
-.table-premium tr:hover td {
-	background: #f8fafc;
-}
-.table-premium td:first-child {
-	border-radius: 16px 0 0 16px;
-}
-.table-premium td:last-child {
-	border-radius: 0 16px 16px 0;
+.glass-table-premium tbody tr:hover td {
+	background: rgba(255, 255, 255, 0.02);
 }
 
-.user-request-cell {
+.user-profile-cell {
 	display: flex;
 	align-items: center;
 	gap: 14px;
 }
-.avatar-glass {
-	width: 44px;
-	height: 44px;
+.profile-avatar-glass {
+	width: 42px;
+	height: 42px;
+	background: var(--gradient-primary);
+	color: white;
 	border-radius: 14px;
-	background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-	color: #64748b;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	font-weight: 800;
 	font-size: 16px;
-	overflow: hidden;
-	border: 2px solid white;
-}
-.avatar-img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
 }
 
-.course-badge-glass {
+.glass-status-badge {
+	padding: 6px 16px;
+	border-radius: 100px;
+	font-size: 11px;
+	font-weight: 800;
 	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	padding: 8px 14px;
-	background: white;
-	border-radius: 12px;
-	border: 1px solid #f1f5f9;
-	font-size: 13px;
-	color: #4f46e5;
-}
-.date-badge-glass {
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	font-size: 13px;
-	color: #64748b;
-	background: rgba(241, 245, 249, 0.5);
-	padding: 6px 12px;
-	border-radius: 10px;
-}
-
-.actions-cell {
-	display: flex;
-	gap: 10px;
-}
-.btn-action-glow {
-	padding: 8px 16px;
-	border-radius: 12px;
-	font-size: 13px;
-	font-weight: 700;
-	display: flex;
 	align-items: center;
 	gap: 6px;
-	border: none;
-	transition: 0.3s;
-	cursor: pointer;
 }
-.btn-action-glow.approve {
+.glass-status-badge.pending {
+	background: rgba(245, 158, 11, 0.1);
+	color: #f59e0b;
+}
+.glass-status-badge.pending .dot {
+	width: 6px;
+	height: 6px;
+	background: #f59e0b;
+	border-radius: 50%;
+	box-shadow: 0 0 8px #f59e0b;
+}
+.glass-status-badge.approved {
 	background: rgba(16, 185, 129, 0.1);
 	color: #10b981;
 }
-.btn-action-glow.approve:hover {
+.glass-status-badge.approved .dot {
+	width: 6px;
+	height: 6px;
+	background: #10b981;
+	border-radius: 50%;
+	box-shadow: 0 0 8px #10b981;
+}
+
+.action-btn {
+	width: 38px;
+	height: 38px;
+	border-radius: 12px;
+	border: 1px solid var(--border-color);
+	background: rgba(255, 255, 255, 0.05);
+	color: var(--text-secondary);
+	margin-left: 8px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s;
+}
+.action-btn.approve-btn:hover {
 	background: #10b981;
 	color: white;
-	transform: translateY(-2px);
-	box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+	border-color: #10b981;
+	transform: scale(1.1);
 }
-.btn-action-glow.reject {
-	background: rgba(239, 68, 68, 0.1);
-	color: #ef4444;
-}
-.btn-action-glow.reject:hover {
+.action-btn.reject-btn:hover {
 	background: #ef4444;
 	color: white;
-	transform: translateY(-2px);
-	box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
-}
-
-.assign-studio-wrapper {
-	display: flex;
-	justify-content: center;
-}
-.assign-form-card {
-	width: 100%;
-	max-width: 500px;
-	background: white;
-	border-radius: 32px;
-	border: 1px solid rgba(226, 232, 240, 0.6);
-}
-.s-icon-large {
-	width: 72px;
-	height: 72px;
-	border-radius: 24px;
-	background: rgba(99, 102, 241, 0.05);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.glass-input-group label {
-	display: block;
-	font-size: 13px;
-	font-weight: 800;
-	color: #64748b;
-	margin-bottom: 8px;
-}
-.input-ico-wrap {
-	position: relative;
-}
-.input-ico-wrap .ico {
-	position: absolute;
-	left: 16px;
-	top: 50%;
-	transform: translateY(-50%);
-	color: #94a3b8;
-	transition: 0.3s;
-}
-.luxe-input-ico {
-	width: 100%;
-	padding: 16px 20px 16px 48px;
-	border-radius: 16px;
-	border: 1px solid #e2e8f0;
-	font-size: 15px;
-	font-weight: 600;
-	color: #1e293b;
-	outline: none;
-	transition: 0.3s;
-	background: #fafafa;
-}
-.luxe-input-ico:focus {
-	border-color: #6366f1;
-	background: white;
-	box-shadow: 0 0 0 5px rgba(99, 102, 241, 0.1) !important;
-}
-.luxe-input-ico:focus + .ico {
-	color: #6366f1;
-}
-
-.switch-premium {
-	display: flex;
-	align-items: center;
-}
-.switch-premium input {
-	display: none;
-}
-.switch-label {
-	width: 50px;
-	height: 28px;
-	background: #e2e8f0;
-	border-radius: 15px;
-	position: relative;
-	cursor: pointer;
-	transition: 0.3s;
-}
-.switch-ball {
-	width: 22px;
-	height: 22px;
-	background: white;
-	border-radius: 50%;
-	position: absolute;
-	left: 3px;
-	top: 3px;
-	transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-.switch-premium input:checked + .switch-label {
-	background: #10b981;
-}
-.switch-premium input:checked + .switch-label .switch-ball {
-	left: 25px;
+	border-color: #ef4444;
 	transform: scale(1.1);
-	box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4);
 }
 
-.btn-premium-action {
-	padding: 16px 28px;
-	background: linear-gradient(135deg, #6366f1, #4f46e5);
-	color: white;
+.enrollment-card-glass {
+	background: rgba(255, 255, 255, 0.02);
+	border: 1px solid var(--border-color);
+	border-radius: 24px;
+	padding: 24px;
+	position: relative;
+	transition: all 0.3s;
+}
+.enrollment-card-glass:hover {
+	border-color: var(--primary-400);
+	transform: translateY(-6px);
+}
+
+.avatar-lg-glass {
+	width: 56px;
+	height: 56px;
+	background: var(--bg-tertiary);
 	border-radius: 18px;
-	font-weight: 800;
-	font-size: 15px;
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	justify-content: center;
+	font-weight: 800;
+	font-size: 22px;
+	color: var(--primary-500);
+	margin-bottom: 12px;
+}
+
+.grid-card-btn {
+	padding: 12px;
+	border-radius: 14px;
+	font-weight: 700;
+	font-size: 13px;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	transition: all 0.2s;
+}
+.grid-card-btn.primary {
+	background: var(--primary-500);
+	color: white;
 	border: none;
+}
+.grid-card-btn.outline {
+	background: transparent;
+	border: 1px solid var(--border-color);
+	color: var(--text-tertiary);
+	margin-top: 10px;
+}
+
+.btn-premium-gradient {
+	background: var(--gradient-primary);
+	color: white;
+	padding: 12px 28px;
+	border-radius: 16px;
+	font-weight: 800;
+	border: none;
+	box-shadow: 0 10px 20px -10px rgba(99, 102, 241, 0.5);
 	transition: all 0.3s;
-	cursor: pointer;
-	letter-spacing: 0.5px;
 }
-.btn-premium-action:hover:not(:disabled) {
-	transform: translateY(-3px);
-	box-shadow: 0 15px 25px -5px rgba(99, 102, 241, 0.4) !important;
+.btn-premium-gradient:hover {
+	transform: translateY(-2px);
+	filter: brightness(1.1);
+	box-shadow: 0 15px 30px -10px rgba(99, 102, 241, 0.6);
 }
-.btn-premium-action:disabled {
-	opacity: 0.7;
+
+/* Modal Styles */
+.modal-glass-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(15, 23, 42, 0.4);
+	backdrop-filter: blur(12px);
+	z-index: 2000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+}
+.modal-glass-container {
+	width: 100%;
+	max-width: 580px;
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
+	border-radius: 36px;
+	box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.4);
+	overflow: hidden;
+}
+
+.glass-input-premium {
+	width: 100%;
+	padding: 14px 20px;
+	background: rgba(255, 255, 255, 0.03);
+	border: 1.5px solid var(--border-color);
+	border-radius: 16px;
+	color: var(--text-primary);
+	outline: none;
+	appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 16px center;
+	background-size: 18px;
+}
+
+.system-note-glass {
+	background: rgba(59, 130, 246, 0.08);
+	color: #3b82f6;
+	padding: 16px 20px;
+	border-radius: 16px;
+	font-size: 13px;
+	display: flex;
+	gap: 12px;
+	line-height: 1.5;
+}
+
+:is([data-theme="dark"], [data-bs-theme="dark"]) .status-tab-btn.active {
+	background: rgba(255, 255, 255, 0.1);
+	color: white;
+}
+:is([data-theme="dark"], [data-bs-theme="dark"]) .glass-input-premium {
+	background-color: rgba(0, 0, 0, 0.2);
+}
+
+.textarea-fixed {
+	resize: none;
+	min-height: 120px;
+}
+
+.rejection-warning {
+	display: flex;
+	gap: 16px;
+	padding: 16px;
+	background: rgba(239, 68, 68, 0.08);
+	border-radius: 16px;
+	color: #ef4444;
+	line-height: 1.5;
+	font-size: 13px;
+}
+
+.btn-danger-premium {
+	background: linear-gradient(135deg, #ef4444, #b91c1c);
+	color: white;
+	border: none;
+	padding: 12px 28px;
+	border-radius: 16px;
+	font-weight: 700;
+	box-shadow: 0 10px 20px -10px rgba(239, 68, 68, 0.5);
+	transition: all 0.3s;
+}
+.btn-danger-premium:hover:not(:disabled) {
+	transform: translateY(-2px);
+	filter: brightness(1.1);
+	box-shadow: 0 15px 30px -10px rgba(239, 68, 68, 0.6);
+}
+.btn-danger-premium:disabled {
+	opacity: 0.5;
 	cursor: not-allowed;
 }
 
-.assign-success-alert {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	padding: 16px;
-	background: rgba(16, 185, 129, 0.1);
-	border-radius: 16px;
-	border: 1px solid rgba(16, 185, 129, 0.2);
-	color: #10b981;
+.modal-glass-container.alert-style {
+	border-color: rgba(239, 68, 68, 0.3);
 }
 
-.luxe-select-no-ico-wrap :deep(.vs__dropdown-toggle) {
-	background: white;
-	border: 1px solid #e2e8f0;
-	border-radius: 16px;
-	padding: 10px 10px 10px 16px;
-	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-	min-height: 58px;
-	transition: all 0.3s ease;
+.rejection-reason-text {
+	max-width: 150px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
-
-.luxe-select-no-ico-wrap :deep(.vs--open .vs__dropdown-toggle) {
-	border-color: #6366f1;
-	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-}
-
-.luxe-select-no-ico-wrap :deep(.vs__search::placeholder),
-.luxe-select-no-ico-wrap :deep(.vs__dropdown-toggle),
-.luxe-select-no-ico-wrap :deep(.vs__selected) {
-	font-size: 15px;
-	font-weight: 600;
-	color: #1e293b;
-}
-
-.luxe-select-no-ico-wrap :deep(.vs__actions) {
-	padding: 4px 12px 0 3px;
-}
-
-.luxe-select-no-ico-wrap :deep(.vs__dropdown-menu) {
-	border-radius: 16px;
-	border: 1px solid #e2e8f0;
-	box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-	padding: 8px;
-	z-index: 1000;
-	margin-top: 8px;
-}
-
-.luxe-select-no-ico-wrap :deep(.vs__dropdown-option) {
-	border-radius: 10px;
-	padding: 10px 12px;
-	margin-bottom: 4px;
-	color: #475569;
-}
-
-.luxe-select-no-ico-wrap :deep(.vs__dropdown-option--highlight) {
-	background: #f5f3ff;
-	color: #6366f1;
-}
-
-.fs-13 {
-	font-size: 13px;
-}
-.fs-11 {
-	font-size: 11px;
-}
-
-.fade-slide-enter-active,
-.fade-slide-leave-active {
-	transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.fade-slide-enter-from {
-	opacity: 0;
-	transform: translateY(20px) scale(0.98);
-}
-.fade-slide-leave-to {
-	opacity: 0;
-	transform: translateY(-20px) scale(0.98);
-}
-.fade-enter-active,
-.fade-leave-active {
-	transition: opacity 0.3s;
-}
-.fade-enter-from,
-.fade-leave-to {
-	opacity: 0;
+.rejection-reason-text:hover {
+	white-space: normal;
+	overflow: visible;
 }
 </style>

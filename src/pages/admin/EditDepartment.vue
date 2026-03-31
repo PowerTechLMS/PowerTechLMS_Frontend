@@ -151,6 +151,7 @@ const updateDepartment = async () => {
 		}
 
 		toast.success("Cập nhật phòng ban & Lộ trình thành công!");
+		router.push("/admin/departments");
 	} catch {
 		toast.error("Lỗi cập nhật thông tin.");
 	} finally {
@@ -845,10 +846,11 @@ const cancel = () => router.push("/admin/departments");
 	transition:
 		transform 0.3s ease,
 		box-shadow 0.3s ease;
-	background: rgba(255, 255, 255, 0.8);
+	background: var(--bg-card);
 	backdrop-filter: blur(10px);
-	border: 1px solid rgba(0, 0, 0, 0.05);
-	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+	border: 1px solid var(--border-color);
+	box-shadow: var(--shadow-sm);
+
 }
 .glass-stat-card:hover {
 	transform: translateY(-4px);
@@ -915,20 +917,22 @@ const cancel = () => router.push("/admin/departments");
 }
 
 .glass-content-card {
-	background: rgba(255, 255, 255, 0.9);
+	background: var(--bg-card);
 	backdrop-filter: blur(20px);
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-2xl);
-	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.03);
+	box-shadow: var(--shadow-sm);
 	overflow: hidden;
 }
+
 
 .tabs-glass-nav {
 	display: flex;
 	gap: 8px;
 	padding: 12px 24px;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-	background: rgba(249, 250, 251, 0.5);
+	border-bottom: 1px solid var(--border-color);
+	background: var(--bg-secondary);
+
 	overflow-x: auto;
 	scrollbar-width: thin;
 }
@@ -951,12 +955,13 @@ const cancel = () => router.push("/admin/departments");
 	color: var(--text-primary);
 }
 .tab-glass-btn.active {
-	background: white;
+	background: var(--bg-tertiary);
 	color: var(--primary-600);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	box-shadow: var(--shadow-sm);
+	border: 1px solid var(--border-color);
 	font-weight: 700;
 }
+
 .tab-badge {
 	background: rgba(0, 0, 0, 0.05);
 	color: var(--text-primary);
@@ -982,9 +987,10 @@ const cancel = () => router.push("/admin/departments");
 	text-transform: uppercase;
 	color: var(--text-primary);
 	letter-spacing: 0.05em;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+	border-bottom: 1px solid var(--border-color);
 	padding-bottom: 12px;
 }
+
 .premium-label {
 	font-weight: 700;
 	font-size: 12px;
@@ -1002,13 +1008,15 @@ const cancel = () => router.push("/admin/departments");
 	position: relative;
 	display: flex;
 	align-items: center;
-	background: rgba(249, 250, 251, 0.5);
+	background: var(--bg-secondary);
 	border-radius: 12px;
-	border: 1px solid rgba(0, 0, 0, 0.06);
+	border: 1px solid var(--border-color);
 	transition: all 0.3s;
 }
+
 .glass-input-group:focus-within {
-	background: #ffffff;
+	background: var(--bg-tertiary);
+
 	border-color: var(--primary-400);
 	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 }
@@ -1031,11 +1039,12 @@ const cancel = () => router.push("/admin/departments");
 	display: flex;
 	gap: 12px;
 	flex-wrap: wrap;
-	background: rgba(249, 250, 251, 0.5);
+	background: var(--bg-secondary);
 	padding: 6px;
 	border-radius: 16px;
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
 }
+
 .status-option {
 	flex: 1;
 	display: flex;
@@ -1062,11 +1071,12 @@ const cancel = () => router.push("/admin/departments");
 	transition: all 0.3s;
 }
 .status-option.active {
-	background: white;
+	background: var(--bg-tertiary);
 	color: var(--text-primary);
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-	border-color: rgba(0, 0, 0, 0.05);
+	box-shadow: var(--shadow-sm);
+	border-color: var(--border-color);
 }
+
 .status-option.active .status-dot.success {
 	background: var(--success-500);
 	box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
@@ -1145,18 +1155,20 @@ const cancel = () => router.push("/admin/departments");
 	align-items: center;
 	gap: 12px;
 	padding: 12px 16px;
-	background: rgba(249, 250, 251, 0.6);
-	border: 1px solid rgba(0, 0, 0, 0.06);
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
 	border-radius: 12px;
 	cursor: pointer;
 	transition: all 0.2s;
 }
 
+
 .cg-select-card:hover {
-	background: #ffffff;
+	background: var(--bg-tertiary);
 	border-color: rgba(99, 102, 241, 0.3);
 	transform: translateY(-1px);
 }
+
 
 .cg-select-card.selected {
 	background: rgba(99, 102, 241, 0.05);
@@ -1239,22 +1251,24 @@ const cancel = () => router.push("/admin/departments");
 }
 
 .glass-add-member-box {
-	background: rgba(249, 250, 251, 0.8);
+	background: var(--bg-card);
 	border-radius: 20px;
 	padding: 20px;
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
 }
+
 
 .glass-search {
 	display: flex;
 	align-items: center;
-	background: #ffffff;
-	border: 1px solid rgba(0, 0, 0, 0.1);
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-full);
 	padding: 4px 16px;
 	box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
 	transition: all 0.3s;
 }
+
 .glass-search:focus-within {
 	border-color: var(--primary-400);
 	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
@@ -1282,14 +1296,15 @@ const cancel = () => router.push("/admin/departments");
 }
 
 .glass-user-list {
-	background: white;
+	background: var(--bg-secondary);
 	border-radius: 12px;
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
 	max-height: 350px;
 	overflow-y: auto;
 	padding: 8px;
 	box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
 }
+
 .glass-user-item {
 	display: flex;
 	align-items: center;
@@ -1351,10 +1366,11 @@ const cancel = () => router.push("/admin/departments");
 .table-container {
 	width: 100%;
 	overflow-x: auto;
-	background: white;
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	border-radius: 16px;
 }
+
 .glass-table {
 	width: 100%;
 	border-collapse: separate;
@@ -1368,8 +1384,9 @@ const cancel = () => router.push("/admin/departments");
 	font-weight: 700;
 	color: var(--text-tertiary);
 	text-transform: uppercase;
-	border-bottom: 2px solid rgba(0, 0, 0, 0.05);
-	background: rgba(249, 250, 251, 0.5);
+	border-bottom: 2px solid var(--border-color);
+	background: var(--bg-secondary);
+
 	white-space: nowrap;
 }
 .glass-table td {
@@ -1379,8 +1396,9 @@ const cancel = () => router.push("/admin/departments");
 	transition: background 0.2s;
 }
 .glass-table tbody tr:hover td {
-	background: rgba(249, 250, 251, 0.8);
+	background: var(--bg-tertiary);
 }
+
 
 .index-col {
 	font-weight: 700;

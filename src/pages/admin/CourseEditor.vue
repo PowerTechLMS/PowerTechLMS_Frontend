@@ -1,17 +1,20 @@
 <template>
-	<div class="container-fluid">
-		<div class="row page-titles mx-0">
-			<div class="col-sm-6 p-md-0">
-				<div class="welcome-text">
-					<h4 class="text-dark fw-bold">Chỉnh Sửa Khóa Học</h4>
-					<p class="text-muted fs-13 mb-0">ID Khóa học: #{{ courseId }}</p>
+	<div class="container-fluid build-course-page">
+		<div class="page-header">
+			<div class="header-content">
+				<div class="header-icon-box pulse-glow">
+					<BookOpen
+						:size="32"
+						style="width: 32px; height: 32px; min-width: 32px"
+					/>
+				</div>
+				<div>
+					<h1 class="page-title-gradient">Chỉnh Sửa Khóa Học</h1>
+					<p class="page-desc">ID Khóa học: #{{ courseId }}</p>
 				</div>
 			</div>
-			<div class="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
-				<button
-					class="btn btn-dark btn-sm fw-bold shadow-sm"
-					@click="router.push('/admin/courses')"
-				>
+			<div class="header-actions">
+				<button @click="router.push('/admin/courses')" class="btn btn-outline">
 					<i class="fas fa-arrow-left me-2"></i>Quay lại
 				</button>
 			</div>
@@ -22,9 +25,9 @@
 			<p class="mt-2 text-muted fw-bold">Đang tải dữ liệu khóa học...</p>
 		</div>
 
-		<div v-else class="row">
+		<div v-else class="glass-card form-container">
 			<div class="col-lg-12">
-				<div class="card shadow-sm border-0">
+				<div class="card border-0 mb-0 shadow-none bg-transparent">
 					<div
 						class="card-header d-flex flex-column align-items-start pb-0 border-0"
 					>
@@ -62,209 +65,360 @@
 					<div class="card-body mt-3">
 						<form @submit.prevent="submitCourse" novalidate>
 							<div v-if="activeTab === 'basic'">
-								<div class="row bg-light p-3 rounded mb-4">
-									<div class="col-lg-8">
-										<div class="form-group mb-3">
-											<label class="form-label fw-bold"
-												>Tên khóa học <span class="text-danger">*</span></label
-											>
-											<input
-												v-model="course.Title"
-												type="text"
-												class="form-control border-dark"
-												required
-											/>
-										</div>
-									</div>
-									<div class="col-lg-4">
-										<div class="form-group mb-3">
-											<label class="form-label fw-bold text-success"
-												>Điểm đạt (%) <span class="text-danger">*</span></label
-											>
-											<input
-												v-model="course.PassScore"
-												type="number"
-												min="0"
-												class="form-control border-dark"
-												required
-											/>
-										</div>
-									</div>
-
-									<div class="col-lg-12">
-										<div class="form-group mb-3">
-											<label class="form-label fw-bold"
-												>Danh mục phân loại
-												<span class="text-danger">*</span></label
-											>
-											<select
-												v-model="course.CategoryId"
-												class="form-select border-dark"
-												required
-											>
-												<option :value="null">-- Chọn danh mục --</option>
-												<option
-													v-for="cat in categories"
-													:key="cat.id"
-													:value="cat.id"
+								<div class="glass-card-body">
+									<div class="form-grid">
+										<div class="row g-4 mb-2">
+											<div class="col-lg-8 input-wrapper">
+												<label class="premium-label"
+													>Tên khóa học
+													<span class="required-star">*</span></label
 												>
-													{{ cat.name }}
-												</option>
-											</select>
-										</div>
-									</div>
-
-									<div class="col-lg-12">
-										<div class="form-group mb-3">
-											<label class="form-label fw-bold"
-												>Phân cấp khóa học
-												<span class="text-danger">*</span></label
-											>
-											<div
-												class="d-flex gap-4 bg-white p-2 rounded border border-dark"
-											>
-												<div class="form-check">
+												<div class="glass-input-group">
+													<span class="input-icon"><Type :size="18" /></span>
 													<input
-														class="form-check-input"
-														type="radio"
-														v-model="course.Level"
-														:value="1"
-														id="lv1"
+														v-model="course.Title"
+														type="text"
+														class="glass-input"
+														required
 													/>
-													<label class="form-check-label fw-bold" for="lv1"
-														>Cấp 1: Người mới</label
-													>
-												</div>
-												<div class="form-check">
-													<input
-														class="form-check-input"
-														type="radio"
-														v-model="course.Level"
-														:value="2"
-														id="lv2"
-													/>
-													<label class="form-check-label fw-bold" for="lv2"
-														>Cấp 2: Phòng ban</label
-													>
-												</div>
-												<div class="form-check">
-													<input
-														class="form-check-input"
-														type="radio"
-														v-model="course.Level"
-														:value="3"
-														id="lv3"
-													/>
-													<label class="form-check-label fw-bold" for="lv3"
-														>Cấp 3: Tự chọn</label
-													>
 												</div>
 											</div>
-											<small class="text-muted fs-11 mt-1 d-block">
-												* Lưu ý: Học viên phải hoàn thành tất cả khoá Cấp 1 để
-												mở khoá Cấp 2. Khoá Cấp 3 xuất hiện trong mục Khám phá.
-											</small>
+											<div class="col-lg-4">
+												<!-- Cấp 2, 3: Hiện Phòng Ban -->
+												<div
+													v-if="course.Level === 2 || course.Level === 3"
+													class="pass-score-card selection-card"
+												>
+													<div class="psc-header">
+														<Users :size="14" class="me-1" />
+														<span
+															>Phòng ban áp dụng
+															<span class="required-star">*</span></span
+														>
+													</div>
+													<div class="psc-body d-block">
+														<div class="glass-input-group mt-1">
+															<span class="input-icon"
+																><Users :size="18"
+															/></span>
+															<select
+																v-model="course.UserGroupId"
+																class="glass-input text-dark"
+																required
+															>
+																<option :value="null">
+																	-- Khoá chung toàn hệ thống --
+																</option>
+																<option
+																	v-for="dept in departments"
+																	:key="dept.id"
+																	:value="dept.id"
+																>
+																	{{ dept.name }}
+																</option>
+															</select>
+														</div>
+														<div
+															class="mt-2 text-muted"
+															style="font-size: 11px"
+														>
+															<Info :size="12" class="me-1" />Khóa học sẽ chỉ
+															dành cho nhân viên từ phòng ban này.
+														</div>
+													</div>
+												</div>
+											</div>
 										</div>
-									</div>
 
-									<div class="col-lg-12">
-										<div class="form-group mb-3">
-											<label class="form-label fw-bold">Mô tả</label>
-											<textarea
-												v-model="course.Description"
-												class="form-control border-dark"
-												rows="4"
-											></textarea>
+										<div class="col-lg-12 input-wrapper mb-2">
+											<label class="premium-label"
+												>Danh mục phân loại
+												<span class="required-star">*</span></label
+											>
+											<div class="glass-input-group">
+												<span class="input-icon"
+													><FolderCheck :size="18"
+												/></span>
+												<select
+													v-model="course.CategoryId"
+													class="glass-input text-dark"
+													required
+												>
+													<option :value="null">-- Chọn danh mục --</option>
+													<option
+														v-for="cat in categories"
+														:key="cat.id"
+														:value="cat.id"
+													>
+														{{ cat.name }}
+													</option>
+												</select>
+											</div>
 										</div>
-									</div>
-									<div class="col-lg-12">
-										<div class="form-group mb-0">
-											<label class="form-label fw-bold">Ảnh bìa</label>
-											<input
-												type="file"
-												class="form-control"
-												accept="image/*"
-												@change="handleImageUpload"
-											/>
+
+										<div
+											class="col-lg-12 input-wrapper mt-3 border-top-glass pt-4"
+										>
+											<label
+												class="premium-label d-flex align-items-center gap-2 mb-3"
+												><BookOpen :size="16" class="text-primary" /> Phân cấp
+												khóa học <span class="required-star">*</span></label
+											>
+											<div class="course-groups-grid">
+												<div
+													class="cg-select-card glass-hover"
+													:class="{ selected: course.Level === 1 }"
+													@click="course.Level = 1"
+												>
+													<div class="cg-check-indicator">
+														<i
+															class="fas fa-check"
+															v-if="course.Level === 1"
+															style="font-size: 10px"
+														></i>
+													</div>
+													<div class="cg-info">
+														<h6 class="cg-name">Cấp 1: Người mới</h6>
+														<p class="cg-desc text-truncate">
+															Dành cho Onboarding nhân viên
+														</p>
+													</div>
+												</div>
+												<div
+													class="cg-select-card glass-hover"
+													:class="{ selected: course.Level === 2 }"
+													@click="course.Level = 2"
+												>
+													<div class="cg-check-indicator">
+														<i
+															class="fas fa-check"
+															v-if="course.Level === 2"
+															style="font-size: 10px"
+														></i>
+													</div>
+													<div class="cg-info">
+														<h6 class="cg-name">Cấp 2: Phòng ban</h6>
+														<p class="cg-desc text-truncate">
+															Chuyên môn theo phòng ban
+														</p>
+													</div>
+												</div>
+												<div
+													class="cg-select-card glass-hover"
+													:class="{ selected: course.Level === 3 }"
+													@click="course.Level = 3"
+												>
+													<div class="cg-check-indicator">
+														<i
+															class="fas fa-check"
+															v-if="course.Level === 3"
+															style="font-size: 10px"
+														></i>
+													</div>
+													<div class="cg-info">
+														<h6 class="cg-name">Cấp 3: Tự chọn</h6>
+														<p class="cg-desc text-truncate">
+															Khóa học mở tự do khám phá
+														</p>
+													</div>
+												</div>
+											</div>
+											<div class="glass-alert-info mt-3">
+												<div class="alert-icon"><Info :size="16" /></div>
+												<div class="alert-content" style="font-size: 13px">
+													<strong>Lưu ý:</strong> Học viên phải hoàn thành tất
+													cả khoá Cấp 1 để mở khoá Cấp 2. Khoá Cấp 3 xuất hiện
+													trong mục Khám phá.
+												</div>
+											</div>
+										</div>
+
+										<div class="col-lg-12 input-wrapper mt-4">
+											<label class="premium-label"
+												>Mô tả (Mục đích khóa học)</label
+											>
+											<div class="glass-input-group textarea-group">
+												<span class="input-icon"><AlignLeft :size="18" /></span>
+												<textarea
+													v-model="course.Description"
+													class="glass-input"
+													rows="4"
+												></textarea>
+											</div>
+										</div>
+
+										<div
+											class="col-lg-12 input-wrapper mt-4 border-top-glass pt-4"
+										>
+											<label class="premium-label mb-2">Ảnh bìa khóa học</label>
+											<div class="glass-input-group">
+												<span class="input-icon"><Image :size="18" /></span>
+												<input
+													type="file"
+													class="glass-input"
+													accept="image/*"
+													@change="handleImageUpload"
+												/>
+											</div>
+											<div
+												v-if="course.ExistingCoverUrl && !course.CoverImage"
+												class="mt-3 p-2 bg-light rounded d-inline-block border"
+											>
+												<img
+													:src="course.ExistingCoverUrl"
+													style="
+														max-height: 120px;
+														border-radius: 8px;
+														object-fit: cover;
+													"
+												/>
+											</div>
+											<div
+												v-if="course.CoverImage"
+												class="mt-3 p-2 bg-light rounded d-inline-block border"
+											>
+												<img
+													:src="getObjectURL(course.CoverImage)"
+													style="
+														max-height: 120px;
+														border-radius: 8px;
+														object-fit: cover;
+													"
+												/>
+											</div>
 											<small
-												v-if="course.ExistingCoverUrl"
+												v-if="course.ExistingCoverUrl && !course.CoverImage"
 												class="text-success mt-1 d-block"
 											>
 												<i class="fas fa-check-circle me-1"></i> Khóa học đã có
-												ảnh bìa. Chọn tệp mới để thay đổi.
+												ảnh bìa. Chọn tệp mới để ghi đè.
 											</small>
-										</div>
-									</div>
-								</div>
-
-								<div class="row border p-3 rounded mb-4">
-									<div class="col-md-6 border-end">
-										<label
-											class="form-label fw-bold d-block text-dark border-bottom pb-2"
-											>Thời gian đăng ký</label
-										>
-										<div class="form-group mb-3 mt-3">
-											<label class="form-label text-muted fs-12">Từ ngày</label
-											><VueDatePicker
-												v-model="course.EnrollStartDate"
-												auto-apply
-											/>
-										</div>
-										<div class="form-group mb-0">
-											<label class="form-label text-muted fs-12">Đến ngày</label
-											><VueDatePicker
-												v-model="course.EnrollEndDate"
-												auto-apply
-											/>
-										</div>
-									</div>
-									<div class="col-md-6 ps-4">
-										<label
-											class="form-label fw-bold d-block text-dark border-bottom pb-2"
-											>Hạn hoàn thành</label
-										>
-										<div class="form-group mb-3 mt-3">
-											<label class="form-label text-muted fs-12"
-												>Số ngày học sau khi đăng ký</label
-											><input
-												v-model="course.CompletionDeadlineDays"
-												type="number"
-												class="form-control"
-											/>
-										</div>
-										<div class="form-group mb-0">
-											<label class="form-label text-muted fs-12"
-												>Ngày kết thúc tuyệt đối</label
-											><VueDatePicker
-												v-model="course.CompletionEndDate"
-												auto-apply
-											/>
 										</div>
 									</div>
 								</div>
 
 								<div
-									class="form-check form-switch mb-4 bg-light p-3 rounded border border-primary"
+									class="glass-card-banner px-4 py-3 mt-4 mb-3 rounded"
+									style="
+										background: rgba(99, 102, 241, 0.05);
+										border: 1px dashed rgba(99, 102, 241, 0.2);
+									"
 								>
-									<input
-										v-model="course.IsPublished"
-										class="form-check-input ms-0"
-										type="checkbox"
-										id="pubSwitch"
-									/>
-									<label class="form-check-label fw-bold ms-2" for="pubSwitch"
-										>Xuất bản khóa học (Học viên có thể nhìn thấy)</label
-									>
+									<div class="row g-4 w-100 m-0">
+										<div class="col-md-6 border-end-glass">
+											<label
+												class="premium-label d-flex align-items-center gap-2 mb-3"
+											>
+												<Calendar :size="16" class="text-primary" /> Thời gian
+												đăng ký
+											</label>
+											<div class="input-wrapper mb-3">
+												<label
+													class="premium-label text-muted"
+													style="font-size: 11px"
+													>Từ ngày</label
+												>
+												<VueDatePicker
+													v-model="course.EnrollStartDate"
+													auto-apply
+													class="glass-datepicker"
+												/>
+											</div>
+											<div class="input-wrapper mb-0">
+												<label
+													class="premium-label text-muted"
+													style="font-size: 11px"
+													>Đến ngày</label
+												>
+												<VueDatePicker
+													v-model="course.EnrollEndDate"
+													auto-apply
+													class="glass-datepicker"
+												/>
+											</div>
+										</div>
+										<div class="col-md-6 ps-md-4">
+											<label
+												class="premium-label d-flex align-items-center gap-2 mb-3"
+											>
+												<Clock :size="16" class="text-warning" /> Hạn hoàn thành
+											</label>
+											<div class="input-wrapper mb-3">
+												<label
+													class="premium-label text-muted"
+													style="font-size: 11px"
+													>Số ngày học sau khi đăng ký</label
+												>
+												<input
+													v-model="course.CompletionDeadlineDays"
+													type="number"
+													class="glass-input"
+													style="padding-left: 16px"
+												/>
+											</div>
+											<div class="input-wrapper mb-0">
+												<label
+													class="premium-label text-muted"
+													style="font-size: 11px"
+													>Ngày kết thúc tuyệt đối</label
+												>
+												<VueDatePicker
+													v-model="course.CompletionEndDate"
+													auto-apply
+													class="glass-datepicker"
+												/>
+											</div>
+										</div>
+									</div>
 								</div>
 
-								<div class="text-end border-top pt-3">
+								<div
+									class="glass-card-banner d-flex align-items-center justify-content-between p-4 mb-4 rounded"
+									style="
+										background: rgba(16, 185, 129, 0.05);
+										border: 1px solid rgba(16, 185, 129, 0.2);
+									"
+								>
+									<div class="d-flex align-items-center gap-3">
+										<div
+											class="banner-icon-bg"
+											style="
+												color: #10b981;
+												background: rgba(16, 185, 129, 0.1);
+											"
+										>
+											<Globe :size="20" />
+										</div>
+										<div>
+											<h6 class="banner-title text-success">
+												Xuất bản khóa học
+											</h6>
+											<p class="banner-desc" style="font-size: 13px">
+												Học viên có thể nhìn thấy và đăng ký ngay lập tức.
+											</p>
+										</div>
+									</div>
+									<div
+										class="form-check form-switch"
+										style="transform: scale(1.5); margin-right: 10px"
+									>
+										<input
+											v-model="course.IsPublished"
+											class="form-check-input ms-0 cursor-pointer"
+											type="checkbox"
+											id="pubSwitch"
+										/>
+									</div>
+								</div>
+
+								<div class="form-actions-container">
 									<button
 										type="button"
-										class="btn btn-primary px-4 shadow-sm"
+										class="btn-submit"
 										@click="activeTab = 'curriculum'"
 									>
 										Tiếp theo: Giáo trình
-										<i class="fas fa-arrow-right ms-2"></i>
+										<i class="fas fa-arrow-right ms-2 fs-14"></i>
 									</button>
 								</div>
 							</div>
@@ -1058,12 +1212,25 @@ import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
+import {
+	BookOpen,
+	Type,
+	FolderCheck,
+	AlignLeft,
+	Image,
+	Info,
+	Calendar,
+	Clock,
+	Globe,
+	Users,
+} from "lucide-vue-next";
 
 import {
 	courseAPI,
 	moduleAPI,
 	lessonAPI,
 	quizAPI,
+	userGroupAPI,
 	aiAPI,
 } from "@/services/api";
 import ImportQuizModal from "@/components/ImportQuizModal.vue";
@@ -1299,6 +1466,7 @@ const course = ref({
 	CompletionEndDate: null as Date | null,
 	QuizRetakeWaitTimeMinutes: 5,
 	QuizMaxRetakesPerDay: 3,
+	UserGroupId: null as number | null,
 });
 
 interface QuizQuestion {
@@ -1359,6 +1527,7 @@ const courseQuiz = ref<QuizModel>(createEmptyQuiz("Bài thi cuối khóa"));
 const deletedModuleIds = ref<number[]>([]);
 const deletedLessonIds = ref<{ moduleId: number; id: number }[]>([]);
 const deletedAttachmentIds = ref<number[]>([]);
+const deletedQuestionIds = ref<number[]>([]);
 
 onMounted(async () => {
 	if (!courseId) return router.push("/admin/courses");
@@ -1388,6 +1557,7 @@ onMounted(async () => {
 		course.value.QuizRetakeWaitTimeMinutes =
 			data.quizRetakeWaitTimeMinutes || 5;
 		course.value.QuizMaxRetakesPerDay = data.quizMaxRetakesPerDay || 3;
+		course.value.UserGroupId = data.departmentId || null;
 
 		if (data.modules) {
 			const loadedModules = [];
@@ -1462,22 +1632,35 @@ onMounted(async () => {
 			try {
 				const resQuiz = await quizAPI.getById(data.finalQuizId);
 				const qData = resQuiz.data;
-				courseQuiz.value.Id = qData.id;
-				courseQuiz.value.Title = qData.title || "Đề thi cuối khóa";
-				courseQuiz.value.PassScore = qData.passScore || 8;
-				courseQuiz.value.QuestionCount = qData.questionCount || 10;
-				courseQuiz.value.TimeLimitMinutes = qData.timeLimitMinutes || null;
-				courseQuiz.value.questions = (qData.questions || []).map((q: any) => ({
-					id: q.id,
-					QuestionText: q.questionText,
-					Options: { A: q.optionA, B: q.optionB, C: q.optionC, D: q.optionD },
-					CorrectAnswer: q.correctAnswer || "A",
-					Points: q.points || 1.0,
-					Explanation: q.explanation || "",
+				courseQuiz.value.Id = qData.id || qData.Id;
+				courseQuiz.value.Title =
+					qData.title || qData.Title || "Đề thi cuối khóa";
+				courseQuiz.value.PassScore = qData.passScore ?? qData.PassScore ?? 8;
+				courseQuiz.value.QuestionCount =
+					qData.questionCount ?? qData.QuestionCount ?? 10;
+				courseQuiz.value.TimeLimitMinutes =
+					qData.timeLimitMinutes ?? qData.TimeLimitMinutes ?? null;
+				courseQuiz.value.questions = (
+					qData.questions ||
+					qData.Questions ||
+					[]
+				).map((q: any) => ({
+					id: q.id || q.Id,
+					QuestionText: q.questionText || q.QuestionText,
+					Options: {
+						A: q.optionA || q.OptionA,
+						B: q.optionB || q.OptionB,
+						C: q.optionC || q.OptionC,
+						D: q.optionD || q.OptionD,
+					},
+					CorrectAnswer: q.correctAnswer || q.CorrectAnswer || "A",
+					Points: q.points ?? q.Points ?? 1.0,
+					Explanation: q.explanation || q.Explanation || "",
 				}));
 				courseQuiz.value.RetakeWaitTimeMinutes =
-					qData.retakeWaitTimeMinutes || null;
-				courseQuiz.value.MaxRetakesPerDay = qData.maxRetakesPerDay || null;
+					qData.retakeWaitTimeMinutes ?? qData.RetakeWaitTimeMinutes ?? null;
+				courseQuiz.value.MaxRetakesPerDay =
+					qData.maxRetakesPerDay ?? qData.MaxRetakesPerDay ?? null;
 			} catch {}
 		}
 	} catch {
@@ -1550,7 +1733,11 @@ const removeQuestionFromLessonQuiz = (
 	lIdx: number,
 	qIdx: number,
 ) => {
-	curriculum.value[mIdx].lessons[lIdx].quiz.questions.splice(qIdx, 1);
+	if (confirm("Xóa câu hỏi này?")) {
+		const q = curriculum.value[mIdx].lessons[lIdx].quiz.questions[qIdx];
+		if (q.id > 0) deletedQuestionIds.value.push(q.id);
+		curriculum.value[mIdx].lessons[lIdx].quiz.questions.splice(qIdx, 1);
+	}
 };
 
 const addQuestionFinal = () => {
@@ -1563,8 +1750,13 @@ const addQuestionFinal = () => {
 		Explanation: "",
 	});
 };
-const removeQuestionFinal = (index: number) =>
-	courseQuiz.value.questions.splice(index, 1);
+const removeQuestionFinal = (index: number) => {
+	if (confirm("Xóa câu hỏi này?")) {
+		const q = courseQuiz.value.questions[index];
+		if (q.id > 0) deletedQuestionIds.value.push(q.id);
+		courseQuiz.value.questions.splice(index, 1);
+	}
+};
 
 const showImportModal = ref(false);
 const importTargetType = ref<"lesson" | "final" | null>(null);
@@ -1673,15 +1865,6 @@ const submitCourse = async () => {
 		activeTab.value = "basic";
 		return;
 	}
-	if (
-		course.value.PassScore === null ||
-		course.value.PassScore === undefined ||
-		course.value.PassScore < 0
-	) {
-		toast.warning("Vui lòng nhập Điểm đạt hợp lệ ở Tab 1!");
-		activeTab.value = "basic";
-		return;
-	}
 	if (!course.value.CategoryId) {
 		toast.warning("Vui lòng chọn Danh mục phân loại ở Tab 1!");
 		activeTab.value = "basic";
@@ -1706,6 +1889,7 @@ const submitCourse = async () => {
 			quizRetakeWaitTimeMinutes:
 				Number(course.value.QuizRetakeWaitTimeMinutes) || 5,
 			quizMaxRetakesPerDay: Number(course.value.QuizMaxRetakesPerDay) || 3,
+			userGroupId: course.value.UserGroupId || null,
 		};
 		await courseAPI.update(courseId as string, coursePayload);
 
@@ -1718,9 +1902,13 @@ const submitCourse = async () => {
 		for (const mId of deletedModuleIds.value) {
 			await moduleAPI.delete(courseId as string, mId);
 		}
+		for (const qId of deletedQuestionIds.value) {
+			await quizAPI.deleteQuestion(qId);
+		}
 		deletedAttachmentIds.value = [];
 		deletedLessonIds.value = [];
 		deletedModuleIds.value = [];
+		deletedQuestionIds.value = [];
 
 		if (course.value.CoverImage) {
 			const formData = new FormData();
@@ -1790,38 +1978,42 @@ const submitCourse = async () => {
 					}
 				}
 
-				if (les.hasQuiz && les.quiz.questions.length > 0) {
+				if (les.hasQuiz) {
 					let targetQuizId = les.quiz.Id;
+					const qPayload = {
+						title: les.quiz.Title || `Quiz: ${les.title}`,
+						timeLimitMinutes: les.quiz.TimeLimitMinutes
+							? Number(les.quiz.TimeLimitMinutes)
+							: null,
+						passScore: Number(les.quiz.PassScore) || 5,
+						questionCount: Number(les.quiz.questions.length),
+						shuffleQuestions: true,
+						shuffleAnswers: true,
+						retakeWaitTimeMinutes: les.quiz.RetakeWaitTimeMinutes
+							? Number(les.quiz.RetakeWaitTimeMinutes)
+							: null,
+						maxRetakesPerDay: les.quiz.MaxRetakesPerDay
+							? Number(les.quiz.MaxRetakesPerDay)
+							: null,
+					};
 
 					if (!targetQuizId || targetQuizId < 0) {
-						const qPayload = {
-							title: les.quiz.Title || `Quiz: ${les.title}`,
-							timeLimitMinutes: les.quiz.TimeLimitMinutes
-								? Number(les.quiz.TimeLimitMinutes)
-								: null,
-							passScore: Number(les.quiz.PassScore) || 5,
-							questionCount: Number(les.quiz.questions.length),
-							shuffleQuestions: true,
-							shuffleAnswers: true,
-							retakeWaitTimeMinutes: les.quiz.RetakeWaitTimeMinutes
-								? Number(les.quiz.RetakeWaitTimeMinutes)
-								: null,
-							maxRetakesPerDay: les.quiz.MaxRetakesPerDay
-								? Number(les.quiz.MaxRetakesPerDay)
-								: null,
-						};
-						const resQuiz = await quizAPI.createForLesson(
-							currentModuleId,
-							currentLessonId,
-							qPayload,
-						);
-						targetQuizId = resQuiz.data.id;
-						les.quiz.Id = targetQuizId;
+						if (les.quiz.questions.length > 0) {
+							const resQuiz = await quizAPI.createForLesson(
+								currentModuleId,
+								currentLessonId,
+								qPayload,
+							);
+							targetQuizId = resQuiz.data.id;
+							les.quiz.Id = targetQuizId;
+						}
+					} else {
+						await quizAPI.update(targetQuizId, qPayload);
 					}
 
-					for (const q of les.quiz.questions) {
-						if (q.id < 0) {
-							await quizAPI.addQuestion(targetQuizId, {
+					if (targetQuizId && targetQuizId > 0) {
+						for (const q of les.quiz.questions) {
+							const questionPayload = {
 								content: q.QuestionText,
 								optionA: q.Options.A || "",
 								optionB: q.Options.B || "",
@@ -1830,42 +2022,69 @@ const submitCourse = async () => {
 								CorrectAnswer: q.CorrectAnswer,
 								points: Number(q.Points) || 1,
 								explanation: q.Explanation || "",
-							});
-							q.id = generateId() * -1;
+							};
+
+							if (q.id < 0) {
+								await quizAPI.addQuestion(targetQuizId, questionPayload);
+								q.id = generateId() * -1;
+							} else {
+								await quizAPI.updateQuestion(q.id, questionPayload);
+							}
 						}
 					}
 				}
 			}
 		}
 
-		if (courseQuiz.value.questions.length > 0) {
+		if (
+			courseQuiz.value.Id ||
+			courseQuiz.value.Title ||
+			courseQuiz.value.questions.length > 0
+		) {
 			let finalId = courseQuiz.value.Id;
-
-			if (!finalId || finalId < 0) {
-				const finalPayload = {
-					title: courseQuiz.value.Title || "Đề thi cuối khóa",
-					passScore: Number(courseQuiz.value.PassScore) || 8,
-					questionCount:
-						Number(courseQuiz.value.QuestionCount) ||
-						courseQuiz.value.questions.length,
-					timeLimitMinutes: Number(courseQuiz.value.TimeLimitMinutes) || null,
-					shuffleQuestions: true,
-					shuffleAnswers: true,
-					retakeWaitTimeMinutes: courseQuiz.value.RetakeWaitTimeMinutes
+			const finalPayload = {
+				title: courseQuiz.value.Title || "Đề thi cuối khóa",
+				passScore:
+					courseQuiz.value.PassScore !== undefined &&
+					courseQuiz.value.PassScore !== ""
+						? Number(courseQuiz.value.PassScore)
+						: 8,
+				questionCount:
+					courseQuiz.value.QuestionCount !== undefined &&
+					courseQuiz.value.QuestionCount !== ""
+						? Number(courseQuiz.value.QuestionCount)
+						: courseQuiz.value.questions.length,
+				timeLimitMinutes:
+					courseQuiz.value.TimeLimitMinutes !== undefined &&
+					courseQuiz.value.TimeLimitMinutes !== ""
+						? Number(courseQuiz.value.TimeLimitMinutes)
+						: null,
+				shuffleQuestions: true,
+				shuffleAnswers: true,
+				retakeWaitTimeMinutes:
+					courseQuiz.value.RetakeWaitTimeMinutes !== undefined &&
+					courseQuiz.value.RetakeWaitTimeMinutes !== ""
 						? Number(courseQuiz.value.RetakeWaitTimeMinutes)
 						: null,
-					maxRetakesPerDay: courseQuiz.value.MaxRetakesPerDay
+				maxRetakesPerDay:
+					courseQuiz.value.MaxRetakesPerDay !== undefined &&
+					courseQuiz.value.MaxRetakesPerDay !== ""
 						? Number(courseQuiz.value.MaxRetakesPerDay)
 						: null,
-				};
+			};
+
+			if (!finalId || finalId < 0) {
+				// Create even with 0 questions for the final quiz
 				const resFQuiz = await quizAPI.create(courseId as string, finalPayload);
 				finalId = resFQuiz.data.id;
 				courseQuiz.value.Id = finalId;
+			} else {
+				await quizAPI.update(finalId, finalPayload);
 			}
 
-			for (const q of courseQuiz.value.questions) {
-				if (q.id < 0) {
-					await quizAPI.addQuestion(finalId, {
+			if (finalId && finalId > 0) {
+				for (const q of courseQuiz.value.questions) {
+					const fQuestionPayload = {
 						content: q.QuestionText,
 						optionA: q.Options.A,
 						optionB: q.Options.B,
@@ -1874,8 +2093,14 @@ const submitCourse = async () => {
 						correctAnswer: q.CorrectAnswer,
 						points: 1,
 						explanation: q.Explanation || "",
-					});
-					q.id = generateId() * -1;
+					};
+
+					if (q.id < 0) {
+						await quizAPI.addQuestion(finalId, fQuestionPayload);
+						q.id = generateId() * -1;
+					} else {
+						await quizAPI.updateQuestion(q.id, fQuestionPayload);
+					}
 				}
 			}
 		}
@@ -1890,9 +2115,276 @@ const submitCourse = async () => {
 		isSaving.value = false;
 	}
 };
+
+const departments = ref<any[]>([]);
+onMounted(async () => {
+	try {
+		const res = await userGroupAPI.getAll({ pageSize: 100 });
+		departments.value = res.data.items || [];
+	} catch {}
+});
 </script>
 
 <style scoped>
+.build-course-page {
+	padding-bottom: var(--space-2xl);
+	animation: fadeIn 0.4s ease-out;
+}
+
+.page-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-end;
+	margin-bottom: var(--space-xl);
+	flex-wrap: wrap;
+	gap: var(--space-lg);
+}
+.header-content {
+	display: flex;
+	align-items: center;
+	gap: var(--space-xl);
+}
+.header-icon-box {
+	width: 64px;
+	height: 64px;
+	border-radius: 20px;
+	background: linear-gradient(
+		135deg,
+		rgba(99, 102, 241, 0.15),
+		rgba(99, 102, 241, 0.05)
+	);
+	color: var(--primary-500);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid rgba(99, 102, 241, 0.2);
+	box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+	flex-shrink: 0;
+}
+.pulse-glow {
+	animation: pulse-border 3s ease-in-out infinite;
+}
+@keyframes pulse-border {
+	0% {
+		box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.2);
+	}
+	50% {
+		box-shadow: 0 0 0 15px rgba(99, 102, 241, 0);
+	}
+	100% {
+		box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+	}
+}
+
+.page-title-gradient {
+	font-size: 32px;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+	background: linear-gradient(90deg, var(--primary-600), var(--primary-400));
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	margin-bottom: 8px;
+	margin-top: 0;
+}
+.page-desc {
+	font-size: var(--font-size-base);
+	color: var(--text-secondary);
+	max-width: 600px;
+	line-height: 1.5;
+	margin: 0;
+}
+
+.glass-card {
+	background: rgba(255, 255, 255, 0.9);
+	backdrop-filter: blur(20px);
+	border: 1px solid rgba(0, 0, 0, 0.05);
+	border-radius: var(--radius-2xl);
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.03);
+	overflow: hidden;
+}
+
+.glass-card-body {
+	padding: 40px 32px;
+}
+
+.premium-label {
+	font-weight: 700;
+	font-size: 13px;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--text-secondary);
+	margin-bottom: 8px;
+}
+.required-star {
+	color: var(--danger-500);
+	margin-left: 2px;
+}
+
+.glass-input-group {
+	position: relative;
+	display: flex;
+	align-items: center;
+	background: rgba(249, 250, 251, 0.5);
+	border-radius: 12px;
+	border: 1px solid rgba(0, 0, 0, 0.06);
+	transition: all 0.3s;
+}
+.glass-input-group:focus-within {
+	background: #ffffff;
+	border-color: var(--primary-400);
+	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+.glass-input-group.border-success-focus:focus-within {
+	border-color: #10b981;
+	box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+}
+.glass-input-group.textarea-group {
+	align-items: flex-start;
+}
+
+.input-icon {
+	position: absolute;
+	left: 16px;
+	color: var(--text-tertiary);
+	z-index: 2;
+	transition: color 0.3s;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+}
+.glass-input-group.textarea-group .input-icon {
+	height: auto;
+	top: 16px;
+}
+.glass-input-group:focus-within .input-icon {
+	color: var(--primary-500);
+}
+.glass-input-group.border-success-focus:focus-within .input-icon {
+	color: #10b981;
+}
+
+.glass-input {
+	width: 100%;
+	padding: 14px 16px 14px 46px;
+	background: transparent;
+	border: none;
+	border-radius: 12px;
+	color: var(--text-primary);
+	font-size: 15px;
+	font-family: inherit;
+	line-height: 1.5;
+	outline: none;
+	z-index: 1;
+	resize: none;
+}
+.glass-input::placeholder {
+	color: var(--text-tertiary);
+}
+
+.course-groups-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+	gap: 16px;
+}
+.cg-select-card {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	padding: 16px;
+	background: rgba(249, 250, 251, 0.6);
+	border: 1px solid rgba(0, 0, 0, 0.06);
+	border-radius: 14px;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+.cg-select-card:hover {
+	background: #ffffff;
+	border-color: rgba(99, 102, 241, 0.3);
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+.cg-select-card.selected {
+	background: rgba(99, 102, 241, 0.05);
+	border-color: var(--primary-500);
+	box-shadow: 0 0 0 1px var(--primary-500);
+}
+
+.cg-check-indicator {
+	width: 20px;
+	height: 20px;
+	border-radius: 6px;
+	border: 1px solid rgba(0, 0, 0, 0.2);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	transition: all 0.2s;
+	color: white;
+}
+.cg-select-card.selected .cg-check-indicator {
+	background: var(--primary-500);
+	border-color: var(--primary-500);
+}
+.cg-info {
+	flex: 1;
+	overflow: hidden;
+}
+.cg-name {
+	margin: 0 0 4px 0;
+	font-size: 14px;
+	font-weight: 700;
+	color: var(--text-primary);
+}
+.cg-desc {
+	margin: 0;
+	font-size: 12px;
+	color: var(--text-tertiary);
+}
+
+.glass-alert-info {
+	display: flex;
+	gap: 16px;
+	align-items: flex-start;
+	padding: 16px 20px;
+	background: rgba(99, 102, 241, 0.05);
+	border-radius: 12px;
+	border: 1px solid rgba(99, 102, 241, 0.1);
+	color: var(--primary-700);
+}
+
+.form-actions-container {
+	padding-top: 32px;
+	margin-top: 8px;
+	border-top: 1px solid rgba(0, 0, 0, 0.05);
+	display: flex;
+	justify-content: flex-end;
+}
+.btn-submit {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: 48px;
+	padding: 0 28px;
+	border-radius: var(--radius-full);
+	font-weight: 700;
+	font-size: 15px;
+	cursor: pointer;
+	background: linear-gradient(
+		135deg,
+		var(--primary-600) 0%,
+		var(--primary-500) 100%
+	);
+	color: white;
+	border: none;
+	box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+	transition: all 0.3s;
+}
+.btn-submit:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+}
+
 .bg-warning-light {
 	background-color: #fffdf5;
 }
@@ -1914,14 +2406,341 @@ const submitCourse = async () => {
 .fs-13 {
 	font-size: 13px;
 }
+.fs-14 {
+	font-size: 14px;
+}
+.fw-600 {
+	font-weight: 600;
+}
+
 .nav-link {
 	cursor: pointer;
 	color: #555;
 	font-weight: 500;
+	transition: all 0.3s;
 }
 .nav-link.active {
 	color: #0d6efd !important;
 	font-weight: 700;
 	border-bottom: 2px solid #0d6efd !important;
+}
+
+/* Responsive Structural Fixes */
+@media (max-width: 768px) {
+	.page-titles {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 15px;
+	}
+	.page-titles .col-sm-6 {
+		width: 100%;
+	}
+	.page-titles .justify-content-sm-end {
+		justify-content: flex-start !important;
+	}
+	.page-titles button {
+		width: 100%;
+	}
+	.nav-tabs {
+		flex-direction: column;
+		gap: 8px;
+		border-bottom: none !important;
+	}
+	.nav-item {
+		width: 100%;
+	}
+	.nav-link {
+		text-align: left;
+		border: 1px solid #e2e8f0;
+		border-radius: 8px;
+		padding: 10px 15px;
+	}
+	.nav-link.active {
+		background: rgba(13, 110, 253, 0.05);
+		border: 1px solid #0d6efd !important;
+	}
+	.row.bg-light,
+	.row.border {
+		padding: 1rem !important;
+	}
+}
+
+/* Premium Card Styling */
+.card {
+	border-radius: 20px;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03) !important;
+	overflow: hidden;
+	transition: 0.3s;
+}
+
+/* Dark Mode Overrides - Updated for System Sync */
+:is([data-bs-theme="dark"], [data-theme="dark"]) .bg-light {
+	background-color: var(--bg-tertiary) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .bg-white {
+	background-color: var(--bg-secondary) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .text-dark {
+	color: var(--text-primary) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .border-dark {
+	border-color: var(--border-color) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .card {
+	background-color: var(--bg-secondary) !important;
+	border-color: var(--border-color) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .nav-tabs {
+	border-bottom-color: var(--border-color) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .nav-link {
+	color: var(--text-secondary) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .nav-link.active {
+	color: var(--primary-400) !important;
+	border-color: var(--primary-400) !important;
+	background: rgba(99, 102, 241, 0.05) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .bg-warning-light {
+	background-color: rgba(245, 158, 11, 0.1) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .bg-success-light {
+	background-color: rgba(16, 185, 129, 0.1) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .text-warning-dark {
+	color: #fbbf24 !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .border,
+:is([data-bs-theme="dark"], [data-theme="dark"]) .border-top,
+:is([data-bs-theme="dark"], [data-theme="dark"]) .border-bottom,
+:is([data-bs-theme="dark"], [data-theme="dark"]) .border-start,
+:is([data-bs-theme="dark"], [data-theme="dark"]) .border-end {
+	border-color: var(--border-color) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .border-dashed {
+	border-color: var(--border-color) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .form-control,
+:is([data-bs-theme="dark"], [data-theme="dark"]) .form-select {
+	background-color: var(--bg-tertiary) !important;
+	border-color: var(--border-color) !important;
+	color: var(--text-primary) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .form-control:focus,
+:is([data-bs-theme="dark"], [data-theme="dark"]) .form-select:focus {
+	background-color: var(--bg-secondary) !important;
+	border-color: var(--primary-500) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .text-muted {
+	color: var(--text-tertiary) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .text-success {
+	color: #34d399 !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .badge.bg-light.text-dark {
+	background-color: var(--bg-tertiary) !important;
+	color: var(--text-primary) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .bg-danger.text-white {
+	background-color: rgba(239, 68, 68, 0.15) !important;
+	color: #ef4444 !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .text-danger {
+	color: #f87171 !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .list-group-item {
+	background-color: var(--bg-tertiary) !important;
+	border-color: var(--border-color) !important;
+	color: var(--text-primary) !important;
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .glass-card {
+	background: var(--bg-secondary) !important;
+	border-color: var(--border-color) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .glass-input-group {
+	background: var(--bg-tertiary) !important;
+	border-color: var(--border-color) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"])
+	.glass-input-group:focus-within {
+	background: var(--bg-secondary) !important;
+	border-color: var(--primary-500) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .glass-input {
+	color: var(--text-primary) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .cg-select-card {
+	background: var(--bg-secondary) !important;
+	border-color: var(--border-color) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .cg-select-card:hover {
+	background: var(--bg-tertiary) !important;
+	border-color: var(--primary-400) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .cg-name {
+	color: var(--text-primary) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .cg-desc {
+	color: var(--text-tertiary) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .border-top-glass {
+	border-top-color: var(--border-color) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .glass-card-banner {
+	background: var(--bg-tertiary) !important;
+	border-color: var(--border-color) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .border-end-glass {
+	border-right: 1px solid var(--border-color) !important;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .premium-label {
+	color: var(--text-secondary) !important;
+}
+
+/* ── Pass Score Widget ── */
+.pass-score-card {
+	border: 1.5px solid var(--border-color, rgba(0, 0, 0, 0.08));
+	border-radius: 16px;
+	overflow: hidden;
+	background: var(--bg-secondary, #f9fafb);
+	transition:
+		border-color 0.2s,
+		box-shadow 0.2s;
+	height: 100%;
+}
+.pass-score-card:hover {
+	border-color: var(--primary-400, #818cf8);
+	box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
+}
+.psc-header {
+	padding: 8px 14px;
+	font-size: 11px;
+	font-weight: 700;
+	color: var(--text-secondary);
+	border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.06));
+	display: flex;
+	align-items: center;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+.psc-body {
+	padding: 12px 14px;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+}
+.psc-display {
+	width: 64px;
+	height: 64px;
+	border-radius: 50%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	font-weight: 800;
+	transition: all 0.3s ease;
+}
+.psc-display.easy {
+	background: rgba(16, 185, 129, 0.1);
+	color: #059669;
+	border: 2px solid rgba(16, 185, 129, 0.35);
+}
+.psc-display.medium {
+	background: rgba(245, 158, 11, 0.1);
+	color: #d97706;
+	border: 2px solid rgba(245, 158, 11, 0.35);
+}
+.psc-display.hard {
+	background: rgba(99, 102, 241, 0.1);
+	color: #6366f1;
+	border: 2px solid rgba(99, 102, 241, 0.35);
+}
+.psc-num {
+	font-size: 20px;
+	line-height: 1.1;
+}
+.psc-unit {
+	font-size: 10px;
+	line-height: 1;
+	opacity: 0.75;
+}
+.psc-controls {
+	flex: 1;
+	min-width: 0;
+}
+.psc-range {
+	width: 100%;
+	height: 4px;
+	cursor: pointer;
+	accent-color: var(--primary-500);
+	appearance: none;
+	-webkit-appearance: none;
+	background: var(--border-color, #e5e7eb);
+	border-radius: 99px;
+	outline: none;
+}
+.psc-range::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	background: var(--primary-500, #6366f1);
+	border: 2px solid white;
+	box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
+	cursor: pointer;
+	transition: transform 0.15s;
+}
+.psc-range::-webkit-slider-thumb:hover {
+	transform: scale(1.2);
+}
+.psc-presets {
+	display: flex;
+	gap: 4px;
+	margin-top: 8px;
+	flex-wrap: wrap;
+}
+.psc-preset {
+	padding: 2px 7px;
+	border-radius: 6px;
+	border: 1px solid var(--border-color, #e5e7eb);
+	background: var(--bg-primary, white);
+	font-size: 10px;
+	font-weight: 700;
+	cursor: pointer;
+	transition: all 0.15s;
+	color: var(--text-secondary);
+	line-height: 1.6;
+}
+.psc-preset.active,
+.psc-preset:hover {
+	background: var(--primary-500, #6366f1);
+	color: white;
+	border-color: var(--primary-500, #6366f1);
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .pass-score-card {
+	background: var(--bg-tertiary);
+	border-color: var(--border-color);
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .psc-display.easy {
+	background: rgba(16, 185, 129, 0.15);
+	color: #34d399;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .psc-display.medium {
+	background: rgba(245, 158, 11, 0.15);
+	color: #fbbf24;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .psc-display.hard {
+	background: rgba(99, 102, 241, 0.15);
+	color: #a5b4fc;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .psc-preset {
+	background: var(--bg-secondary);
+	color: var(--text-secondary);
+	border-color: var(--border-color);
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .psc-range {
+	background: var(--border-color);
 }
 </style>

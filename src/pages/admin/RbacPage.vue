@@ -534,7 +534,7 @@ function getAvatarUrl(url) {
 		? null
 		: url.startsWith("http")
 			? url
-			: `${import.meta.env.VITE_API_URL || ""}${url}`;
+			: `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${url}`;
 }
 function getInitials(name) {
 	return !name
@@ -697,9 +697,10 @@ onMounted(loadData);
 	display: flex;
 }
 .glass-tabs {
-	background: #ffffff;
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-full);
+
 	padding: 6px;
 	display: inline-flex;
 	position: relative;
@@ -742,11 +743,12 @@ onMounted(loadData);
 }
 
 .glass-card {
-	background: #ffffff;
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-2xl);
-	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+	box-shadow: var(--shadow-sm);
 }
+
 .section-bar {
 	display: flex;
 	justify-content: space-between;
@@ -808,9 +810,10 @@ onMounted(loadData);
 	height: 500px;
 	transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 	position: relative;
-	background: #ffffff;
+	background: var(--bg-card);
 	overflow: hidden;
 }
+
 .role-card-premium::before {
 	content: "";
 	position: absolute;
@@ -832,11 +835,12 @@ onMounted(loadData);
 	display: flex;
 	justify-content: space-between;
 	align-items: flex-start;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-	background: rgba(249, 250, 251, 1);
+	border-bottom: 1px solid var(--border-color);
+	background: var(--bg-secondary);
 	border-top-left-radius: var(--radius-2xl);
 	border-top-right-radius: var(--radius-2xl);
 }
+
 .role-info-wrap {
 	display: flex;
 	gap: var(--space-lg);
@@ -909,9 +913,10 @@ onMounted(loadData);
 	font-size: 11px;
 	font-weight: 700;
 	padding: 4px 10px;
-	background: rgba(0, 0, 0, 0.03);
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-full);
+
 	color: var(--text-secondary);
 }
 .perm-cat-group {
@@ -940,9 +945,10 @@ onMounted(loadData);
 }
 .perm-item-check {
 	padding: 8px 12px;
-	background: rgba(0, 0, 0, 0.02);
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	background: var(--bg-tertiary);
+	border: 1px solid var(--border-color);
 	border-radius: 10px;
+
 	font-size: var(--font-size-xs);
 	color: var(--text-secondary);
 	cursor: pointer;
@@ -976,9 +982,10 @@ onMounted(loadData);
 .search-input-premium {
 	box-sizing: border-box;
 	width: 100%;
-	background: #ffffff;
-	border: 1px solid rgba(0, 0, 0, 0.1);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-full);
+
 	padding: 12px 16px 12px 44px;
 	font-size: var(--font-size-sm);
 	color: var(--text-primary);
@@ -1014,16 +1021,18 @@ onMounted(loadData);
 	display: flex;
 	flex-direction: column;
 	height: 400px;
-	background: #ffffff;
+	background: var(--bg-card);
 }
+
 .p-cat-header-main {
 	padding: var(--space-lg) var(--space-xl);
-	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+	border-bottom: 1px solid var(--border-color);
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	border-left: 4px solid var(--primary-500);
-	background: rgba(249, 250, 251, 1);
+	background: var(--bg-secondary);
+
 	border-radius: inherit;
 	border-bottom-left-radius: 0;
 	border-bottom-right-radius: 0;
@@ -1057,10 +1066,11 @@ onMounted(loadData);
 	margin-bottom: 4px;
 }
 .p-row-premium:hover {
-	background: rgba(0, 0, 0, 0.02);
-	border-color: rgba(0, 0, 0, 0.05);
+	background: var(--bg-tertiary);
+	border-color: var(--border-color);
 	transform: translateX(4px);
 }
+
 .p-code-box {
 	display: flex;
 	justify-content: space-between;
@@ -1093,12 +1103,14 @@ onMounted(loadData);
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
-	background: #ffffff;
+	background: var(--bg-card);
 }
+
 .panel-header {
 	padding: var(--space-xl) var(--space-xl) var(--space-md) var(--space-xl);
-	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+	border-bottom: 1px solid var(--border-color);
 }
+
 .panel-title {
 	font-size: 13px;
 	font-weight: 800;
@@ -1166,9 +1178,10 @@ onMounted(loadData);
 	background: transparent;
 }
 .user-item:hover {
-	background: rgba(0, 0, 0, 0.02);
+	background: var(--bg-tertiary);
 	transform: translateX(6px);
 }
+
 .user-item.active {
 	background: rgba(99, 102, 241, 0.08);
 	border-color: rgba(99, 102, 241, 0.2);
@@ -1229,8 +1242,9 @@ onMounted(loadData);
 	flex-direction: column;
 	overflow: hidden;
 	position: relative;
-	background: #ffffff;
+	background: var(--bg-card);
 }
+
 .no-selection {
 	flex: 1;
 	display: flex;
@@ -1286,12 +1300,9 @@ onMounted(loadData);
 	position: relative;
 	padding: var(--space-xl) var(--space-2xl);
 	overflow: hidden;
-	background: linear-gradient(
-		135deg,
-		rgba(249, 250, 251, 1),
-		rgba(243, 244, 246, 1)
-	);
-	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+	background: var(--bg-secondary);
+	border-bottom: 1px solid var(--border-color);
+
 	display: flex;
 	align-items: center;
 	min-height: 120px;
@@ -1394,18 +1405,19 @@ onMounted(loadData);
 	display: flex;
 	gap: 16px;
 	padding: 20px;
-	background: #ffffff;
-	border: 1px solid rgba(0, 0, 0, 0.08);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-xl);
 	transition: all 0.3s;
+
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
 }
 .role-block-card:hover .role-block-content {
-	background: rgba(249, 250, 251, 1);
-	border-color: rgba(99, 102, 241, 0.3);
+	background: var(--bg-tertiary);
+	border-color: var(--primary-300);
 	transform: translateY(-3px);
-	box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
 }
+
 .role-block-card.selected .role-block-content {
 	background: rgba(99, 102, 241, 0.04);
 	border-color: var(--primary-500);
@@ -1458,10 +1470,11 @@ onMounted(loadData);
 }
 .assign-actions {
 	padding: var(--space-xl) var(--space-2xl);
-	border-top: 1px solid rgba(0, 0, 0, 0.05);
-	background: rgba(249, 250, 251, 0.5);
+	border-top: 1px solid var(--border-color);
+	background: var(--bg-secondary);
 	display: flex;
 }
+
 .btn-lg {
 	padding: 14px 24px;
 	font-size: var(--font-size-base);
@@ -1482,9 +1495,10 @@ onMounted(loadData);
 	z-index: 1000;
 }
 .glass-modal-content {
-	background: #ffffff;
-	border: 1px solid rgba(0, 0, 0, 0.1);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-2xl);
+
 	width: 100%;
 	max-width: 500px;
 	position: relative;
@@ -1546,9 +1560,10 @@ onMounted(loadData);
 .premium-input {
 	width: 100%;
 	padding: 12px 16px;
-	background: #ffffff;
-	border: 1px solid rgba(0, 0, 0, 0.1);
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-lg);
+
 	color: var(--text-primary);
 	font-size: var(--font-size-base);
 	transition: all 0.3s;
@@ -1566,9 +1581,10 @@ onMounted(loadData);
 }
 .modal-footer {
 	padding: 20px 32px;
-	background: rgba(249, 250, 251, 1);
-	border-top: 1px solid rgba(0, 0, 0, 0.05);
+	background: var(--bg-secondary);
+	border-top: 1px solid var(--border-color);
 	display: flex;
+
 	justify-content: flex-end;
 	gap: 12px;
 	border-bottom-left-radius: var(--radius-2xl);
@@ -1592,8 +1608,9 @@ onMounted(loadData);
 	bottom: 32px;
 	left: 50%;
 	transform: translateX(-50%);
-	background: #ffffff;
-	border: 1px solid rgba(0, 0, 0, 0.08);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
+
 	border-radius: 16px;
 	color: var(--text-primary);
 	box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);

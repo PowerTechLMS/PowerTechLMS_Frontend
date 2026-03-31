@@ -14,7 +14,7 @@ class NotificationHub {
 			return;
 		}
 
-		const hubUrl = `${import.meta.env.VITE_API_URL || ""}/hubs/notifications`;
+		const hubUrl = `${import.meta.env.VITE_API_URL || "http://localhost:5100"}/hubs/notifications`;
 
 		this.connection = new HubConnectionBuilder()
 			.withUrl(hubUrl, {
