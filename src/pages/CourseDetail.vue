@@ -58,15 +58,17 @@
 						</div>
 
 						<div
-							v-if="course.level === 2 && !isLevel1Completed && !isEnrolled"
+							v-if="(course.level === 2 && !isLevel1Completed && !isEnrolled) || (course.level === 3 && (!isLevel1Completed || !isLevel2Completed) && !isEnrolled)"
 							class="prerequisite-warning glass mb-4"
 						>
 							<Lock :size="20" class="text-danger" />
 							<div class="warning-text">
-								<div class="fw-bold">Yêu cầu hoàn thành Cấp 1</div>
-								<div>
-									Bạn cần hoàn thành tất cả các khóa học Bắt buộc trước khi đăng
-									ký khóa học này.
+								<div class="fw-bold">Yêu cầu hoàn thành cấp bậc trước</div>
+								<div v-if="course.level === 2">
+									Bạn cần hoàn thành tất cả các khóa học Cấp 1 để đăng ký khóa học này.
+								</div>
+								<div v-else-if="course.level === 3">
+									Bạn cần hoàn thành tất cả các khóa học Cấp 1 và Cấp 2 để đăng ký khóa học này.
 								</div>
 							</div>
 						</div>
@@ -110,7 +112,7 @@
 								<template v-else-if="enrolling">
 									<Loader2 :size="18" class="spin" /> Đang ghi danh...
 								</template>
-								<template v-else-if="course.level === 2 && !isLevel1Completed">
+								<template v-else-if="(course.level === 2 && !isLevel1Completed) || (course.level === 3 && (!isLevel1Completed || !isLevel2Completed))">
 									<Lock :size="18" /> Chưa đủ điều kiện
 								</template>
 								<template v-else>
@@ -417,7 +419,7 @@
 													<Loader2 :size="20" class="spin" /> ĐANG XỬ LÝ...
 												</template>
 												<template
-													v-else-if="course.level === 2 && !isLevel1Completed"
+													v-else-if="(course.level === 2 && !isLevel1Completed) || (course.level === 3 && (!isLevel1Completed || !isLevel2Completed))"
 												>
 													<Lock :size="20" /> CHƯA ĐỦ ĐIỀU KIỆN
 												</template>
@@ -582,6 +584,21 @@ const toast = ref("");
 let toastTimer = null;
 
 const isLevel1Completed = ref(false);
+const isLevel2Completed = ref(false);
+
+async function checkPrerequisites() {
+	if (!course.value) return;
+	try {
+		const { data: enrollments } = await enrollmentAPI.getMy();
+		const { data: allCourses } = await courseAPI.getAll({ pageSize: 1000 });
+		const level1Ids = allCourses.items.filter(c => c.level === 1).map(c => c.id);
+		const level2Ids = allCourses.items.filter(c => c.level === 2).map(c => c.id);
+		const doneIds = enrollments.filter(e => e.status === 'Completed' || e.status === 'Finished' || e.progressPercent >= 100).map(e => e.courseId);
+		
+		isLevel1Completed.value = level1Ids.length === 0 || level1Ids.every(id => doneIds.includes(id));
+		isLevel2Completed.value = level2Ids.length === 0 || level2Ids.every(id => doneIds.includes(id));
+	} catch {}
+}
 
 function showToast(msg) {
 	clearTimeout(toastTimer);
@@ -676,9 +693,11 @@ function startLearning() {
 }
 
 async function handleEnroll() {
-	if (course.value.level === 2 && !isLevel1Completed.value) {
+	const isLocked = (course.value.level === 2 && !isLevel1Completed.value) || 
+	                 (course.value.level === 3 && (!isLevel1Completed.value || !isLevel2Completed.value));
+	if (isLocked) {
 		showToast(
-			"Bạn phải hoàn thành tất cả các khóa học Bắt buộc (Cấp 1) trước.",
+			"Bạn phải hoàn thành tất cả các khóa học cấp bậc trước khi đăng ký.",
 		);
 		return;
 	}
@@ -693,7 +712,6 @@ async function handleEnroll() {
 		} else {
 			isEnrolled.value = true;
 			showToast("Chúc mừng! Bạn đã ghi danh thành khóa học thành công.");
-			setTimeout(() => startLearning(), 1000);
 		}
 	} catch {}
 }
@@ -735,9 +753,7 @@ onMounted(async () => {
 			isEnrolled.value = false;
 		}
 
-		if (course.value.level === 2) {
-			await checkLevel1Completion();
-		}
+		await checkPrerequisites();
 	} catch {
 	} finally {
 		loading.value = false;

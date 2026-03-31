@@ -535,6 +535,18 @@ const getImageUrl = (url: string) => {
 	return `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${url.startsWith("/") ? "" : "/"}${url}`;
 };
 
+const getEmbedUrl = (url: string) => {
+	if (!url) return "";
+	if (url.includes("youtube.com") || url.includes("youtu.be")) {
+		const ytMatch = url.match(
+			/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/,
+		);
+		return ytMatch ? `https://www.youtube.com/embed/${ytMatch[1]}` : url;
+	}
+	if (url.startsWith("http")) return url;
+	return `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${url.startsWith("/") ? "" : "/"}${url}`;
+};
+
 const totalLessonsCount = computed(() => {
 	return syllabus.value.reduce((acc, mod) => acc + mod.lessons.length, 0);
 });
@@ -552,6 +564,13 @@ const totalDurationFormatted = computed(() => {
 });
 
 const previewData = ref({ title: "", videoUrl: "", isYoutube: false });
+
+const openPreview = (lesson: Lesson) => {
+	previewData.value.title = lesson.title;
+	previewData.value.videoUrl = getEmbedUrl(lesson.videoUrl);
+	previewData.value.isYoutube =
+		lesson.videoUrl.includes("youtube") || lesson.videoUrl.includes("youtu.be");
+};
 
 onMounted(async () => {
 	isLoading.value = true;
@@ -608,7 +627,6 @@ onMounted(async () => {
 			} catch {}
 		}
 
-		// Kiểm tra trạng thái ghi danh
 		try {
 			const enrollRes = await enrollmentAPI.getByCourse(courseId);
 			if (enrollRes.data) {
@@ -649,7 +667,6 @@ const enrollCourse = async () => {
 		await enrollmentAPI.enroll(courseId);
 		isEnrolled.value = true;
 		toast.success("Đăng ký khóa học thành công!");
-		// Sau khi đăng ký xong mới cho vào học
 		router.push(`/learn/${courseId}`);
 	} catch (error: any) {
 		toast.error(error.response?.data?.message || "Đã xảy ra lỗi khi đăng ký.");

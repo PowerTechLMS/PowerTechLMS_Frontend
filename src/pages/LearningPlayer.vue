@@ -1383,7 +1383,12 @@ const isCurrentLessonQuizPassed = computed(() => {
 });
 
 const canCompleteManual = computed(() => {
-	// Bỏ giới hạn cứng về thời gian để tăng UX, người dùng có thể chủ động xác nhận
+	if (lesson.value?.type === "Video") {
+		if (!isVideoWatchedEnough.value && !isCompleted.value) return false;
+	} else if (lesson.value?.type === "Text") {
+		if (!isReadingTimeFinished.value && !isCompleted.value) return false;
+	}
+
 	if (lesson.value?.hasQuiz && !isCurrentLessonQuizPassed.value) return false;
 	return true;
 });
@@ -1395,6 +1400,23 @@ const isAdmin = computed(
 
 const completeBtnMessage = computed(() => {
 	if (savingProgress.value) return "Đang lưu tiến độ...";
+
+	if (
+		lesson.value?.type === "Video" &&
+		!isVideoWatchedEnough.value &&
+		!isCompleted.value
+	) {
+		return `🔒 Hãy xem hết video để hoàn thành (${videoWatchPercent.value}%)`;
+	}
+
+	if (
+		lesson.value?.type === "Text" &&
+		!isReadingTimeFinished.value &&
+		!isCompleted.value
+	) {
+		return `🔒 Hãy đọc kỹ tài liệu (${readingTimeLeft.value}s)`;
+	}
+
 	if (lesson.value?.hasQuiz && !isCurrentLessonQuizPassed.value) {
 		const passScore = lesson.value?.quiz?.passScore || 5;
 		return `🔒 Yêu cầu: Đạt ≥ ${passScore} điểm bài tập để hoàn thành`;
@@ -1491,7 +1513,6 @@ watch(
 					readingTimer = null;
 					if (!isCompleted.value) {
 						if (lesson.value?.hasQuiz) {
-							// For text lessons with quiz, just mark effort but stay on page
 							progressAPI.complete(lesson.value.id, false);
 							activeTab.value = "quiz";
 							toast.info("Đã xem xong tài liệu, hãy làm bài tập củng cố!");
@@ -1535,7 +1556,9 @@ watch(
 
 async function loadData() {
 	const { courseId, lessonId } = route.params;
-	loading.value = true;
+	if (!course.value || String(course.value.id) !== String(courseId)) {
+		loading.value = true;
+	}
 	error.value = null;
 
 	try {
@@ -1544,7 +1567,6 @@ async function loadData() {
 		try {
 			progressRes = await progressAPI.getLessonProgresses(courseId);
 		} catch {
-			// Nếu chưa ghi danh hoặc lỗi, khởi tạo mảng tiến độ trống
 			progressRes = { data: [] };
 		}
 
@@ -1801,14 +1823,15 @@ function onSeeked(e) {
 	const video = e.target;
 	isSeeking.value = false;
 
-	// Cho phép Admin/Instructor hoặc bài học đã hoàn thành được tự do tua
 	if (isAdmin.value || isCompleted.value) {
 		lastCurrentTime.value = video.currentTime;
+		if (video.currentTime > maxWatchedTime.value) {
+			maxWatchedTime.value = video.currentTime;
+		}
 		return;
 	}
 
-	// Nếu tua tiến về phía trước hơn 2 giây so với mốc đã xem lớn nhất
-	if (video.currentTime > maxWatchedTime.value + 2) {
+	if (video.currentTime > maxWatchedTime.value + 1) {
 		const now = Date.now();
 		if (now - lastSeekWarnTime > 3000) {
 			toast.warning(
@@ -1816,14 +1839,9 @@ function onSeeked(e) {
 			);
 			lastSeekWarnTime = now;
 		}
-		// Reset về vị trí trước khi tua (hoặc vị trí đã xem xa nhất)
-		video.currentTime = Math.min(preSeekTime.value, maxWatchedTime.value);
-		lastCurrentTime.value = video.currentTime;
-	} else if (video.currentTime < preSeekTime.value) {
-		// Tua lùi được phép
-		lastCurrentTime.value = video.currentTime;
+		video.currentTime = maxWatchedTime.value;
+		lastCurrentTime.value = maxWatchedTime.value;
 	} else {
-		// Tua tiến trong phạm vi đã xem
 		lastCurrentTime.value = video.currentTime;
 	}
 }
@@ -1836,21 +1854,28 @@ function onTimeUpdate(e) {
 	if (!videoDurationRef.value && video.duration)
 		videoDurationRef.value = video.duration;
 
-	if (!isSeeking.value && Math.abs(current - lastCurrentTime.value) < 3) {
+	if (!isSeeking.value) {
+		if (current > maxWatchedTime.value) {
+			if (current - maxWatchedTime.value < 2) {
+				maxWatchedTime.value = current;
+			} else if (!isAdmin.value && !isCompleted.value) {
+				video.currentTime = maxWatchedTime.value;
+			}
+		}
 		lastCurrentTime.value = current;
-	}
-	if (isSeeking.value) return;
-	if (current > maxWatchedTime.value && current - maxWatchedTime.value < 3) {
-		maxWatchedTime.value = current;
 	}
 
 	if (
 		!isCompleted.value &&
-		video.duration > 0 &&
-		current >= video.duration * 0.9
+		videoDurationRef.value > 0 &&
+		maxWatchedTime.value >= videoDurationRef.value * 0.95
 	) {
-		isVideoWatchedEnough.value = true;
-		if (!savingProgress.value) completeLesson();
+		if (!isVideoWatchedEnough.value) {
+			isVideoWatchedEnough.value = true;
+			if (!savingProgress.value && !lesson.value?.hasQuiz) {
+				completeLesson();
+			}
+		}
 	}
 }
 

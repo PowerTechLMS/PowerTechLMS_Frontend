@@ -132,7 +132,7 @@
 								authStore.isAdmin || authStore.hasPermission('group.manage')
 							">
 								<RouterLink to="/admin/coursegroup" class="admin-nav-item" :class="{
-									active: $route.path.startsWith('/admin/learning-paths'),
+									active: $route.path.startsWith('/admin/coursegroup'),
 								}" @click="mobileMenuOpen = false">
 									<span class="admin-item-icon icon-training">
 										<Route :size="15" />

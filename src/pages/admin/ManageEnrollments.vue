@@ -27,7 +27,6 @@ const searchQuery = ref("");
 const statusFilter = ref("all");
 const viewMode = ref<"table" | "grid">("table");
 
-// Manual enrollment form
 const isModalOpen = ref(false);
 const submitting = ref(false);
 const form = ref({
@@ -35,7 +34,6 @@ const form = ref({
 	courseId: "",
 });
 
-// Rejection modal
 const isRejectModalOpen = ref(false);
 const rejectReason = ref("");
 const currentRejectId = ref<number | null>(null);
@@ -53,6 +51,8 @@ const fetchData = async () => {
 		enrollments.value = enrollRes.data.items || enrollRes.data || [];
 		courses.value = courseRes.data.items || courseRes.data || [];
 		users.value = userRes.data.items || userRes.data || [];
+	} catch {
+		toast.error("Không thể tải dữ liệu ghi danh.");
 	} finally {
 		loading.value = false;
 	}
@@ -62,7 +62,6 @@ let pollInterval: any = null;
 
 onMounted(async () => {
 	await fetchData();
-	// Auto-refresh every 30 seconds to catch new enrollments from learners
 	pollInterval = setInterval(fetchData, 30000);
 });
 

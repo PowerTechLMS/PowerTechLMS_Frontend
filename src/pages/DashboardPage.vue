@@ -326,10 +326,12 @@ onMounted(async () => {
 									:style="`background: linear-gradient(135deg, ${c.thumbColor}, ${c.thumbColor2})`"
 								>
 									<span
+										v-if="c.level !== 3"
 										class="course-badge"
 										:class="c.tag === 'Bắt buộc' ? 'bg-purple' : 'bg-blue'"
 										>{{ c.tag }}</span
 									>
+									<span v-else class="course-badge bg-blue">Tự chọn</span>
 									<GraduationCap :size="32" color="white" />
 								</div>
 								<div class="course-info">
@@ -1267,7 +1269,11 @@ onMounted(async () => {
 }
 
 .bg-purple {
-	background: #8b5cf6;
+	background: #ef4444;
+	text-transform: uppercase;
+	font-size: 9px;
+	letter-spacing: 0.5px;
+	box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
 }
 .bg-blue {
 	background: #3b82f6;

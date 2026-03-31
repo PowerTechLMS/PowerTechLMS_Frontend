@@ -10,11 +10,14 @@ import {
 	Download,
 	LayoutGrid,
 	List,
+	X,
 	FileCode,
 	CheckCircle2,
 	Users,
 	Bot,
 	Send,
+	FileSpreadsheet,
+	FileType,
 } from "lucide-vue-next";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
@@ -28,6 +31,7 @@ const loadingVersions = ref(false);
 
 const searchQuery = ref("");
 const selectedTag = ref("");
+const selectedFileType = ref("all");
 const viewMode = ref<"grid" | "list">("grid");
 
 const currentPage = ref(1);
@@ -97,7 +101,23 @@ const fetchDocs = async () => {
 		}
 
 		const { data } = await documentAPI.getAll(params);
-		documents.value = data.items || [];
+		let docs = data.items || [];
+
+		if (selectedFileType.value !== "all") {
+			docs = docs.filter((d: any) => {
+				const ext = d.fileName?.split(".").pop()?.toLowerCase() || "";
+				if (selectedFileType.value === "pdf") return ext === "pdf";
+				if (selectedFileType.value === "word")
+					return ["doc", "docx"].includes(ext);
+				if (selectedFileType.value === "excel")
+					return ["xls", "xlsx"].includes(ext);
+				if (selectedFileType.value === "powerpoint")
+					return ["ppt", "pptx"].includes(ext);
+				return true;
+			});
+		}
+
+		documents.value = docs;
 		totalRecords.value = data.totalCount || 0;
 	} catch {
 		toast.error("Không thể tải danh sách tài liệu.");
@@ -130,29 +150,16 @@ const filterByTag = (tag: string) => {
 const clearFilters = () => {
 	searchQuery.value = "";
 	selectedTag.value = "";
+	selectedFileType.value = "all";
 	currentPage.value = 1;
 	fetchDocs();
 };
 
-/*
- * const stats = computed(() => {
- * 	const total = documents.value.length;
- * 	const pdf = documents.value.filter((d) =>
- * 		d.fileName?.toLowerCase().endsWith(".pdf"),
- * 	).length;
- * 	const docx = documents.value.filter(
- * 		(d) =>
- * 			d.fileName?.toLowerCase().endsWith(".doc") ||
- * 			d.fileName?.toLowerCase().endsWith(".docx"),
- * 	).length;
- * 	const xlsx = documents.value.filter(
- * 		(d) =>
- * 			d.fileName?.toLowerCase().endsWith(".xls") ||
- * 			d.fileName?.toLowerCase().endsWith(".xlsx"),
- * 	).length;
- * 	return { total, pdf, docx, xlsx };
- * });
- */
+const filterByFileType = (type: string) => {
+	selectedFileType.value = type;
+	currentPage.value = 1;
+	fetchDocs();
+};
 
 const viewDocument = (docId: number) => {
 	window.open(documentAPI.getDownloadUrl(docId), "_blank");
@@ -184,16 +191,39 @@ const downloadVersion = (versionId: number) => {
 const getFileIcon = (fileName: string) => {
 	const ext = fileName?.split(".").pop()?.toLowerCase() || "";
 	if (ext === "pdf")
-		return { icon: FileText, color: "#ef4444", bg: "rgba(239, 68, 68, 0.1)" };
+		return {
+			icon: FileType,
+			color: "#ef4444",
+			bg: "rgba(239, 68, 68, 0.1)",
+			label: "PDF",
+		};
 	if (["docx", "doc"].includes(ext))
-		return { icon: FileText, color: "#3b82f6", bg: "rgba(59, 130, 246, 0.1)" };
+		return {
+			icon: FileType,
+			color: "#3b82f6",
+			bg: "rgba(59, 130, 246, 0.1)",
+			label: "WORD",
+		};
 	if (["xlsx", "xls"].includes(ext))
 		return {
-			icon: FilePieChart,
+			icon: FileSpreadsheet,
 			color: "#22c55e",
 			bg: "rgba(34, 197, 94, 0.1)",
+			label: "EXCEL",
 		};
-	return { icon: FileCode, color: "#64748b", bg: "rgba(100, 116, 139, 0.1)" };
+	if (["pptx", "ppt"].includes(ext))
+		return {
+			icon: FilePieChart,
+			color: "#f59e0b",
+			bg: "rgba(245, 158, 11, 0.1)",
+			label: "PPT",
+		};
+	return {
+		icon: FileCode,
+		color: "#64748b",
+		bg: "rgba(100, 116, 139, 0.1)",
+		label: "FILE",
+	};
 };
 
 const showChat = ref(false);
@@ -306,54 +336,108 @@ const renderMarkdown = (text: string) => {
 					type="text"
 					v-model="searchQuery"
 					@input="handleSearchInput"
-					placeholder="Tìm kiếm tên tài liệu, từ khóa..."
+					placeholder="Tìm tệp tin, từ khóa kỹ năng..."
 				/>
 			</div>
 
-			<div v-if="selectedTag" class="active-filter-chip">
-				<span class="fs-13 text-tertiary me-2">Đang lọc theo thẻ:</span>
-				<span
-					class="badge bg-primary d-inline-flex align-items-center px-3 py-2 rounded-pill"
+			<div class="file-type-tabs glass">
+				<button
+					class="type-tab"
+					:class="{ active: selectedFileType === 'all' }"
+					@click="filterByFileType('all')"
 				>
-					#{{ selectedTag }}
-					<button
-						@click="clearFilters"
-						class="btn-close btn-close-white ms-2"
-						style="font-size: 0.5rem"
-					></button>
-				</span>
+					Tất cả
+				</button>
+				<button
+					class="type-tab"
+					:class="{ active: selectedFileType === 'pdf' }"
+					@click="filterByFileType('pdf')"
+				>
+					<span class="dot pdf"></span> PDF
+				</button>
+				<button
+					class="type-tab"
+					:class="{ active: selectedFileType === 'word' }"
+					@click="filterByFileType('word')"
+				>
+					<span class="dot word"></span> Word
+				</button>
+				<button
+					class="type-tab"
+					:class="{ active: selectedFileType === 'excel' }"
+					@click="filterByFileType('excel')"
+				>
+					<span class="dot excel"></span> Excel
+				</button>
 			</div>
+		</div>
+
+		<div
+			class="active-filters-row"
+			v-if="selectedTag || selectedFileType !== 'all'"
+		>
+			<span class="fs-12 text-tertiary fw-bold text-uppercase me-2"
+				>Bộ lọc đang bật:</span
+			>
+			<span v-if="selectedTag" class="filter-chip">
+				<FileType :size="12" /> #{{ selectedTag }}
+				<X
+					:size="14"
+					class="ms-1 cursor-pointer"
+					@click="
+						selectedTag = '';
+						fetchDocs();
+					"
+				/>
+			</span>
+			<span v-if="selectedFileType !== 'all'" class="filter-chip info">
+				<FileType :size="12" /> {{ selectedFileType.toUpperCase() }}
+				<X
+					:size="14"
+					class="ms-1 cursor-pointer"
+					@click="
+						selectedFileType = 'all';
+						fetchDocs();
+					"
+				/>
+			</span>
+			<button class="btn-clear-all" @click="clearFilters">Xóa tất cả</button>
 		</div>
 
 		<div class="explorer-layout animate-slide-up" style="animation-delay: 0.1s">
 			<aside class="explorer-sidebar desktop-only">
-				<div
-					class="sidebar-section glass mb-4"
-					v-for="(group, key) in predefinedTags"
-					:key="key"
-				>
-					<h3 class="section-label mb-3">
-						<component :is="group.icon" :size="14" /> {{ group.label }}
-					</h3>
-					<ul class="filter-nav tags-list">
-						<li
-							v-for="tag in group.items"
-							:key="tag"
-							:class="{ active: selectedTag === tag }"
-							@click="filterByTag(tag)"
-						>
-							<div class="d-flex align-items-center w-100">
-								<span class="tag-hash">#</span>
-								<span class="tag-name">{{ tag.replace(/-/g, " ") }}</span>
-							</div>
-						</li>
-					</ul>
+				<div class="sidebar-category-card glass">
+					<div
+						class="category-group"
+						v-for="(group, key) in predefinedTags"
+						:key="key"
+					>
+						<div class="category-header">
+							<component :is="group.icon" :size="16" />
+							<span>{{ group.label }}</span>
+						</div>
+						<div class="category-items">
+							<button
+								v-for="tag in group.items"
+								:key="tag"
+								class="category-link"
+								:class="{ active: selectedTag === tag }"
+								@click="filterByTag(tag)"
+							>
+								{{ tag.replace(/-/g, " ") }}
+							</button>
+						</div>
+					</div>
 				</div>
 
-				<div class="info-box-mini glass mt-4">
-					<h4 class="info-title"><Clock :size="16" /> Cập nhật mới</h4>
-					<p>
-						Thư viện được phân quyền tự động dựa trên vị trí công việc của bạn.
+				<div class="version-info-card glass mt-4">
+					<div class="d-flex align-items-center gap-2 mb-2 text-primary">
+						<Clock :size="16" />
+						<span class="fw-bold fs-13">Quy định tải về</span>
+					</div>
+					<p class="fs-12 text-secondary mb-0">
+						Tất cả tài liệu thuộc bản quyền nội bộ. Hệ thống tự động ghi lại
+						lịch sử tải xuống của từng nhân sự.
 					</p>
 				</div>
 			</aside>
@@ -382,7 +466,15 @@ const renderMarkdown = (text: string) => {
 							>
 								<component :is="getFileIcon(doc.fileName).icon" :size="24" />
 							</div>
-							<div class="doc-badge">v{{ doc.currentVersionNumber }}.0</div>
+							<div class="d-flex flex-column align-items-end gap-1">
+								<div class="doc-badge">v{{ doc.currentVersionNumber }}.0</div>
+								<div
+									class="format-badge"
+									:style="{ backgroundColor: getFileIcon(doc.fileName).color }"
+								>
+									{{ getFileIcon(doc.fileName).label }}
+								</div>
+							</div>
 						</div>
 
 						<div class="doc-card-body">
@@ -796,6 +888,171 @@ const renderMarkdown = (text: string) => {
 .tag-hash {
 	opacity: 0.5;
 	margin-right: 6px;
+}
+
+/* Redesigned File Type Tabs (Horizontal) */
+.file-type-tabs {
+	display: flex;
+	padding: 6px;
+	gap: 6px;
+	border-radius: var(--radius-lg);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
+}
+.type-tab {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 18px;
+	border-radius: 10px;
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--text-secondary);
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.type-tab:hover {
+	background: var(--bg-secondary);
+	color: var(--text-primary);
+}
+.type-tab.active {
+	background: var(--primary-500);
+	color: white;
+	box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+}
+.type-tab.active .dot {
+	border: 1px solid white;
+}
+
+.active-filters-row {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-bottom: 20px;
+	padding: 0 4px;
+}
+.filter-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 14px;
+	background: rgba(99, 102, 241, 0.08);
+	border: 1px solid rgba(99, 102, 241, 0.15);
+	border-radius: var(--radius-full);
+	color: var(--primary-700);
+	font-size: 13px;
+	font-weight: 700;
+}
+.filter-chip.info {
+	background: rgba(14, 165, 233, 0.08);
+	border-color: rgba(14, 165, 233, 0.15);
+	color: var(--info-700);
+}
+.btn-clear-all {
+	background: transparent;
+	border: none;
+	color: var(--text-tertiary);
+	font-size: 12px;
+	font-weight: 700;
+	text-decoration: underline;
+	cursor: pointer;
+	padding: 4px 8px;
+}
+
+/* Sidebar Category Card */
+.sidebar-category-card {
+	padding: 0;
+	overflow: hidden;
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
+	border-radius: 20px;
+}
+.category-group {
+	border-bottom: 1px solid var(--border-color);
+}
+.category-group:last-child {
+	border-bottom: none;
+}
+.category-header {
+	padding: 16px 20px;
+	background: var(--bg-secondary);
+	font-size: 12px;
+	font-weight: 800;
+	color: var(--text-tertiary);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	border-bottom: 1px solid var(--border-color);
+}
+.category-items {
+	padding: 8px;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+.category-link {
+	width: 100%;
+	text-align: left;
+	padding: 10px 14px;
+	border-radius: 10px;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--text-secondary);
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+.category-link:hover {
+	background: var(--bg-secondary);
+	color: var(--primary-600);
+	padding-left: 18px;
+}
+.category-link.active {
+	background: rgba(99, 102, 241, 0.05);
+	color: var(--primary-600);
+	font-weight: 700;
+}
+
+.version-info-card {
+	padding: 20px;
+	border-radius: 20px;
+	border: 1px solid var(--border-color);
+	background: linear-gradient(
+		135deg,
+		var(--bg-card) 0%,
+		var(--bg-secondary) 100%
+	);
+}
+
+.dot {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+}
+.dot.pdf {
+	background: #ef4444;
+}
+.dot.word {
+	background: #3b82f6;
+}
+.dot.excel {
+	background: #22c55e;
+}
+
+.format-badge {
+	padding: 2px 8px;
+	border-radius: 6px;
+	font-size: 9px;
+	font-weight: 800;
+	color: white;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
 }
 
 .info-box-mini {

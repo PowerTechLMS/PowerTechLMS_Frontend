@@ -55,11 +55,12 @@
 					class="featured-image"
 					:style="
 						featuredEnrollment.coverImageUrl
-							? { backgroundImage: `url(${getFullMediaUrl(featuredEnrollment.coverImageUrl)})` }
+							? {
+									backgroundImage: `url(${getFullMediaUrl(featuredEnrollment.coverImageUrl)})`,
+								}
 							: { background: 'var(--gradient-card)' }
 					"
 				>
-
 					<div class="featured-overlay">
 						<span class="badge-glass primary fw-bold shadow-sm">
 							<Play :size="12" class="me-1" /> Đang học dở
@@ -70,9 +71,23 @@
 					<div class="featured-meta">
 						<span
 							class="badge-glass"
-							:class="featuredEnrollment.isMandatory ? 'danger' : 'primary'"
+							:class="
+								(featuredEnrollment.courseLevel || featuredEnrollment.level) ===
+								3
+									? 'primary'
+									: featuredEnrollment.isMandatory
+										? 'danger'
+										: 'primary'
+							"
 						>
-							{{ featuredEnrollment.isMandatory ? "Bắt buộc" : "Tự chọn" }}
+							{{
+								(featuredEnrollment.courseLevel || featuredEnrollment.level) ===
+								3
+									? "Tự chọn"
+									: featuredEnrollment.isMandatory
+										? "Bắt buộc"
+										: "Tự chọn"
+							}}
 						</span>
 					</div>
 					<h3 class="featured-title title-gradient">
@@ -145,18 +160,26 @@
 					v-for="(e, index) in filteredEnrollments"
 					:key="e.id"
 					class="enrollment-row glass-hover shadow-sm"
+					:class="{ 'is-locked': e.isLocked }"
 					:style="{ '--delay': index * 0.05 + 's' }"
-					@click="$router.push(`/courses/${e.courseId}`)"
+					@click="e.isLocked ? null : $router.push(`/courses/${e.courseId}`)"
 				>
+					<div v-if="e.isLocked" class="lock-overlay">
+						<span class="lock-message">
+							<Lock :size="14" class="me-1" /> {{ e.lockReason }}
+						</span>
+					</div>
 					<div class="row-icon">
 						<div
 							class="icon-box-soft"
 							:class="{
 								'is-completed': Math.round(e.progressPercent) >= 100,
+								'is-locked-icon': e.isLocked,
 							}"
 						>
+							<Lock v-if="e.isLocked" :size="22" />
 							<CheckCircle
-								v-if="Math.round(e.progressPercent) >= 100"
+								v-else-if="Math.round(e.progressPercent) >= 100"
 								:size="22"
 							/>
 							<BookMarked v-else :size="22" />
@@ -168,17 +191,34 @@
 						</h4>
 						<div class="course-meta-small">
 							<span
-								class="badge-glass"
-								:class="e.isMandatory ? 'danger' : 'primary'"
-								>{{ e.isMandatory ? "Bắt buộc" : "Tự chọn" }}</span
+								:class="
+									(e.courseLevel || e.level) === 3
+										? 'primary'
+										: e.isMandatory
+											? 'danger'
+											: 'primary'
+								"
+								>{{
+									(e.courseLevel || e.level) === 3
+										? "Tự chọn"
+										: e.isMandatory
+											? "Bắt buộc"
+											: "Tự chọn"
+								}}</span
 							>
-							<span v-if="e.courseLevel === 1" class="badge-glass warning"
+							<span
+								v-if="(e.courseLevel || e.level) === 1"
+								class="badge-glass warning"
 								>Cấp 1: Người mới</span
 							>
-							<span v-else-if="e.courseLevel === 2" class="badge-glass indigo"
+							<span
+								v-else-if="(e.courseLevel || e.level) === 2"
+								class="badge-glass indigo"
 								>Cấp 2: Chuyên ngành</span
 							>
-							<span v-else-if="e.courseLevel === 3" class="badge-glass success"
+							<span
+								v-else-if="(e.courseLevel || e.level) === 3"
+								class="badge-glass success"
 								>Cấp 3: Tự chọn</span
 							>
 							<span v-if="e.deadline" class="deadline-text fw-bold"
@@ -191,7 +231,9 @@
 						<div class="progress-group">
 							<span
 								class="percent-label"
-								:class="{ 'text-success': Math.round(e.progressPercent) >= 100 }"
+								:class="{
+									'text-success': Math.round(e.progressPercent) >= 100,
+								}"
 								>{{ Math.round(e.progressPercent || 0) }}%</span
 							>
 							<div class="progress-mini">
@@ -206,8 +248,9 @@
 						</div>
 					</div>
 					<div class="row-action">
-						<button class="btn-icon-soft">
-							<ChevronRight :size="20" />
+						<button class="btn-icon-soft" :disabled="e.isLocked">
+							<Lock v-if="e.isLocked" :size="18" />
+							<ChevronRight v-else :size="20" />
 						</button>
 					</div>
 				</div>
@@ -239,6 +282,7 @@ import {
 	BarChart3,
 	Play,
 	BookMarked,
+	Lock,
 } from "lucide-vue-next";
 
 const enrollments = ref([]);
@@ -301,16 +345,54 @@ const featuredEnrollment = computed(() => {
 	);
 });
 
+const level1Completed = computed(() => {
+	const level1Enrollments = enrollments.value.filter(
+		(e) => (e.courseLevel || e.level) === 1,
+	);
+	if (level1Enrollments.length === 0) return true;
+	return level1Enrollments.every((e) => Math.round(e.progressPercent) >= 100);
+});
+
+const level2Completed = computed(() => {
+	if (!level1Completed.value) return false;
+	const level2Enrollments = enrollments.value.filter(
+		(e) => (e.courseLevel || e.level) === 2,
+	);
+	if (level2Enrollments.length === 0) return true;
+	return level2Enrollments.every((e) => Math.round(e.progressPercent) >= 100);
+});
+
 const filteredEnrollments = computed(() => {
+	let list = enrollments.value;
+
 	if (activeFilter.value === "learning")
-		return enrollments.value.filter((e) => Math.round(e.progressPercent) < 100);
-	if (activeFilter.value === "completed")
-		return enrollments.value.filter(
-			(e) => Math.round(e.progressPercent) >= 100,
-		);
-	if (activeFilter.value === "mandatory")
-		return enrollments.value.filter((e) => e.isMandatory);
-	return enrollments.value;
+		list = list.filter((e) => Math.round(e.progressPercent) < 100);
+	else if (activeFilter.value === "completed")
+		list = list.filter((e) => Math.round(e.progressPercent) >= 100);
+	else if (activeFilter.value === "mandatory")
+		list = list.filter((e) => e.isMandatory);
+
+	const mappedList = list.map((e) => {
+		let isLocked = false;
+		let lockReason = "";
+		const currentLevel = e.courseLevel || e.level;
+
+		if (currentLevel === 2 && !level1Completed.value) {
+			isLocked = true;
+			lockReason = "Hoàn thành tất cả khóa học Cấp 1 để mở khóa";
+		} else if (currentLevel === 3 && !level2Completed.value) {
+			isLocked = true;
+			lockReason = "Hoàn thành tất cả khóa học Cấp 2 để mở khóa";
+		}
+
+		return { ...e, isLocked, lockReason };
+	});
+
+	return mappedList.sort((a, b) => {
+		const levelA = a.courseLevel || a.level || 0;
+		const levelB = b.courseLevel || b.level || 0;
+		return levelA - levelB;
+	});
 });
 
 function setActiveFilter(id, index) {
@@ -354,7 +436,6 @@ function getFullMediaUrl(url) {
 onUnmounted(() => {
 	window.removeEventListener("resize", updateActivePillPosition);
 });
-
 </script>
 
 <style scoped>
@@ -413,9 +494,13 @@ onUnmounted(() => {
 	border-color: rgba(245, 158, 11, 0.3);
 }
 .badge-glass.danger {
-	background: rgba(239, 68, 68, 0.15);
-	color: var(--danger-400);
-	border-color: rgba(239, 68, 68, 0.3);
+	background: #ef4444;
+	color: #fff;
+	border-color: #dc2626;
+	box-shadow: 0 2px 10px rgba(239, 68, 68, 0.4);
+	font-weight: 900;
+	text-transform: uppercase;
+	font-size: 10px;
 }
 
 .page-header-premium {
@@ -695,6 +780,50 @@ onUnmounted(() => {
 	transform: translateX(4px);
 }
 
+.enrollment-row.is-locked {
+	position: relative;
+	cursor: not-allowed;
+	opacity: 0.7;
+	filter: grayscale(0.5);
+	background: rgba(var(--bg-card-rgb), 0.5);
+}
+.enrollment-row.is-locked .badge-glass.danger {
+	opacity: 1 !important;
+	filter: grayscale(0) !important;
+	transform: scale(1.05);
+	box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+}
+.enrollment-row.is-locked:hover {
+	transform: none;
+	border-color: var(--border-color);
+}
+
+.lock-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.03);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 10;
+	border-radius: 20px;
+}
+.lock-message {
+	background: var(--bg-card);
+	padding: 6px 14px;
+	border-radius: 30px;
+	font-size: 11px;
+	font-weight: 700;
+	color: var(--text-tertiary);
+	border: 1px solid var(--border-color);
+	box-shadow: var(--shadow-sm);
+	display: flex;
+	align-items: center;
+}
+
 .icon-box-soft {
 	width: 52px;
 	height: 52px;
@@ -718,6 +847,11 @@ onUnmounted(() => {
 	);
 	border-color: rgba(34, 197, 94, 0.2);
 	color: #16a34a;
+}
+.icon-box-soft.is-locked-icon {
+	background: var(--bg-secondary);
+	border-color: var(--border-color);
+	color: var(--text-tertiary);
 }
 
 .row-main {

@@ -23,6 +23,10 @@ declare module "@/services/api" {
 	const dashboardAPI: any;
 	const notificationAPI: any;
 	const courseGroupAPI: any;
+	const lessonChatAPI: any;
+	const documentChatAPI: any;
+	const aiSuggestionAPI: any;
+	const aiAPI: any;
 	export {
 		authAPI,
 		userAPI,
@@ -43,15 +47,15 @@ declare module "@/services/api" {
 		dashboardAPI,
 		notificationAPI,
 		courseGroupAPI,
+		lessonChatAPI,
+		documentChatAPI,
+		aiSuggestionAPI,
+		aiAPI,
 	};
 }
 
 declare module "@/components/ImportQuizModal.vue" {
 	import type { DefineComponent } from "vue";
-	const component: DefineComponent<
-		Record<string, unknown>,
-		Record<string, unknown>,
-		any
-	>;
+	const component: DefineComponent<object, object, any>;
 	export default component;
 }

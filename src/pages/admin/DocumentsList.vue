@@ -47,7 +47,18 @@ const isRendering = ref(false);
 
 const searchQuery = ref("");
 const selectedFormat = ref("all");
+const selectedTag = ref("all");
 const viewMode = ref<"grid" | "list">("grid");
+
+const allTags = computed(() => {
+	const tagsSet = new Set<string>();
+	documents.value.forEach(doc => {
+		if (doc.tags) {
+			doc.tags.split(',').forEach((t: string) => tagsSet.add(t.trim()));
+		}
+	});
+	return Array.from(tagsSet).sort();
+});
 
 const fetchDocs = async () => {
 	loading.value = true;
@@ -82,16 +93,17 @@ const filteredDocs = computed(() => {
 			tags.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
 			fileName.toLowerCase().includes(searchQuery.value.toLowerCase());
 
-		if (selectedFormat.value === "all") return matchesSearch;
+		const matchesFormat = selectedFormat.value === "all" || (() => {
+			const ext = fileName.split(".").pop()?.toLowerCase();
+			if (selectedFormat.value === "pdf") return ext === "pdf";
+			if (selectedFormat.value === "word") return ["doc", "docx"].includes(ext || "");
+			if (selectedFormat.value === "excel") return ["xls", "xlsx"].includes(ext || "");
+			return true;
+		})();
 
-		const ext = fileName.split(".").pop()?.toLowerCase();
-		if (selectedFormat.value === "pdf") return matchesSearch && ext === "pdf";
-		if (selectedFormat.value === "word")
-			return matchesSearch && ["doc", "docx"].includes(ext);
-		if (selectedFormat.value === "excel")
-			return matchesSearch && ["xls", "xlsx"].includes(ext);
+		const matchesTag = selectedTag.value === "all" || tags.toLowerCase().includes(selectedTag.value.toLowerCase());
 
-		return matchesSearch;
+		return matchesSearch && matchesFormat && matchesTag;
 	});
 });
 
@@ -395,6 +407,30 @@ const getFileIcon = (fileName: string) => {
 								<BarChart3 :size="18" class="me-3 text-success" />
 								<span>Bảng tính Excel</span>
 								<span class="count-badge">{{ stats.xlsx }}</span>
+							</div>
+						</div>
+					</div>
+
+					<div class="sidebar-section-premium mb-4" v-if="allTags.length">
+						<h6 class="sidebar-label mb-3">
+							<Award :size="14" class="me-2" /> CHỦ ĐỀ TÀI LIỆU
+						</h6>
+						<div class="tags-cloud-glass">
+							<div 
+								class="tag-item-btn" 
+								:class="{ active: selectedTag === 'all' }"
+								@click="selectedTag = 'all'"
+							>
+								#Tất-cả
+							</div>
+							<div 
+								v-for="tag in allTags" 
+								:key="tag"
+								class="tag-item-btn"
+								:class="{ active: selectedTag === tag }"
+								@click="selectedTag = tag"
+							>
+								#{{ tag }}
 							</div>
 						</div>
 					</div>
@@ -1117,6 +1153,7 @@ const getFileIcon = (fileName: string) => {
 .text-truncate-2 {
 	display: -webkit-box;
 	-webkit-line-clamp: 2;
+	line-clamp: 2;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 }
@@ -1679,6 +1716,46 @@ const getFileIcon = (fileName: string) => {
 	background: var(--bg-tertiary);
 	border-color: var(--border-color);
 	color: var(--text-secondary);
+}
+
+.tags-cloud-glass {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding: 4px;
+}
+.tag-item-btn {
+	padding: 6px 12px;
+	border-radius: 10px;
+	font-size: 12px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s;
+	background: rgba(0, 0, 0, 0.04);
+	color: var(--text-secondary);
+	border: 1px solid transparent;
+}
+.tag-item-btn:hover {
+	background: rgba(99, 102, 241, 0.1);
+	color: #6366f1;
+}
+.tag-item-btn.active {
+	background: #6366f1;
+	color: white;
+	box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .tag-item-btn {
+	background: rgba(255, 255, 255, 0.05);
+	color: var(--text-tertiary);
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .tag-item-btn:hover {
+	background: rgba(99, 102, 241, 0.2);
+	color: #818cf8;
+}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .tag-item-btn.active {
+	background: #6366f1;
+	color: white;
 }
 </style>
 

@@ -186,15 +186,17 @@
 									><Play :size="11" class="me-1" />
 									{{ course.lessonCount || 0 }} bài</span
 								>
-								<span class="badge-level" :class="'level-' + (course.level || 3)">
+								<span
+									class="badge-level"
+									:class="'level-' + (course.level || 3)"
+								>
 									{{ getLevelBadgeLabel(course.level) }}
 								</span>
-
 							</div>
 							<div class="card-hover-info">
 								<div v-if="isLocked(course)" class="lock-overlay">
 									<Lock :size="32" class="mb-2" />
-									<span>Hoàn thành Cấp 1 để mở</span>
+									<span>{{ getLockMessage(course) }}</span>
 								</div>
 								<button v-else class="btn-white btn-sm">Xem chi tiết</button>
 							</div>
@@ -253,10 +255,12 @@
 									}}
 									bài học</span
 								>
-								<span class="badge-level sm" :class="'level-' + (course.level || 3)">
+								<span
+									class="badge-level sm"
+									:class="'level-' + (course.level || 3)"
+								>
 									{{ getLevelBadgeLabel(course.level) }}
 								</span>
-
 							</div>
 							<h3
 								class="list-title"
@@ -360,9 +364,9 @@ const sortBy = ref("newest");
 const activeCategory = ref(null);
 const viewMode = ref("grid");
 
-const completedLevel1Ids = ref([]);
-const level1CourseCount = ref(0);
+const completedCourseIds = ref([]);
 const allLevel1Ids = ref([]);
+const allLevel2Ids = ref([]);
 const isLoggedIn = ref(!!localStorage.getItem("token"));
 
 const categories = [
@@ -421,7 +425,6 @@ async function fetchCourses() {
 			level: 3,
 		};
 
-
 		const { data } = await courseAPI.getAll(params);
 		courses.value = data.items;
 		totalPages.value = Math.ceil(data.totalCount / 12);
@@ -444,9 +447,18 @@ async function fetchUserProgress() {
 			.filter((c) => c.level === 1)
 			.map((c) => c.id);
 
+		allLevel2Ids.value = allCourses.items
+			.filter((c) => c.level === 2)
+			.map((c) => c.id);
+
 		const { data: myEnrollments } = await enrollmentAPI.getMy();
-		completedLevel1Ids.value = myEnrollments
-			.filter((e) => e.status === "Completed" || e.status === "Finished")
+		completedCourseIds.value = myEnrollments
+			.filter(
+				(e) =>
+					e.status === "Completed" ||
+					e.status === "Finished" ||
+					e.progressPercent >= 100,
+			)
 			.map((e) => e.courseId);
 	} catch {}
 }
@@ -464,17 +476,29 @@ function getLevelBadgeLabel(level) {
 }
 
 function isLocked(course) {
-
 	if (authStore.isInstructor || authStore.isAdmin) return false;
-
-	if (course.level !== 2) return false;
+	if (course.level === 1) return false;
 	if (!isLoggedIn.value) return true;
 
-	if (allLevel1Ids.value.length === 0) return false;
+	const level1Done =
+		allLevel1Ids.value.length === 0 ||
+		allLevel1Ids.value.every((id) => completedCourseIds.value.includes(id));
+	const level2Done =
+		allLevel2Ids.value.length === 0 ||
+		allLevel2Ids.value.every((id) => completedCourseIds.value.includes(id));
 
-	return !allLevel1Ids.value.every((id) =>
-		completedLevel1Ids.value.includes(id),
-	);
+	if (course.level === 2) return !level1Done;
+	if (course.level === 3) return !level1Done || !level2Done;
+
+	return false;
+}
+
+function getLockMessage(_course) {
+	const level1Done =
+		allLevel1Ids.value.length === 0 ||
+		allLevel1Ids.value.every((id) => completedCourseIds.value.includes(id));
+	if (!level1Done) return "Cần hoàn thành Cấp 1 để mở";
+	return "Cần hoàn thành Cấp 2 để mở";
 }
 
 function debounceFetch() {
@@ -550,9 +574,12 @@ onMounted(async () => {
 	border-color: rgba(245, 158, 11, 0.3);
 }
 .badge-glass.danger {
-	background: rgba(239, 68, 68, 0.15);
-	color: #b91c1c;
-	border-color: rgba(239, 68, 68, 0.3);
+	background: #ef4444;
+	color: #ffffff;
+	border-color: #dc2626;
+	box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+	font-weight: 900;
+	text-transform: uppercase;
 }
 .badge-glass.dark {
 	background: rgba(0, 0, 0, 0.5);
@@ -1259,7 +1286,12 @@ onMounted(async () => {
 }
 .skeleton-cover {
 	height: 180px;
-	background: linear-gradient(90deg, var(--bg-tertiary), var(--border-color), var(--bg-tertiary));
+	background: linear-gradient(
+		90deg,
+		var(--bg-tertiary),
+		var(--border-color),
+		var(--bg-tertiary)
+	);
 	background-size: 200% 100%;
 	animation: shimmer 2s infinite;
 }

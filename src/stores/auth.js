@@ -72,7 +72,6 @@ export const useAuthStore = defineStore("auth", () => {
 		return codes.some((c) => hasPermission(c));
 	}
 
-	// Native Cookie Helpers
 	function setCookie(name, value, days) {
 		let expires = "";
 		if (days) {
@@ -101,11 +100,9 @@ export const useAuthStore = defineStore("auth", () => {
 	}
 
 	function initAuth() {
-		// Check Cookies first (If "Remember Me" was used)
 		let savedToken = getCookie("lms_token");
 		let savedUser = getCookie("lms_user");
 
-		// If not in Cookies, check sessionStorage (Single session)
 		if (!savedToken) {
 			savedToken = sessionStorage.getItem("lms_token");
 			savedUser = sessionStorage.getItem("lms_user");
@@ -119,7 +116,6 @@ export const useAuthStore = defineStore("auth", () => {
 		) {
 			try {
 				token.value = savedToken;
-				// Try decode if possible, or just parse
 				const decoded = savedUser.includes("%")
 					? decodeURIComponent(savedUser)
 					: savedUser;
@@ -146,12 +142,10 @@ export const useAuthStore = defineStore("auth", () => {
 		const userStr = encodeURIComponent(JSON.stringify(user.value));
 
 		if (remember) {
-			// Save in Cookie for 7 days
 			setCookie("lms_token", data.token, 7);
 			setCookie("lms_user", userStr, 7);
 			setCookie("lms_remembered_email", email, 7);
 		} else {
-			// Save in SessionStorage (Lost on tab close)
 			sessionStorage.setItem("lms_token", data.token);
 			sessionStorage.setItem("lms_user", userStr);
 			eraseCookie("lms_token");

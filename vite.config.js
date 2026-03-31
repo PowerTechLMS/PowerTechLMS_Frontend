@@ -9,10 +9,6 @@ export default defineConfig(({ mode }) => {
 		plugins: [vue()],
 		server: {
 			port: 5173,
-			host: true,
-			hmr: {
-				host: "banhcauba.com",
-			},
 			proxy: {
 				"/api": {
 					target: target,

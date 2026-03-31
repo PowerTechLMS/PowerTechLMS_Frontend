@@ -1254,6 +1254,10 @@ const renderMarkdown = (text: string) => {
 	return DOMPurify.sanitize(marked.parse(text) as string);
 };
 
+const getObjectURL = (file: File | null) => {
+	return file ? URL.createObjectURL(file) : "";
+};
+
 const generateLessonQuizAI = async (mIdx: number, lIdx: number) => {
 	const lesson = curriculum.value[mIdx].lessons[lIdx];
 
@@ -2045,36 +2049,35 @@ const submitCourse = async () => {
 			const finalPayload = {
 				title: courseQuiz.value.Title || "Đề thi cuối khóa",
 				passScore:
-					courseQuiz.value.PassScore !== undefined &&
-					courseQuiz.value.PassScore !== ""
+					courseQuiz.value.PassScore != null &&
+					(courseQuiz.value.PassScore as any) !== ""
 						? Number(courseQuiz.value.PassScore)
 						: 8,
 				questionCount:
-					courseQuiz.value.QuestionCount !== undefined &&
-					courseQuiz.value.QuestionCount !== ""
+					courseQuiz.value.QuestionCount != null &&
+					(courseQuiz.value.QuestionCount as any) !== ""
 						? Number(courseQuiz.value.QuestionCount)
 						: courseQuiz.value.questions.length,
 				timeLimitMinutes:
-					courseQuiz.value.TimeLimitMinutes !== undefined &&
-					courseQuiz.value.TimeLimitMinutes !== ""
+					courseQuiz.value.TimeLimitMinutes != null &&
+					(courseQuiz.value.TimeLimitMinutes as any) !== ""
 						? Number(courseQuiz.value.TimeLimitMinutes)
 						: null,
 				shuffleQuestions: true,
 				shuffleAnswers: true,
 				retakeWaitTimeMinutes:
-					courseQuiz.value.RetakeWaitTimeMinutes !== undefined &&
-					courseQuiz.value.RetakeWaitTimeMinutes !== ""
+					courseQuiz.value.RetakeWaitTimeMinutes != null &&
+					(courseQuiz.value.RetakeWaitTimeMinutes as any) !== ""
 						? Number(courseQuiz.value.RetakeWaitTimeMinutes)
 						: null,
 				maxRetakesPerDay:
-					courseQuiz.value.MaxRetakesPerDay !== undefined &&
-					courseQuiz.value.MaxRetakesPerDay !== ""
+					courseQuiz.value.MaxRetakesPerDay != null &&
+					(courseQuiz.value.MaxRetakesPerDay as any) !== ""
 						? Number(courseQuiz.value.MaxRetakesPerDay)
 						: null,
 			};
 
 			if (!finalId || finalId < 0) {
-				// Create even with 0 questions for the final quiz
 				const resFQuiz = await quizAPI.create(courseId as string, finalPayload);
 				finalId = resFQuiz.data.id;
 				courseQuiz.value.Id = finalId;
@@ -2121,7 +2124,9 @@ onMounted(async () => {
 	try {
 		const res = await userGroupAPI.getAll({ pageSize: 100 });
 		departments.value = res.data.items || [];
-	} catch {}
+	} catch {
+		toast.error("Không thể tải danh sách phòng ban.");
+	}
 });
 </script>
 

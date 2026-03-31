@@ -27,6 +27,14 @@ const loading = ref(true);
 const pathCourses = ref<any[]>([]);
 const allCourses = ref<any[]>([]);
 const selectedCourseToAdd = ref("");
+const selectedLevel = ref("all");
+
+const levelOptions = [
+	{ value: "all", label: "Tất cả cấp độ" },
+	{ value: "1", label: "Cấp độ 1: Người mới" },
+	{ value: "2", label: "Cấp độ 2: Phòng ban" },
+	{ value: "3", label: "Cấp độ 3: Tự chọn" },
+];
 
 const fetchData = async () => {
 	loading.value = true;
@@ -52,7 +60,13 @@ onMounted(fetchData);
 
 const availableCourses = computed(() => {
 	const existingIds = new Set(pathCourses.value.map((c) => c.id));
-	return allCourses.value.filter((c) => !existingIds.has(c.id));
+	let results = allCourses.value.filter((c) => !existingIds.has(c.id));
+
+	if (selectedLevel.value !== "all") {
+		results = results.filter((c) => String(c.level) === selectedLevel.value);
+	}
+
+	return results;
 });
 
 const updatePath = async () => {
@@ -135,41 +149,84 @@ const removeCourse = async (courseId: number, title: string) => {
 					</h2>
 				</div>
 				<div class="glass-card-body p-4">
-					<form @submit.prevent="updatePath" style="max-width: 600px">
-						<div class="form-group mb-4">
-							<label class="premium-label"
-								>Tên Lộ trình <span class="text-danger">*</span></label
-							>
-							<input
-								type="text"
-								class="glass-input w-100"
-								v-model="form.name"
-								required
-							/>
+					<div class="row g-4">
+						<div class="col-lg-7">
+							<form @submit.prevent="updatePath">
+								<div class="form-group mb-4">
+									<label class="premium-label"
+										>Tên Lộ trình <span class="text-danger">*</span></label
+									>
+									<input
+										type="text"
+										class="glass-input w-100"
+										v-model="form.name"
+										required
+									/>
+								</div>
+								<div class="form-group mb-4">
+									<label class="premium-label">Mô tả mục tiêu đào tạo</label>
+									<textarea
+										class="glass-input w-100"
+										rows="4"
+										v-model="form.description"
+									></textarea>
+								</div>
+								<div class="pt-2">
+									<button
+										type="submit"
+										class="btn btn-primary"
+										:disabled="isSubmitting"
+									>
+										<Loader2
+											v-if="isSubmitting"
+											:size="18"
+											class="spinner-icon me-2"
+										/>
+										<Save v-else :size="18" class="me-2" /> Lưu thay đổi thông tin
+									</button>
+								</div>
+							</form>
 						</div>
-						<div class="form-group mb-4">
-							<label class="premium-label">Mô tả mục tiêu đào tạo</label>
-							<textarea
-								class="glass-input w-100"
-								rows="3"
-								v-model="form.description"
-							></textarea>
+
+						<div class="col-lg-5">
+							<div class="path-stat-dashboard">
+								<div class="stat-header mb-3">
+									<h4 class="fs-14 fw-bold text-muted text-uppercase letter-spacing-1">Tóm tắt lộ trình</h4>
+								</div>
+								<div class="stat-grid">
+									<div class="stat-item">
+										<div class="stat-icon-bg primary">
+											<BookOpen :size="20" />
+										</div>
+										<div class="stat-content">
+											<div class="stat-value">{{ pathCourses.length }}</div>
+											<div class="stat-label">Khóa học thành phần</div>
+										</div>
+									</div>
+
+									<div class="stat-item">
+										<div class="stat-icon-bg success">
+											<CheckCircle :size="20" />
+										</div>
+										<div class="stat-content">
+											<div class="stat-value">Active</div>
+											<div class="stat-label">Trạng thái hệ thống</div>
+										</div>
+									</div>
+
+									<div class="stat-item">
+										<div class="stat-icon-bg warning">
+											<Layers :size="20" />
+										</div>
+										<div class="stat-content">
+											<div class="stat-value">{{ selectedLevel === 'all' ? 'Tất cả' : 'Cấp ' + selectedLevel }}</div>
+											<div class="stat-label">Cấp độ đang lọc</div>
+										</div>
+									</div>
+								</div>
+							</div>
 						</div>
-						<div class="pt-2">
-							<button
-								type="submit"
-								class="btn btn-primary"
-								:disabled="isSubmitting"
-							>
-								<Loader2
-									v-if="isSubmitting"
-									:size="18"
-									class="spinner-icon me-2"
-								/>
-								<Save v-else :size="18" class="me-2" /> Lưu thay đổi thông tin
-							</button>
-						</div>
-					</form>
+					</div>
 				</div>
 			</div>
 
@@ -182,16 +239,27 @@ const removeCourse = async (courseId: number, title: string) => {
 				</div>
 				<div class="glass-card-body p-4">
 					<div class="glass-add-box mb-4">
-						<div class="flex-grow-1">
-							<label class="premium-label text-primary mb-2"
-								>Thêm khóa học vào lộ trình này</label
-							>
-							<select class="glass-input w-100" v-model="selectedCourseToAdd">
-								<option value="">-- Chọn khóa học từ kho lưu trữ --</option>
-								<option v-for="c in availableCourses" :key="c.id" :value="c.id">
-									{{ c.title }} <span v-if="c.level === 2">(Chuyên ngành)</span>
-								</option>
-							</select>
+						<div class="flex-grow-1 d-flex gap-3 flex-wrap">
+							<div style="flex: 1; min-width: 200px;">
+								<label class="premium-label text-primary mb-2">Lọc theo cấp độ</label>
+								<select class="glass-input w-100" v-model="selectedLevel">
+									<option v-for="opt in levelOptions" :key="opt.value" :value="opt.value">
+										{{ opt.label }}
+									</option>
+								</select>
+							</div>
+
+							<div style="flex: 2; min-width: 300px;">
+								<label class="premium-label text-primary mb-2"
+									>Thêm khóa học từ cấp độ đã chọn</label
+								>
+								<select class="glass-input w-100" v-model="selectedCourseToAdd">
+									<option value="">-- Chọn khóa học từ kho lưu trữ --</option>
+									<option v-for="c in availableCourses" :key="c.id" :value="c.id">
+										{{ c.title }}
+									</option>
+								</select>
+							</div>
 						</div>
 						<button
 							class="btn btn-primary"
@@ -448,6 +516,64 @@ const removeCourse = async (courseId: number, title: string) => {
 	background: var(--bg-card);
 	border-color: var(--primary-400);
 	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+/* Path Stats Dashboard */
+.path-stat-dashboard {
+	height: 100%;
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
+	border-radius: 20px;
+	padding: 24px;
+	display: flex;
+	flex-direction: column;
+}
+.stat-grid {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+.stat-item {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 12px;
+	background: var(--bg-card);
+	border-radius: 12px;
+	border: 1px solid var(--border-color);
+	transition: all 0.3s;
+}
+.stat-item:hover {
+	transform: translateX(5px);
+	border-color: var(--primary-300);
+}
+.stat-icon-bg {
+	width: 44px;
+	height: 44px;
+	border-radius: 10px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.stat-icon-bg.primary { background: rgba(99, 102, 241, 0.1); color: var(--primary-600); }
+.stat-icon-bg.success { background: rgba(16, 185, 129, 0.1); color: var(--success-600); }
+.stat-icon-bg.warning { background: rgba(245, 158, 11, 0.1); color: var(--warning-600); }
+
+.stat-content {
+	flex: 1;
+}
+.stat-value {
+	font-size: 18px;
+	font-weight: 800;
+	color: var(--text-primary);
+	line-height: 1.2;
+}
+.stat-label {
+	font-size: 11px;
+	font-weight: 700;
+	color: var(--text-tertiary);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
 }
 
 

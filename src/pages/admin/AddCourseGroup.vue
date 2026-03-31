@@ -28,6 +28,14 @@ const allCourses = ref<any[]>([]);
 const isSubmitting = ref(false);
 const isLoadingCourses = ref(true);
 const searchQuery = ref("");
+const selectedLevel = ref("all");
+
+const levelOptions = [
+	{ value: "all", label: "Tất cả cấp độ" },
+	{ value: "1", label: "Cấp độ 1: Người mới" },
+	{ value: "2", label: "Cấp độ 2: Phòng ban" },
+	{ value: "3", label: "Cấp độ 3: Tự chọn" },
+];
 
 onMounted(async () => {
 	isLoadingCourses.value = true;
@@ -42,9 +50,20 @@ onMounted(async () => {
 });
 
 const filteredCourses = computed(() => {
-	if (!searchQuery.value) return allCourses.value;
-	const q = searchQuery.value.toLowerCase();
-	return allCourses.value.filter((c) => c.title?.toLowerCase().includes(q));
+	let results = allCourses.value;
+
+	if (searchQuery.value) {
+		const q = searchQuery.value.toLowerCase();
+		results = results.filter((c) => c.title?.toLowerCase().includes(q));
+	}
+
+	if (selectedLevel.value !== "all") {
+		results = results.filter((c) => {
+			return String(c.level) === selectedLevel.value;
+		});
+	}
+
+	return results;
 });
 
 const toggleCourse = (id: number) => {
@@ -205,18 +224,32 @@ const cancel = () => router.push("/admin/coursegroup");
 								</div>
 							</div>
 
-							<div class="glass-search inline">
-								<Search
-									:size="16"
-									class="text-tertiary"
-									style="width: 16px; height: 16px; min-width: 16px"
-								/>
-								<input
-									type="text"
-									class="search-input-premium sm"
-									placeholder="Tìm khóa học..."
-									v-model="searchQuery"
-								/>
+							<div class="d-flex align-items-center gap-2">
+								<div class="glass-search inline">
+									<Search
+										:size="16"
+										class="text-tertiary"
+										style="width: 16px; height: 16px; min-width: 16px"
+									/>
+									<input
+										type="text"
+										class="search-input-premium sm"
+										placeholder="Tìm khóa học..."
+										v-model="searchQuery"
+									/>
+								</div>
+
+								<div class="glass-select-wrapper">
+									<select v-model="selectedLevel" class="glass-select-sm">
+										<option
+											v-for="opt in levelOptions"
+											:key="opt.value"
+											:value="opt.value"
+										>
+											{{ opt.label }}
+										</option>
+									</select>
+								</div>
 							</div>
 						</div>
 
@@ -562,6 +595,32 @@ const cancel = () => router.push("/admin/coursegroup");
 	border-color: var(--primary-400);
 	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 }
+
+.glass-select-wrapper {
+	position: relative;
+	min-width: 160px;
+}
+.glass-select-sm {
+	width: 100%;
+	background: var(--bg-tertiary);
+	border: 1px solid var(--border-color);
+	border-radius: var(--radius-full);
+	padding: 8px 16px;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--text-primary);
+	outline: none;
+	cursor: pointer;
+	transition: all 0.3s;
+	appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 12px center;
+}
+.glass-select-sm:focus {
+	border-color: var(--primary-400);
+	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
 .search-input-premium.sm {
 	flex: 1;
 	border: none;
@@ -594,7 +653,6 @@ const cancel = () => router.push("/admin/coursegroup");
 	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
 }
 
-
 .glass-course-select-card:hover {
 	border-color: var(--primary-300);
 	transform: translateY(-2px);
@@ -623,7 +681,6 @@ const cancel = () => router.push("/admin/coursegroup");
 	transition: all 0.2s;
 	z-index: 5;
 }
-
 
 .glass-course-select-card.selected .card-check-circle {
 	background: var(--primary-500);
@@ -687,7 +744,6 @@ const cancel = () => router.push("/admin/coursegroup");
 	border: 1px solid var(--border-color);
 	box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.02);
 }
-
 
 .btn-cancel,
 .btn-submit {
@@ -805,8 +861,8 @@ svg {
 	}
 }
 
-:is([data-bs-theme="dark"], [data-theme="dark"]) .glass-course-select-card.selected {
+:is([data-bs-theme="dark"], [data-theme="dark"])
+	.glass-course-select-card.selected {
 	background: rgba(99, 102, 241, 0.2);
 }
 </style>
-

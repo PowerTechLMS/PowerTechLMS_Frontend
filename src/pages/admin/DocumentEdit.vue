@@ -214,9 +214,9 @@ const handleSave = async () => {
 
 		if (!form.value.isPublic) {
 			const permPayload = {
-				roleIds: selectedRoles.value || [],
+				roleIds: [],
 				groupIds: selectedGroups.value || [],
-				userIds: selectedUsers.value || [],
+				userIds: [],
 			};
 			await documentAPI.updatePermissions(docId, permPayload);
 		} else {
@@ -291,7 +291,9 @@ const handleSave = async () => {
 					<div v-show="activeTab === 'general'" class="fade-in row g-5">
 						<div class="col-lg-6">
 							<div class="form-group mb-4">
-								<label class="fw-bold fs-13 text-uppercase mb-2" style="color: var(--text-primary)"
+								<label
+									class="fw-bold fs-13 text-uppercase mb-2"
+									style="color: var(--text-primary)"
 									>Tên tài liệu <span class="text-danger">*</span></label
 								>
 								<input
@@ -303,7 +305,9 @@ const handleSave = async () => {
 							</div>
 
 							<div class="form-group mb-4">
-								<label class="fw-bold fs-13 text-uppercase mb-2" style="color: var(--text-primary)"
+								<label
+									class="fw-bold fs-13 text-uppercase mb-2"
+									style="color: var(--text-primary)"
 									>Mô tả nội dung</label
 								>
 								<textarea
@@ -313,10 +317,11 @@ const handleSave = async () => {
 								></textarea>
 							</div>
 
-
 							<div class="row g-3 mb-4">
 								<div class="col-md-6">
-									<label class="fw-bold fs-13 text-uppercase mb-2" style="color: var(--text-primary)"
+									<label
+										class="fw-bold fs-13 text-uppercase mb-2"
+										style="color: var(--text-primary)"
 										>Mở truy cập từ ngày</label
 									>
 									<input
@@ -326,7 +331,9 @@ const handleSave = async () => {
 									/>
 								</div>
 								<div class="col-md-6">
-									<label class="fw-bold fs-13 text-uppercase mb-2" style="color: var(--text-primary)"
+									<label
+										class="fw-bold fs-13 text-uppercase mb-2"
+										style="color: var(--text-primary)"
 										>Khóa vào ngày</label
 									>
 									<input
@@ -337,8 +344,10 @@ const handleSave = async () => {
 								</div>
 							</div>
 
-
-							<div class="form-group border-top pt-4" style="border-color: var(--border-color) !important">
+							<div
+								class="form-group border-top pt-4"
+								style="border-color: var(--border-color) !important"
+							>
 								<label
 									class="fw-bold fs-13 text-uppercase mb-3 text-primary d-flex align-items-center gap-2"
 								>
@@ -380,7 +389,6 @@ const handleSave = async () => {
 									}}</span>
 								</label>
 
-
 								<div v-if="selectedFile" class="mt-3">
 									<label class="fs-12 fw-bold text-tertiary mb-1"
 										>Ghi chú thay đổi ở phiên bản này:</label
@@ -395,14 +403,16 @@ const handleSave = async () => {
 							</div>
 						</div>
 
-						<div class="col-lg-6 border-start-glass" style="border-color: var(--border-color) !important">
+						<div
+							class="col-lg-6 border-start-glass"
+							style="border-color: var(--border-color) !important"
+						>
 							<label
 								class="fw-bold fs-13 text-uppercase mb-3 d-flex align-items-center gap-2"
 								style="color: var(--text-primary)"
 							>
 								<Filter :size="16" class="text-primary" /> Phân loại Thẻ (Tags)
 							</label>
-
 
 							<div class="selected-tags-box mb-3 p-3 rounded-3">
 								<div
@@ -448,7 +458,12 @@ const handleSave = async () => {
 
 							<div
 								class="tag-dictionary p-4 rounded-4 shadow-sm custom-scrollbar"
-								style="max-height: 380px; overflow-y: auto; background: var(--bg-tertiary); border: 1px solid var(--border-color);"
+								style="
+									max-height: 380px;
+									overflow-y: auto;
+									background: var(--bg-tertiary);
+									border: 1px solid var(--border-color);
+								"
 							>
 								<h6 class="fw-bold fs-12 text-tertiary mb-3 text-uppercase">
 									Thư viện thẻ hệ thống
@@ -534,81 +549,38 @@ const handleSave = async () => {
 							v-if="!form.isPublic"
 							class="permissions-container animate-fade-up"
 						>
-							<div class="row g-4">
-								<div class="col-md-4">
-									<div class="perm-box glass-card p-4 h-100">
-										<div class="d-flex align-items-center mb-3 text-primary">
-											<Building2 :size="18" class="me-2" />
-											<span class="fw-bold">Theo Phòng ban</span>
-										</div>
-										<div
-											class="custom-scrollbar"
-											style="max-height: 250px; overflow-y: auto"
-										>
-											<label
+							<div class="col-md-12">
+								<div class="perm-box glass-card p-4 h-100">
+									<div class="d-flex align-items-center mb-4 text-primary">
+										<Building2 :size="20" class="me-2" />
+										<span class="fw-bold fs-16">Phân quyền theo Phòng ban</span>
+									</div>
+									<div
+										class="custom-scrollbar"
+										style="max-height: 400px; overflow-y: auto"
+									>
+										<div class="row g-2">
+											<div
 												v-for="g in allGroups"
 												:key="g.id"
-												class="d-flex align-items-center gap-2 mb-2 p-2 rounded hover-bg"
+												class="col-md-6 col-lg-4"
 											>
-												<input
-													type="checkbox"
-													:value="g.id"
-													v-model="selectedGroups"
-												/>
-												<span class="fs-14 fw-medium">{{ g.name }}</span>
-											</label>
-										</div>
-									</div>
-								</div>
-
-								<div class="col-md-4">
-									<div class="perm-box glass-card p-4 h-100">
-										<div class="d-flex align-items-center mb-3 text-success">
-											<Briefcase :size="18" class="me-2" />
-											<span class="fw-bold">Theo Vai trò (Role)</span>
-										</div>
-										<div
-											class="custom-scrollbar"
-											style="max-height: 250px; overflow-y: auto"
-										>
-											<label
-												v-for="r in allRoles"
-												:key="r.id"
-												class="d-flex align-items-center gap-2 mb-2 p-2 rounded hover-bg"
-											>
-												<input
-													type="checkbox"
-													:value="r.id"
-													v-model="selectedRoles"
-												/>
-												<span class="fs-14 fw-medium">{{ r.name }}</span>
-											</label>
-										</div>
-									</div>
-								</div>
-
-								<div class="col-md-4">
-									<div class="perm-box glass-card p-4 h-100">
-										<div class="d-flex align-items-center mb-3 text-warning">
-											<Users :size="18" class="me-2" />
-											<span class="fw-bold">Cá nhân ngoại lệ</span>
-										</div>
-										<div
-											class="custom-scrollbar"
-											style="max-height: 250px; overflow-y: auto"
-										>
-											<label
-												v-for="u in allUsers"
-												:key="u.id"
-												class="d-flex align-items-center gap-2 mb-2 p-2 rounded hover-bg"
-											>
-												<input
-													type="checkbox"
-													:value="u.id"
-													v-model="selectedUsers"
-												/>
-												<span class="fs-14 fw-medium">{{ u.fullName }}</span>
-											</label>
+												<label
+													class="d-flex align-items-center gap-2 p-3 rounded-3 hover-bg border"
+													style="
+														border-color: var(--border-color) !important;
+														cursor: pointer;
+													"
+												>
+													<input
+														type="checkbox"
+														class="form-check-input"
+														:value="g.id"
+														v-model="selectedGroups"
+													/>
+													<span class="fs-14 fw-semibold">{{ g.name }}</span>
+												</label>
+											</div>
 										</div>
 									</div>
 								</div>
@@ -680,7 +652,6 @@ const handleSave = async () => {
 	box-shadow: var(--shadow-sm);
 }
 
-
 .tabs-glass-nav {
 	display: flex;
 	gap: 24px;
@@ -723,7 +694,6 @@ const handleSave = async () => {
 	border-color: var(--primary-400);
 	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 }
-
 
 .upload-area {
 	border: 2px dashed var(--border-color);

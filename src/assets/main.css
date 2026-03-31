@@ -1,4 +1,5 @@
 :root {
+	/* Original Indigo/Purple Palette */
 	--primary-50: #eef2ff;
 	--primary-100: #e0e7ff;
 	--primary-200: #c7d2fe;
@@ -11,7 +12,7 @@
 	--primary-900: #312e81;
 	--primary-rgb: 99, 102, 241;
 	--primary: var(--primary-500);
-
+	
 	--sidebar-bg-active: rgba(var(--primary-rgb), 0.08);
 	--sidebar-text-active: var(--primary-600);
 
@@ -36,8 +37,9 @@
 	--danger-500: #ef4444;
 	--danger-600: #dc2626;
 
+	/* Layout Variables - Default Light (Synced with Login) */
 	--bg-primary: #f4f7fb;
-	--bg-secondary: #eef3fd;
+	--bg-secondary: #eef3fd; /* Login's brand panel background */
 	--bg-tertiary: #e2e8f0;
 	--bg-card: #ffffff;
 	--bg-card-hover: rgba(255, 255, 255, 0.9);
@@ -51,16 +53,8 @@
 	--border-color: #e2e8f0;
 	--border-color-hover: #cbd5e1;
 
-	--gradient-primary: linear-gradient(
-		90deg,
-		var(--primary-600),
-		var(--primary-400)
-	);
-	--gradient-card: linear-gradient(
-		135deg,
-		rgba(var(--primary-rgb), 0.1),
-		rgba(168, 85, 247, 0.05)
-	);
+	--gradient-primary: linear-gradient(90deg, var(--primary-600), var(--primary-400));
+	--gradient-card: linear-gradient(135deg, rgba(var(--primary-rgb), 0.1), rgba(168, 85, 247, 0.05));
 	--gradient-sidebar: linear-gradient(180deg, #ffffff 0%, #f4f7fb 100%);
 
 	--shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.07);
@@ -103,6 +97,7 @@
 }
 
 [data-theme="light"] {
+	/* Light theme values are already set in :root */
 }
 
 :is([data-theme="dark"], [data-bs-theme="dark"]) {
@@ -112,14 +107,14 @@
 	--bg-card: #16182d;
 	--bg-card-hover: #1e213a;
 	--bg-glass: rgba(22, 24, 45, 0.8);
-
+	
 	--border-color: rgba(255, 255, 255, 0.08);
 	--border-color-hover: rgba(255, 255, 255, 0.15);
-
+	
 	--text-primary: #f8fafc;
 	--text-secondary: #cbd5e1;
 	--text-tertiary: #94a3b8;
-
+	
 	--gradient-sidebar: linear-gradient(180deg, #0f1021 0%, #16182d 100%);
 	--shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
 	color-scheme: dark;
@@ -151,6 +146,7 @@
 	border-color: var(--border-color) !important;
 }
 
+
 :is([data-theme="dark"], [data-bs-theme="dark"]) .tab-btn.active,
 :is([data-theme="dark"], [data-bs-theme="dark"]) .search-input,
 :is([data-theme="dark"], [data-bs-theme="dark"]) input,
@@ -160,6 +156,7 @@
 	color: var(--text-primary) !important;
 	border-color: var(--border-color) !important;
 }
+
 
 :is([data-theme="dark"], [data-bs-theme="dark"]) h1,
 :is([data-theme="dark"], [data-bs-theme="dark"]) h2,
@@ -175,6 +172,7 @@
 	-webkit-text-fill-color: var(--text-primary) !important;
 }
 
+
 :is([data-theme="dark"], [data-bs-theme="dark"]) p,
 :is([data-theme="dark"], [data-bs-theme="dark"]) span:not(.badge),
 :is([data-theme="dark"], [data-bs-theme="dark"]) .desc-text,
@@ -184,16 +182,19 @@
 	color: var(--text-secondary) !important;
 }
 
+
 :is([data-theme="dark"], [data-bs-theme="dark"]) .meta-pill-item,
 :is([data-theme="dark"], [data-bs-theme="dark"]) .card-action-bar-tri {
 	background-color: rgba(255, 255, 255, 0.03) !important;
 	border-color: var(--border-color) !important;
 }
 
+
 :is([data-theme="dark"], [data-bs-theme="dark"]) .dropdown-divider,
 :is([data-theme="dark"], [data-bs-theme="dark"]) .border-top {
 	border-color: var(--border-color) !important;
 }
+
 
 *,
 *::before,
@@ -769,11 +770,7 @@ textarea {
 .page-title-gradient,
 [data-theme="dark"] .title-gradient,
 [data-theme="dark"] .page-title-gradient {
-	background: linear-gradient(
-		90deg,
-		var(--primary-600),
-		var(--primary-400)
-	) !important;
+	background: linear-gradient(90deg, var(--primary-600), var(--primary-400)) !important;
 	background-clip: text !important;
 	-webkit-background-clip: text !important;
 	-webkit-text-fill-color: transparent !important;

@@ -14,6 +14,8 @@ import {
 	CheckCircle2,
 	Layout,
 	Shield,
+	Users,
+	User as UserIcon,
 } from "lucide-vue-next";
 import { toast } from "vue3-toastify";
 import { onMounted } from "vue";
@@ -290,26 +292,24 @@ const submitForm = async () => {
 						</div>
 
 						<div class="form-group mb-4">
-							<label class="dp-label"
-								>Vai trò hệ thống <span class="text-danger">*</span></label
-							>
+							<label class="dp-label">Vai trò hệ thống <span class="text-danger">*</span></label>
 							<div class="role-grid">
-								<div
-									class="role-card"
+								<div 
+									class="role-card" 
 									:class="{ 'active-danger': userForm.role === 'Admin' }"
 									@click="userForm.role = 'Admin'"
 								>
 									<span class="role-text">Quản trị viên</span>
 								</div>
-								<div
-									class="role-card"
+								<div 
+									class="role-card" 
 									:class="{ 'active-info': userForm.role === 'Instructor' }"
 									@click="userForm.role = 'Instructor'"
 								>
 									<span class="role-text">Giảng viên</span>
 								</div>
-								<div
-									class="role-card"
+								<div 
+									class="role-card" 
 									:class="{ 'active-primary': userForm.role === 'Employee' }"
 									@click="userForm.role = 'Employee'"
 								>
@@ -317,6 +317,8 @@ const submitForm = async () => {
 								</div>
 							</div>
 						</div>
+
+
 
 						<div class="form-group mb-4">
 							<label class="dp-label">Phòng ban / Bộ phận</label>

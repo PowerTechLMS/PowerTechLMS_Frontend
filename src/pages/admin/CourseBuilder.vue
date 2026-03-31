@@ -1522,8 +1522,12 @@ const submitCourse = async () => {
 
 const departments = ref<any[]>([]);
 onMounted(async () => {
-	const res = await userGroupAPI.getAll({ pageSize: 100 });
-	departments.value = res.data.items || [];
+	try {
+		const res = await userGroupAPI.getAll({ pageSize: 100 });
+		departments.value = res.data.items || [];
+	} catch {
+		toast.error("Không thể tải danh sách phòng ban.");
+	}
 });
 </script>
 

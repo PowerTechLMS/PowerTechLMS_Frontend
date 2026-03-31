@@ -215,7 +215,7 @@ const routes = [
 				name: "CourseGroupList",
 				component: () => import("@/pages/admin/CourseGroups.vue"),
 				meta: {
-					permissions: ["user.manage"],
+					permissions: ["group.manage"],
 					title: `Quản lý nhóm khóa học – ${APP_NAME}`,
 				},
 			},
