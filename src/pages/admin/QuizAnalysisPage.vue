@@ -426,9 +426,10 @@ const tableData = computed(() => {
 	min-height: 100vh;
 	animation: fadeIn 0.5s ease-out;
 	background: transparent;
-	color: #1e293b;
+	color: var(--text-primary);
 	font-family: "Inter", sans-serif;
 }
+
 @keyframes fadeIn {
 	from {
 		opacity: 0;
@@ -478,11 +479,14 @@ const tableData = computed(() => {
 .title-gradient {
 	font-size: 32px;
 	font-weight: 800;
-	background: linear-gradient(90deg, #1e293b, #6366f1);
+	background: linear-gradient(90deg, var(--text-primary), #6366f1);
+	background-clip: text;
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 	margin: 0;
 }
+
+
 .desc-text {
 	color: #64748b;
 	margin-top: 4px;
@@ -520,13 +524,14 @@ const tableData = computed(() => {
 }
 
 .glass-panel {
-	background: rgba(255, 255, 255, 0.85);
+	background: var(--bg-card);
 	backdrop-filter: blur(12px);
 	border-radius: 24px;
-	border: 1px solid white;
-	box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
+	box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
 	padding: 32px;
 }
+
 .select-ico-wrap {
 	position: relative;
 }
@@ -544,16 +549,17 @@ const tableData = computed(() => {
 	width: 100%;
 	padding: 14px 20px 14px 44px;
 	border-radius: 14px;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 	font-size: 14px;
 	font-weight: 600;
-	color: #1e293b;
+	color: var(--text-primary);
 	outline: none;
 	transition: 0.3s;
-	background: #f8fafc;
+	background: var(--bg-tertiary);
 	appearance: none;
 	cursor: pointer;
 }
+
 .luxe-select:focus {
 	border-color: #6366f1;
 	background: white;
@@ -586,16 +592,17 @@ const tableData = computed(() => {
 .btn-ghost-gradient {
 	padding: 8px 20px;
 	border-radius: 12px;
-	background: white;
-	border: 1px solid #e2e8f0;
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
 	text-transform: uppercase;
 	font-size: 12px;
 	display: flex;
 	align-items: center;
 	transition: 0.3s;
-	color: #4f46e5;
+	color: #818cf8;
 	cursor: pointer;
 }
+
 .btn-ghost-gradient:hover {
 	border-color: #6366f1;
 	background: #6366f1;
@@ -606,13 +613,15 @@ const tableData = computed(() => {
 
 .glass-stat-card {
 	border-radius: 24px;
-	border: 1px solid white;
-	box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
+	border: 1px solid var(--border-color);
+	background: var(--bg-card);
+	box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
 	transition: 0.4s;
 	position: relative;
 	overflow: hidden;
 	z-index: 1;
 }
+
 .glass-stat-card::before {
 	content: "";
 	position: absolute;
@@ -647,8 +656,9 @@ const tableData = computed(() => {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: #f8fafc;
+	background: var(--bg-tertiary);
 }
+
 .primary-glow .stat-icon-box {
 	background: rgba(99, 102, 241, 0.1);
 }
@@ -789,16 +799,38 @@ const tableData = computed(() => {
 	line-height: 1.5;
 }
 
-:deep(.btn-ghost-glass) {
-	padding: 6px 14px;
-	border-radius: 10px;
-	border: 1px solid #e2e8f0;
-	background: white;
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	transition: 0.3s;
-	cursor: pointer;
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) :deep(.dt-container) {
+	color: var(--text-primary) !important;
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) :deep(table.dataTable.luxe-table tbody td) {
+	background: var(--bg-secondary) !important;
+	border-color: var(--border-color) !important;
+	color: var(--text-primary) !important;
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) :deep(table.dataTable.luxe-table tbody tr:hover td) {
+	background: var(--bg-tertiary) !important;
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) :deep(.capsule-progress) {
+	background: rgba(255, 255, 255, 0.05) !important;
+	border-color: var(--border-color) !important;
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .text-dark {
+	color: var(--text-primary) !important;
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .glass-stat-card::before {
+	background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.03), transparent 70%);
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .btn-ghost-glass {
+	background: var(--bg-tertiary) !important;
+	border-color: var(--border-color) !important;
+	color: var(--text-secondary) !important;
 }
 :deep(.btn-ghost-glass:hover) {
 	background: #f8fafc;

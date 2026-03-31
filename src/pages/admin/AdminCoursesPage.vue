@@ -241,17 +241,6 @@ onMounted(() => {
 							>
 								{{ course.categoryName || "Chưa phân loại" }}
 							</div>
-							<div
-								class="status-badge mt-1"
-								:class="'level-' + course.level"
-								style="
-									background: rgba(255, 255, 255, 0.2);
-									border: 1px solid rgba(255, 255, 255, 0.4);
-									backdrop-filter: blur(4px);
-								"
-							>
-								Cấp {{ course.level || 3 }}
-							</div>
 						</div>
 
 						<button
@@ -790,5 +779,84 @@ onMounted(() => {
 	.search-glass-box {
 		width: 100%;
 	}
+}
+
+/* Dark Mode Overrides */
+[data-theme="dark"] .stat-glass-card:not(.primary):not(.success):not(.warning) {
+	background: var(--bg-secondary) !important;
+	border-color: var(--border-color) !important;
+}
+[data-theme="dark"] .filter-tabs-glass {
+	background: var(--bg-secondary) !important;
+}
+[data-theme="dark"] .tab-btn {
+	color: var(--text-secondary);
+}
+[data-theme="dark"] .tab-btn.active {
+	background: var(--bg-tertiary) !important;
+	color: var(--primary-400);
+	box-shadow: none;
+}
+[data-theme="dark"] .search-glass-box {
+	background: var(--bg-secondary) !important;
+	border-color: var(--border-color) !important;
+}
+[data-theme="dark"] .search-input {
+	background: transparent;
+	color: var(--text-primary);
+}
+[data-theme="dark"] .search-input::placeholder {
+	color: var(--text-tertiary);
+}
+[data-theme="dark"] .course-glass-card {
+	background: var(--bg-secondary) !important;
+	border-color: var(--border-color) !important;
+}
+[data-theme="dark"] .course-title-card {
+	color: var(--text-primary) !important;
+}
+[data-theme="dark"] .meta-pill-item {
+	background: var(--bg-tertiary) !important;
+}
+[data-theme="dark"] .p-label {
+	color: var(--text-tertiary) !important;
+}
+[data-theme="dark"] .p-val {
+	color: var(--text-primary) !important;
+}
+[data-theme="dark"] .i-name {
+	color: var(--text-secondary) !important;
+}
+[data-theme="dark"] .i-avatar {
+	background: var(--bg-primary) !important;
+	color: var(--text-secondary) !important;
+}
+[data-theme="dark"] .card-action-bar-tri {
+	background: var(--bg-tertiary) !important;
+	border-top-color: var(--border-color) !important;
+}
+[data-theme="dark"] .act-btn {
+	color: var(--text-secondary) !important;
+}
+[data-theme="dark"] .act-btn:hover {
+	background: var(--bg-primary) !important;
+	color: var(--primary-400) !important;
+}
+[data-theme="dark"] .empty-icon-wrap {
+	background: var(--bg-tertiary) !important;
+}
+[data-theme="dark"] .empty-glass-state h4 {
+	color: var(--text-primary) !important;
+}
+[data-theme="dark"] .footer-meta.border-top {
+	border-top-color: var(--border-color) !important;
+}
+[data-theme="dark"] .btn-card-delete {
+	background: rgba(30,30,30,0.9);
+	color: #ef4444;
+}
+[data-theme="dark"] .btn-card-delete:hover {
+	background: #ef4444;
+	color: white;
 }
 </style>

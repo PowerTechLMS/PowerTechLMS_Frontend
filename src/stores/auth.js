@@ -72,9 +72,45 @@ export const useAuthStore = defineStore("auth", () => {
 		return codes.some((c) => hasPermission(c));
 	}
 
+	// Native Cookie Helpers
+	function setCookie(name, value, days) {
+		let expires = "";
+		if (days) {
+			const date = new Date();
+			date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+			expires = "; expires=" + date.toUTCString();
+		}
+		document.cookie =
+			name + "=" + (value || "") + expires + "; path=/; SameSite=Lax";
+	}
+
+	function getCookie(name) {
+		const nameEQ = name + "=";
+		const ca = document.cookie.split(";");
+		for (let i = 0; i < ca.length; i++) {
+			let c = ca[i];
+			while (c.charAt(0) === " ") c = c.substring(1, c.length);
+			if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+		}
+		return null;
+	}
+
+	function eraseCookie(name) {
+		document.cookie =
+			name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+	}
+
 	function initAuth() {
-		const savedToken = localStorage.getItem("lms_token");
-		const savedUser = localStorage.getItem("lms_user");
+		// Check Cookies first (If "Remember Me" was used)
+		let savedToken = getCookie("lms_token");
+		let savedUser = getCookie("lms_user");
+
+		// If not in Cookies, check sessionStorage (Single session)
+		if (!savedToken) {
+			savedToken = sessionStorage.getItem("lms_token");
+			savedUser = sessionStorage.getItem("lms_user");
+		}
+
 		if (
 			savedToken &&
 			savedUser &&
@@ -83,14 +119,18 @@ export const useAuthStore = defineStore("auth", () => {
 		) {
 			try {
 				token.value = savedToken;
-				user.value = JSON.parse(savedUser);
+				// Try decode if possible, or just parse
+				const decoded = savedUser.includes("%")
+					? decodeURIComponent(savedUser)
+					: savedUser;
+				user.value = JSON.parse(decoded);
 			} catch {
 				logout();
 			}
 		}
 	}
 
-	async function login(email, password) {
+	async function login(email, password, remember = false) {
 		const { data } = await authAPI.login({ email, password });
 		token.value = data.token;
 		user.value = {
@@ -102,12 +142,27 @@ export const useAuthStore = defineStore("auth", () => {
 			roles: data.roles || data.Roles || [data.role || data.Role],
 			permissions: data.permissions || data.Permissions || [],
 		};
-		localStorage.setItem("lms_token", data.token);
-		localStorage.setItem("lms_user", JSON.stringify(user.value));
+
+		const userStr = encodeURIComponent(JSON.stringify(user.value));
+
+		if (remember) {
+			// Save in Cookie for 7 days
+			setCookie("lms_token", data.token, 7);
+			setCookie("lms_user", userStr, 7);
+			setCookie("lms_remembered_email", email, 7);
+		} else {
+			// Save in SessionStorage (Lost on tab close)
+			sessionStorage.setItem("lms_token", data.token);
+			sessionStorage.setItem("lms_user", userStr);
+			eraseCookie("lms_token");
+			eraseCookie("lms_user");
+			eraseCookie("lms_remembered_email");
+		}
+
 		return data;
 	}
 
-	async function register(fullName, email, password, role) {
+	async function register(fullName, email, password, role, remember = false) {
 		const { data } = await authAPI.register({
 			fullName,
 			email,
@@ -124,8 +179,17 @@ export const useAuthStore = defineStore("auth", () => {
 			roles: data.roles || data.Roles || [data.role || data.Role],
 			permissions: data.permissions || data.Permissions || [],
 		};
-		localStorage.setItem("lms_token", data.token);
-		localStorage.setItem("lms_user", JSON.stringify(user.value));
+
+		const userStr = encodeURIComponent(JSON.stringify(user.value));
+
+		if (remember) {
+			setCookie("lms_token", data.token, 7);
+			setCookie("lms_user", userStr, 7);
+		} else {
+			sessionStorage.setItem("lms_token", data.token);
+			sessionStorage.setItem("lms_user", userStr);
+		}
+
 		return data;
 	}
 
@@ -134,14 +198,22 @@ export const useAuthStore = defineStore("auth", () => {
 		user.value.fullName = profileData.fullName;
 		user.value.email = profileData.email;
 		user.value.avatar = profileData.avatar;
-		localStorage.setItem("lms_user", JSON.stringify(user.value));
+
+		const userStr = encodeURIComponent(JSON.stringify(user.value));
+		if (getCookie("lms_user")) {
+			setCookie("lms_user", userStr, 7);
+		} else {
+			sessionStorage.setItem("lms_user", userStr);
+		}
 	}
 
 	function logout() {
 		token.value = null;
 		user.value = null;
-		localStorage.removeItem("lms_token");
-		localStorage.removeItem("lms_user");
+		sessionStorage.removeItem("lms_token");
+		sessionStorage.removeItem("lms_user");
+		eraseCookie("lms_token");
+		eraseCookie("lms_user");
 	}
 
 	const avatarUpdateTime = ref(Date.now());

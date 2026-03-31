@@ -52,9 +52,7 @@ onMounted(fetchData);
 
 const availableCourses = computed(() => {
 	const existingIds = new Set(pathCourses.value.map((c) => c.id));
-	return allCourses.value.filter(
-		(c) => !existingIds.has(c.id) && c.level !== 1,
-	);
+	return allCourses.value.filter((c) => !existingIds.has(c.id));
 });
 
 const updatePath = async () => {
@@ -62,6 +60,7 @@ const updatePath = async () => {
 	try {
 		await courseGroupAPI.update(pathId, form.value);
 		toast.success("Cập nhật thông tin thành công!");
+		router.push("/admin/coursegroup");
 	} catch {
 		toast.error("Lỗi cập nhật.");
 	} finally {
@@ -203,17 +202,6 @@ const removeCourse = async (courseId: number, title: string) => {
 						</button>
 					</div>
 
-					<div
-						v-if="allCourses.some((c) => c.level === 1)"
-						class="alert alert-warning-glass mb-4 d-flex align-items-center gap-3"
-					>
-						<AlertCircle :size="20" class="text-warning" />
-						<div class="fs-13">
-							<strong>Lưu ý:</strong> Các khóa học dành cho
-							<b>người mới (Cấp 1)</b> đã được ẩn khỏi danh sách này vì chúng
-							không được gán vào phòng ban.
-						</div>
-					</div>
 
 					<div class="table-container custom-scrollbar mt-4">
 						<table class="glass-table custom-table mb-0 w-100">
@@ -241,9 +229,10 @@ const removeCourse = async (courseId: number, title: string) => {
 										</div>
 									</td>
 									<td>
-										<div class="fw-bold text-dark fs-14">
+										<div class="fw-bold fs-14">
 											{{ course.title }}
 										</div>
+
 										<div class="text-muted fs-12 mt-1">
 											Mã khóa học: #{{ course.id }}
 										</div>
@@ -405,10 +394,6 @@ const removeCourse = async (courseId: number, title: string) => {
 	border: 1px solid var(--border-color);
 }
 .btn-outline:hover {
-	background: white;
-	color: var(--text-primary);
-	border-color: var(--text-tertiary);
-	transform: translateY(-2px);
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 .btn-primary {
@@ -430,13 +415,14 @@ const removeCourse = async (courseId: number, title: string) => {
 }
 
 .glass-content-card {
-	background: rgba(255, 255, 255, 0.9);
+	background: var(--bg-card);
 	backdrop-filter: blur(20px);
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-2xl);
 	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.03);
 	overflow: hidden;
 }
+
 
 .premium-label {
 	font-weight: 700;
@@ -450,8 +436,8 @@ const removeCourse = async (courseId: number, title: string) => {
 .glass-input {
 	width: 100%;
 	padding: 12px 16px;
-	background: rgba(249, 250, 251, 0.5);
-	border: 1px solid rgba(0, 0, 0, 0.06);
+	background: var(--bg-tertiary);
+	border: 1px solid var(--border-color);
 	border-radius: 12px;
 	color: var(--text-primary);
 	font-size: 14px;
@@ -459,10 +445,11 @@ const removeCourse = async (courseId: number, title: string) => {
 	outline: none;
 }
 .glass-input:focus {
-	background: white;
+	background: var(--bg-card);
 	border-color: var(--primary-400);
 	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 }
+
 
 .glass-add-box {
 	background: rgba(99, 102, 241, 0.03);
@@ -478,10 +465,11 @@ const removeCourse = async (courseId: number, title: string) => {
 .table-container {
 	width: 100%;
 	overflow-x: auto;
-	background: white;
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	border-radius: 16px;
 }
+
 .glass-table {
 	width: 100%;
 	border-collapse: separate;
@@ -495,14 +483,16 @@ const removeCourse = async (courseId: number, title: string) => {
 	font-weight: 700;
 	color: var(--text-tertiary);
 	text-transform: uppercase;
-	border-bottom: 2px solid rgba(0, 0, 0, 0.05);
-	background: rgba(249, 250, 251, 0.5);
+	border-bottom: 2px solid var(--border-color);
+	background: var(--bg-secondary);
 }
+
 .glass-table td {
 	padding: 16px;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+	border-bottom: 1px solid var(--border-color);
 	vertical-align: middle;
 }
+
 
 .btn-ghost-icon {
 	display: inline-flex;

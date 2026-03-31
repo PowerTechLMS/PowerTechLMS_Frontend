@@ -7,11 +7,9 @@
 				</div>
 				<div class="header-info">
 					<div class="d-flex align-items-center gap-2 mb-1">
-						<span class="badge-glass primary text-primary"
-							>THÀNH TÍCH CÁ NHÂN</span
-						>
+						<span class="badge-glass primary text-primary">THÀNH TÍCH CÁ NHÂN</span>
 					</div>
-					<h1 class="title-gradient">Chứng chỉ của tôi</h1>
+					<h1 class="title-gradient">Chứng Chỉ Của Tôi</h1>
 					<p class="desc-text">
 						Những thành tích và vinh danh bạn đã đạt được trong quá trình học
 						tập.
@@ -19,11 +17,7 @@
 				</div>
 			</div>
 			<div class="header-actions">
-				<button
-					class="btn-glass-refresh"
-					:disabled="loading"
-					@click="fetchCertificates"
-				>
+				<button class="btn-glass-refresh" :disabled="loading" @click="fetchCertificates">
 					<RotateCcw :size="16" :class="{ spin: loading }" />
 					<span>{{ loading ? "Đang đồng bộ..." : "Làm mới dữ liệu" }}</span>
 				</button>
@@ -33,11 +27,7 @@
 		<div class="controls-bar mb-4 animate-slide-up">
 			<div class="search-box glass">
 				<Search :size="18" class="search-icon text-muted" />
-				<input
-					v-model="searchQuery"
-					type="text"
-					placeholder="Tìm kiếm chứng chỉ theo tên khóa học..."
-				/>
+				<input v-model="searchQuery" type="text" placeholder="Tìm kiếm chứng chỉ theo tên khóa học..." />
 			</div>
 			<div class="sort-box">
 				<select v-model="sortOrder" class="glass-select">
@@ -52,16 +42,8 @@
 			<p class="text-secondary fw-bold">Đang kiểm tra chứng chỉ mới...</p>
 		</div>
 
-		<div
-			v-else-if="filteredCerts.length > 0"
-			class="certs-grid animate-slide-up"
-			style="animation-delay: 0.1s"
-		>
-			<div
-				v-for="cert in filteredCerts"
-				:key="cert.id"
-				class="cert-card glass-hover"
-			>
+		<div v-else-if="filteredCerts.length > 0" class="certs-grid animate-slide-up" style="animation-delay: 0.1s">
+			<div v-for="cert in filteredCerts" :key="cert.id" class="cert-card glass-hover">
 				<div class="cert-card-header bg-gradient-emerald">
 					<div v-if="isRecentlyIssued(cert.issuedAt)" class="new-cert-badge">
 						NEW
@@ -81,26 +63,20 @@
 					<div class="cert-meta">
 						<div class="meta-item">
 							<Calendar :size="14" class="text-primary" />
-							<span
-								>Cấp ngày:
-								<strong>{{ formatDate(cert.issuedAt) }}</strong></span
-							>
+							<span>Cấp ngày:
+								<strong>{{ formatDate(cert.issuedAt) }}</strong></span>
 						</div>
 						<div class="cert-code-chip">ID: {{ cert.certificateCode }}</div>
 					</div>
 				</div>
 
 				<div class="cert-card-footer">
-					<button
-						class="btn btn-outline-primary btn-sm flex-fill fw-bold"
-						@click="copyCertLink(cert.certificateCode)"
-					>
+					<button class="btn btn-outline-primary btn-sm flex-fill fw-bold"
+						@click="copyCertLink(cert.certificateCode)">
 						<Copy :size="14" class="me-1" /> Link
 					</button>
-					<button
-						class="btn btn-primary btn-sm flex-fill fw-bold shadow-sm"
-						@click="viewCertificate(cert.certificateCode)"
-					>
+					<button class="btn btn-primary btn-sm flex-fill fw-bold shadow-sm"
+						@click="viewCertificate(cert.certificateCode)">
 						<ExternalLink :size="14" class="me-1" /> Xem Online
 					</button>
 				</div>
@@ -115,11 +91,7 @@
 			<p class="text-secondary mb-0">
 				Hoàn thành khóa học để nhận chứng chỉ và chứng minh năng lực của bạn!
 			</p>
-			<button
-				v-if="!loading"
-				class="btn btn-primary mt-4 px-4 fw-bold"
-				@click="fetchCertificates"
-			>
+			<button v-if="!loading" class="btn btn-primary mt-4 px-4 fw-bold" @click="fetchCertificates">
 				<RotateCcw :size="16" class="me-2" /> Thử kiểm tra lại
 			</button>
 		</div>
@@ -198,7 +170,7 @@ function formatDate(dateString) {
 async function copyCertLink(code) {
 	try {
 		await navigator.clipboard.writeText(
-			`${window.location.origin}/verify/${code}`,
+			`${window.location.origin}/#/verify/${code}`,
 		);
 		toast.info("Đã sao chép link xác thực!", {
 			position: "bottom-center",
@@ -210,7 +182,7 @@ async function copyCertLink(code) {
 }
 
 function viewCertificate(code) {
-	window.open(`${window.location.origin}/verify/${code}`, "_blank");
+	window.open(`${window.location.origin}/#/verify/${code}`, "_blank");
 }
 </script>
 
@@ -236,12 +208,14 @@ function viewCertificate(code) {
 	transition: all 0.3s;
 	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
+
 .btn-glass-refresh:hover {
 	background: #f8fafc;
 	color: #4f46e5;
 	border-color: #818cf8;
 	transform: translateY(-2px);
 }
+
 .btn-glass-refresh:disabled {
 	opacity: 0.6;
 	cursor: not-allowed;
@@ -251,10 +225,12 @@ function viewCertificate(code) {
 .spin {
 	animation: rotate 1.5s linear infinite;
 }
+
 @keyframes rotate {
 	from {
 		transform: rotate(0deg);
 	}
+
 	to {
 		transform: rotate(360deg);
 	}
@@ -279,11 +255,13 @@ function viewCertificate(code) {
 	justify-content: space-between;
 	align-items: center;
 }
+
 .header-inner {
 	display: flex;
 	align-items: center;
 	gap: 20px;
 }
+
 .header-icon-box {
 	width: 64px;
 	height: 64px;
@@ -295,20 +273,25 @@ function viewCertificate(code) {
 	justify-content: center;
 	border: 1px solid rgba(79, 70, 229, 0.2);
 }
+
 .pulse-glow {
 	animation: pulse 3s infinite;
 }
+
 @keyframes pulse {
 	0% {
 		box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
 	}
+
 	70% {
 		box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
 	}
+
 	100% {
 		box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
 	}
 }
+
 .title-gradient {
 	font-size: 32px;
 	font-weight: 900;
@@ -319,6 +302,7 @@ function viewCertificate(code) {
 	margin: 0;
 	letter-spacing: -0.5px;
 }
+
 .desc-text {
 	color: #64748b;
 	margin-top: 4px;
@@ -336,6 +320,7 @@ function viewCertificate(code) {
 	align-items: center;
 	border: 1px solid transparent;
 }
+
 .badge-glass.primary {
 	background: rgba(99, 102, 241, 0.1);
 	color: #4f46e5;
@@ -347,6 +332,7 @@ function viewCertificate(code) {
 	gap: 1.5rem;
 	align-items: center;
 }
+
 .search-box.glass {
 	flex-grow: 1;
 	display: flex;
@@ -357,10 +343,12 @@ function viewCertificate(code) {
 	border-radius: 14px;
 	transition: all 0.3s ease;
 }
+
 .search-box.glass:focus-within {
 	border-color: #4f46e5;
 	box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
 }
+
 .search-box input {
 	border: none;
 	background: transparent;
@@ -393,6 +381,7 @@ function viewCertificate(code) {
 	grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
 	gap: 1.5rem;
 }
+
 .cert-card.glass-hover {
 	background: rgba(255, 255, 255, 0.85);
 	backdrop-filter: blur(12px);
@@ -403,6 +392,7 @@ function viewCertificate(code) {
 	overflow: hidden;
 	transition: all 0.3s;
 }
+
 .cert-card.glass-hover:hover {
 	transform: translateY(-5px);
 	border-color: #818cf8;
@@ -416,18 +406,18 @@ function viewCertificate(code) {
 	justify-content: center;
 	position: relative;
 }
+
 .bg-gradient-emerald {
 	background: linear-gradient(135deg, #0d9488, #059669);
 }
+
 .bg-gradient-emerald::after {
 	content: "";
 	position: absolute;
 	inset: 0;
-	background: radial-gradient(
-		circle at top right,
-		rgba(255, 255, 255, 0.2),
-		transparent 50%
-	);
+	background: radial-gradient(circle at top right,
+			rgba(255, 255, 255, 0.2),
+			transparent 50%);
 }
 
 .cert-card-body {
@@ -436,6 +426,7 @@ function viewCertificate(code) {
 	display: flex;
 	flex-direction: column;
 }
+
 .cert-title {
 	font-size: 1.15rem;
 	font-weight: 700;
@@ -448,12 +439,14 @@ function viewCertificate(code) {
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 }
+
 .cert-meta {
 	margin-top: auto;
 	display: flex;
 	flex-direction: column;
 	gap: 0.75rem;
 }
+
 .meta-item {
 	display: flex;
 	align-items: center;
@@ -461,6 +454,7 @@ function viewCertificate(code) {
 	font-size: 0.85rem;
 	color: #64748b;
 }
+
 .cert-code-chip {
 	align-self: flex-start;
 	background: #f1f5f9;
@@ -489,6 +483,7 @@ function viewCertificate(code) {
 	justify-content: center;
 	text-align: center;
 }
+
 .luxe-spinner {
 	width: 40px;
 	height: 40px;
@@ -497,15 +492,14 @@ function viewCertificate(code) {
 	border-radius: 50%;
 	animation: spin 1s linear infinite;
 }
+
 .empty-icon-glass {
 	width: 90px;
 	height: 90px;
 	border-radius: 50%;
-	background: linear-gradient(
-		135deg,
-		rgba(79, 70, 229, 0.05),
-		rgba(79, 70, 229, 0.02)
-	);
+	background: linear-gradient(135deg,
+			rgba(79, 70, 229, 0.05),
+			rgba(79, 70, 229, 0.02));
 	border: 1px solid rgba(79, 70, 229, 0.1);
 	display: flex;
 	align-items: center;
@@ -515,33 +509,130 @@ function viewCertificate(code) {
 .animate-fade-in {
 	animation: fadeIn 0.8s ease-out forwards;
 }
+
 .animate-slide-up {
 	animation: slideInUp 0.6s ease-out forwards;
 	opacity: 0;
 }
+
 @keyframes slideInUp {
 	from {
 		opacity: 0;
 		transform: translateY(20px);
 	}
+
 	to {
 		opacity: 1;
 		transform: translateY(0);
 	}
 }
+
 @keyframes fadeIn {
 	from {
 		opacity: 0;
 	}
+
 	to {
 		opacity: 1;
 	}
 }
 
 @media (max-width: 768px) {
+	.page-header-premium {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 16px;
+	}
+
+	.header-inner {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 16px;
+	}
+
+	.header-icon-box {
+		width: 48px;
+		height: 48px;
+		border-radius: 14px;
+	}
+
+	.title-gradient {
+		font-size: 26px;
+	}
+
+	.desc-text {
+		font-size: 14px;
+	}
+
 	.controls-bar {
 		flex-direction: column;
 		align-items: stretch;
+		gap: 12px;
 	}
+
+	.search-box.glass,
+	.glass-select {
+		width: 100%;
+	}
+
+	.certs-grid {
+		grid-template-columns: 1fr;
+		gap: 1rem;
+	}
+
+	.cert-card-header {
+		height: 100px;
+	}
+
+	.cert-card-body {
+		padding: 1.25rem;
+	}
+
+	.cert-card-footer {
+		padding: 1rem 1.25rem;
+	}
+}
+
+/* Dark Mode Overrides */
+[data-theme="dark"] .btn-glass-refresh,
+[data-theme="dark"] .search-box.glass,
+[data-theme="dark"] .sort-box .glass-select {
+	background-color: var(--bg-tertiary);
+	border-color: var(--border-color);
+	color: var(--text-primary);
+}
+
+[data-theme="dark"] .btn-glass-refresh:hover {
+	background-color: var(--bg-secondary);
+	border-color: var(--primary-500);
+}
+
+[data-theme="dark"] .cert-card.glass-hover {
+	background-color: var(--bg-secondary);
+	border-color: var(--border-color);
+}
+
+[data-theme="dark"] .cert-title {
+	color: var(--text-primary);
+}
+
+[data-theme="dark"] .cert-code-chip {
+	background-color: var(--bg-tertiary);
+	border-color: var(--border-color);
+	color: var(--text-secondary);
+}
+
+[data-theme="dark"] .cert-card-footer {
+	background-color: var(--bg-tertiary);
+	border-top-color: var(--border-color);
+}
+
+[data-theme="dark"] .btn-outline-primary {
+	border-color: var(--primary-500);
+	color: var(--primary-400);
+}
+
+[data-theme="dark"] .btn-outline-primary:hover {
+	background-color: rgba(99, 102, 241, 0.1);
 }
 </style>

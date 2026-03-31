@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { ref, computed, onMounted } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { dashboardAPI, certificateAPI, leaderboardAPI } from "@/services/api";
@@ -100,7 +100,7 @@ const avatarUrl = computed(() => {
 	const url = authStore.user.avatar;
 	const base = url.startsWith("http")
 		? url
-		: `${import.meta.env.VITE_API_URL || ""}${url}`;
+		: `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${url}`;
 	return `${base}?t=${authStore.avatarUpdateTime}`;
 });
 
@@ -597,20 +597,11 @@ onMounted(async () => {
 
 <style scoped>
 .theme-provider {
-	--primary: var(--primary-500);
-	--primary-hover: var(--primary-600);
-	--bg-main: var(--bg-primary);
-	--bg-card: var(--bg-secondary);
-	--text-main: var(--text-primary);
-	--text-sub: var(--text-secondary);
-	--border: var(--border-color);
-	--shadow: var(--shadow-sm);
-
 	min-height: 100vh;
-	background-color: var(--bg-main);
-	color: var(--text-main);
-	font-family: "Inter", sans-serif;
-	transition: all 0.3s ease;
+	background-color: var(--bg-primary);
+	color: var(--text-primary);
+	font-family: var(--font-family);
+	transition: all var(--transition-base);
 }
 
 .dash {
@@ -638,9 +629,10 @@ onMounted(async () => {
 	border-radius: 50%;
 	background-size: cover;
 	background-position: center;
-	background-color: var(--primary);
+	background-color: var(--primary-500);
 	border: 3px solid var(--bg-card);
-	box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+	box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.2);
+	flex-shrink: 0;
 }
 
 .avatar-init {
@@ -688,7 +680,7 @@ onMounted(async () => {
 	border-radius: 24px;
 	display: flex;
 	flex-direction: column;
-	box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+	box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
 	overflow: hidden;
 	border: 1px solid var(--border);
 }
@@ -898,7 +890,7 @@ onMounted(async () => {
 }
 
 .text-primary {
-	color: var(--primary);
+	color: var(--primary-500);
 }
 
 .greet-text p {
@@ -926,8 +918,8 @@ onMounted(async () => {
 }
 
 .pill-glow {
-	color: var(--primary);
-	border-color: rgba(99, 102, 241, 0.2);
+	color: var(--primary-500);
+	border-color: rgba(var(--primary-rgb), 0.2);
 }
 
 .dot {
@@ -954,13 +946,14 @@ onMounted(async () => {
 }
 
 .goal-banner {
-	background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+	background: var(--gradient-primary);
 	border-radius: 24px;
 	padding: 24px 32px;
 	color: #ffffff;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
+	margin-bottom: 32px;
 }
 .banner-title {
 	display: flex;
@@ -1115,7 +1108,7 @@ onMounted(async () => {
 
 .circle-fill {
 	fill: none;
-	stroke: var(--primary);
+	stroke: var(--primary-500);
 	stroke-width: 8;
 	stroke-linecap: round;
 	transition: stroke-dashoffset 0.8s ease;
@@ -1233,7 +1226,7 @@ onMounted(async () => {
 }
 .btn-primary:hover {
 	transform: translateY(-2px);
-	box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+	box-shadow: var(--shadow-glow);
 }
 
 .course-grid {
@@ -1629,6 +1622,46 @@ onMounted(async () => {
 	.dash {
 		padding: 16px;
 	}
+	.card {
+		padding: 20px;
+	}
+	.side-panel {
+		padding: 20px;
+	}
+	.top-bar {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 16px;
+		margin-bottom: 24px;
+	}
+	.top-actions {
+		width: 100%;
+		display: flex;
+		justify-content: flex-start;
+	}
+	.goal-banner {
+		flex-direction: column;
+		gap: 20px;
+		padding: 20px;
+		text-align: center;
+		margin-bottom: 24px;
+	}
+	.banner-content {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	.banner-title {
+		justify-content: center;
+	}
+	.banner-right {
+		width: 100%;
+		justify-content: center;
+	}
+	.bot-bubble {
+		max-width: 100%;
+		text-align: center;
+	}
 	.side-col {
 		grid-template-columns: 1fr;
 	}
@@ -1637,8 +1670,56 @@ onMounted(async () => {
 		gap: 24px;
 		align-items: center;
 	}
+	.mission-details {
+		width: 100%;
+	}
+	.stat-line {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 4px;
+	}
+	.stat-sub {
+		margin-left: 0;
+	}
+	.mission-footer {
+		flex-direction: column;
+		gap: 16px;
+		align-items: stretch;
+		text-align: center;
+	}
+	.btn-primary {
+		width: 100%;
+	}
+	.circle-wrap {
+		width: 180px;
+		height: 180px;
+	}
+	.circle-content .pct {
+		font-size: 36px;
+	}
+	.circle-content .lbl {
+		font-size: 12px;
+	}
 	.course-grid {
 		grid-template-columns: 1fr;
+	}
+	.course-info {
+		padding: 16px;
+	}
+	.quiz-item {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+	}
+	.quiz-item button {
+		width: 100%;
+	}
+	.badge-row {
+		flex-wrap: wrap;
+	}
+	.ai-chat-panel {
+		height: 90vh;
+		border-radius: 16px;
 	}
 }
 </style>

@@ -1,60 +1,19 @@
 <template>
 	<div class="app-layout">
-		<div
-			class="mobile-backdrop"
-			:class="{ active: mobileMenuOpen }"
-			@click="mobileMenuOpen = false"
-		/>
+		<div class="mobile-backdrop" :class="{ active: mobileMenuOpen }" @click="mobileMenuOpen = false" />
 
-		<aside
-			class="sidebar"
-			:class="{ collapsed: sidebarCollapsed, 'mobile-open': mobileMenuOpen }"
-		>
+		<aside class="sidebar" :class="{ collapsed: sidebarCollapsed, 'mobile-open': mobileMenuOpen }">
 			<div class="sidebar-header">
-				<div class="logo" @click="$router.push('/')">
-					<div class="logo-icon">
-						<svg
-							width="28"
-							height="28"
-							viewBox="0 0 28 28"
-							fill="none"
-							style="display: block; width: 28px; height: 28px"
-						>
-							<rect width="28" height="28" rx="8" fill="url(#logo-gradient)" />
-							<path
-								d="M8 14L12 18L20 10"
-								stroke="white"
-								stroke-width="2.5"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-							<defs>
-								<linearGradient
-									id="logo-gradient"
-									x1="0"
-									y1="0"
-									x2="28"
-									y2="28"
-								>
-									<stop stop-color="#6366f1" />
-									<stop offset="1" stop-color="#a855f7" />
-								</linearGradient>
-							</defs>
-						</svg>
-					</div>
-					<span v-if="!sidebarCollapsed" class="logo-text">POWERTECH LMS</span>
+				<div v-show="!sidebarCollapsed" class="logo" @click="$router.push('/')">
+					<img src="@/assets/images/logo.png" alt="Powertech Logo"
+						style="max-height: 60px; width: auto; object-fit: contain; transform: scale(1.8); transform-origin: center;" />
 				</div>
-				<button
-					class="btn-icon btn-ghost toggle-btn desktop-only"
-					@click="sidebarCollapsed = !sidebarCollapsed"
-				>
+				<button class="btn-icon btn-ghost toggle-btn desktop-only"
+					@click="sidebarCollapsed = !sidebarCollapsed">
 					<ChevronLeft v-if="!sidebarCollapsed" :size="18" />
 					<ChevronRight v-else :size="18" />
 				</button>
-				<button
-					class="btn-icon btn-ghost mobile-close-btn mobile-only"
-					@click="mobileMenuOpen = false"
-				>
+				<button class="btn-icon btn-ghost mobile-close-btn mobile-only" @click="mobileMenuOpen = false">
 					<X :size="18" />
 				</button>
 			</div>
@@ -65,11 +24,8 @@
 						<li class="nav-label">CHUNG</li>
 
 						<li>
-							<RouterLink
-								to="/"
-								:class="{ active: $route.name === 'Dashboard' }"
-								@click="mobileMenuOpen = false"
-							>
+							<RouterLink to="/" :class="{ active: $route.name === 'Dashboard' }"
+								@click="mobileMenuOpen = false">
 								<LayoutDashboard :size="20" class="nav-icon" />
 								<span class="nav-text">Tổng quan</span>
 							</RouterLink>
@@ -78,22 +34,16 @@
 						<li class="nav-label">HỌC TẬP</li>
 
 						<li>
-							<RouterLink
-								to="/my-courses"
-								:class="{ active: $route.path === '/my-courses' }"
-								@click="mobileMenuOpen = false"
-							>
+							<RouterLink to="/my-courses" :class="{ active: $route.path === '/my-courses' }"
+								@click="mobileMenuOpen = false">
 								<BookOpen :size="20" class="nav-icon" />
 								<span class="nav-text">Khóa học của tôi</span>
 							</RouterLink>
 						</li>
 
 						<li>
-							<RouterLink
-								to="/learning-paths"
-								:class="{ active: $route.path === '/learning-paths' }"
-								@click="mobileMenuOpen = false"
-							>
+							<RouterLink to="/learning-paths" :class="{ active: $route.path === '/learning-paths' }"
+								@click="mobileMenuOpen = false">
 								<Route :size="20" class="nav-icon" />
 								<span class="nav-text">Lộ trình học tập</span>
 							</RouterLink>
@@ -102,44 +52,32 @@
 						<li class="nav-label">KHÁM PHÁ & TÀI NGUYÊN</li>
 
 						<li>
-							<RouterLink
-								to="/courses"
-								:class="{ active: $route.path === '/courses' }"
-								@click="mobileMenuOpen = false"
-							>
+							<RouterLink to="/courses" :class="{ active: $route.path === '/courses' }"
+								@click="mobileMenuOpen = false">
 								<Library :size="20" class="nav-icon" />
 								<span class="nav-text">Thư viện khóa học</span>
 							</RouterLink>
 						</li>
 
 						<li>
-							<RouterLink
-								to="/documents"
-								:class="{ active: $route.path === '/documents' }"
-								@click="mobileMenuOpen = false"
-							>
+							<RouterLink to="/documents" :class="{ active: $route.path === '/documents' }"
+								@click="mobileMenuOpen = false">
 								<FolderOpen :size="20" class="nav-icon" />
 								<span class="nav-text">Tài liệu nội bộ</span>
 							</RouterLink>
 						</li>
 
 						<li>
-							<RouterLink
-								to="/certificates"
-								:class="{ active: $route.path === '/certificates' }"
-								@click="mobileMenuOpen = false"
-							>
+							<RouterLink to="/certificates" :class="{ active: $route.path === '/certificates' }"
+								@click="mobileMenuOpen = false">
 								<Award :size="20" class="nav-icon" />
-								<span class="nav-text">Chứng chỉ của tôi</span>
+								<span class="nav-text">Chứng Chỉ Của Tôi</span>
 							</RouterLink>
 						</li>
 
 						<li>
-							<RouterLink
-								to="/leaderboard"
-								:class="{ active: $route.path.startsWith('/leaderboard') }"
-								@click="mobileMenuOpen = false"
-							>
+							<RouterLink to="/leaderboard" :class="{ active: $route.path.startsWith('/leaderboard') }"
+								@click="mobileMenuOpen = false">
 								<Trophy :size="20" class="nav-icon" />
 								<span class="nav-text">Bảng xếp hạng</span>
 							</RouterLink>
@@ -148,288 +86,213 @@
 						<template v-if="authStore.canManage">
 							<li class="nav-label nav-label-admin">QUẢN LÝ</li>
 
-							<li
-								v-if="
-									!sidebarCollapsed &&
-									(authStore.isAdmin ||
-										authStore.isInstructor ||
-										authStore.hasAnyPermission(
-											'course.view',
-											'group.manage',
-											'enrollment.view',
-											'quiz.manage',
-										))
-								"
-								class="admin-group-header"
-							>
+							<li v-if="
+								!sidebarCollapsed &&
+								(authStore.isAdmin ||
+									authStore.isInstructor ||
+									authStore.hasAnyPermission(
+										'course.view',
+										'group.manage',
+										'enrollment.view',
+										'quiz.manage',
+									))
+							" class="admin-group-header">
 								<span class="admin-group-pill pill-training">
 									<GraduationCap :size="12" /> Đào tạo
 								</span>
 							</li>
-							<li
-								v-if="
-									!sidebarCollapsed &&
-									(authStore.isAdmin ||
-										authStore.isInstructor ||
-										authStore.hasAnyPermission(
-											'course.view',
-											'group.manage',
-											'enrollment.view',
-											'quiz.manage',
-										))
-								"
-								class="admin-group-divider"
-							/>
-
-							<li
-								v-if="
-									authStore.isAdmin ||
+							<li v-if="
+								!sidebarCollapsed &&
+								(authStore.isAdmin ||
 									authStore.isInstructor ||
-									authStore.hasPermission('course.view')
-								"
-							>
-								<RouterLink
-									to="/admin/courses"
-									class="admin-nav-item"
+									authStore.hasAnyPermission(
+										'course.view',
+										'group.manage',
+										'enrollment.view',
+										'quiz.manage',
+									))
+							" class="admin-group-divider" />
+
+							<li v-if="
+								authStore.isAdmin ||
+								authStore.isInstructor ||
+								authStore.hasPermission('course.view')
+							">
+								<RouterLink to="/admin/courses" class="admin-nav-item"
 									:class="{ active: $route.path === '/admin/courses' }"
-									@click="mobileMenuOpen = false"
-								>
-									<span class="admin-item-icon icon-training"
-										><BookOpen :size="15"
-									/></span>
+									@click="mobileMenuOpen = false">
+									<span class="admin-item-icon icon-training">
+										<BookOpen :size="15" />
+									</span>
 									<span class="nav-text">Danh sách khoá học</span>
 								</RouterLink>
 							</li>
 
-							<li
-								v-if="
-									authStore.isAdmin || authStore.hasPermission('group.manage')
-								"
-							>
-								<RouterLink
-									to="/admin/coursegroup"
-									class="admin-nav-item"
-									:class="{
-										active: $route.path.startsWith('/admin/learning-paths'),
-									}"
-									@click="mobileMenuOpen = false"
-								>
-									<span class="admin-item-icon icon-training"
-										><Route :size="15"
-									/></span>
+							<li v-if="
+								authStore.isAdmin || authStore.hasPermission('group.manage')
+							">
+								<RouterLink to="/admin/coursegroup" class="admin-nav-item" :class="{
+									active: $route.path.startsWith('/admin/learning-paths'),
+								}" @click="mobileMenuOpen = false">
+									<span class="admin-item-icon icon-training">
+										<Route :size="15" />
+									</span>
 									<span class="nav-text">Khung Lộ trình</span>
 								</RouterLink>
 							</li>
 
-							<li
-								v-if="
-									authStore.isAdmin ||
-									authStore.isInstructor ||
-									authStore.hasPermission('enrollment.view')
-								"
-							>
-								<RouterLink
-									to="/admin/enrollments"
-									class="admin-nav-item"
+							<li v-if="
+								authStore.isAdmin ||
+								authStore.isInstructor ||
+								authStore.hasPermission('enrollment.view')
+							">
+								<RouterLink to="/admin/enrollments" class="admin-nav-item"
 									:class="{ active: $route.path === '/admin/enrollments' }"
-									@click="mobileMenuOpen = false"
-								>
-									<span class="admin-item-icon icon-training"
-										><Users :size="15"
-									/></span>
+									@click="mobileMenuOpen = false">
+									<span class="admin-item-icon icon-training">
+										<Users :size="15" />
+									</span>
 									<span class="nav-text">Quản lý ghi danh</span>
 								</RouterLink>
 							</li>
-							<li
-								v-if="
-									authStore.isAdmin ||
-									authStore.isInstructor ||
-									authStore.hasPermission('quiz.manage')
-								"
-							>
-								<RouterLink
-									to="/admin/quiz-analysis"
-									class="admin-nav-item"
+							<li v-if="
+								authStore.isAdmin ||
+								authStore.isInstructor ||
+								authStore.hasPermission('quiz.manage')
+							">
+								<RouterLink to="/admin/quiz-analysis" class="admin-nav-item"
 									:class="{ active: $route.path === '/admin/quiz-analysis' }"
-									@click="mobileMenuOpen = false"
-								>
-									<span class="admin-item-icon icon-training"
-										><BarChart3 :size="15"
-									/></span>
+									@click="mobileMenuOpen = false">
+									<span class="admin-item-icon icon-training">
+										<BarChart3 :size="15" />
+									</span>
 									<span class="nav-text">Phân tích đề thi</span>
 								</RouterLink>
 							</li>
 
-							<li
-								v-if="
-									!sidebarCollapsed &&
-									(authStore.isAdmin ||
-										authStore.hasAnyPermission(
-											'user.manage',
-											'doc.view',
-											'doc.upload',
-											'doc.delete',
-											'certificate.view',
-											'certificate.manage',
-										))
-								"
-								class="admin-group-header"
-							>
-								<span class="admin-group-pill pill-org">
-									<Layout :size="12" /> Tổ chức
-								</span>
-							</li>
-							<li
-								v-if="
-									!sidebarCollapsed &&
-									(authStore.isAdmin ||
-										authStore.hasAnyPermission(
-											'user.manage',
-											'doc.view',
-											'doc.upload',
-											'doc.delete',
-											'certificate.view',
-											'certificate.manage',
-										))
-								"
-								class="admin-group-divider"
-							/>
-
-							<li
-								v-if="
-									authStore.isAdmin || authStore.hasPermission('user.manage')
-								"
-							>
-								<RouterLink
-									to="/admin/departments"
-									class="admin-nav-item"
-									:class="{
-										active: $route.path.startsWith('/admin/departments'),
-									}"
-									@click="mobileMenuOpen = false"
-								>
-									<span class="admin-item-icon icon-org"
-										><Building2 :size="15"
-									/></span>
-									<span class="nav-text">Danh sách Phòng ban</span>
-								</RouterLink>
-							</li>
-							<li
-								v-if="
-									authStore.isAdmin || authStore.hasPermission('user.manage')
-								"
-							>
-								<RouterLink
-									to="/admin/staff"
-									class="admin-nav-item"
-									:class="{ active: $route.path.startsWith('/admin/staff') }"
-									@click="mobileMenuOpen = false"
-								>
-									<span class="admin-item-icon icon-org"
-										><UserCog :size="15"
-									/></span>
-									<span class="nav-text">Quản trị Nhân sự</span>
-								</RouterLink>
-							</li>
-							<li
-								v-if="
-									authStore.isAdmin ||
+							<li v-if="
+								!sidebarCollapsed &&
+								(authStore.isAdmin ||
 									authStore.hasAnyPermission(
 										'user.manage',
 										'doc.view',
 										'doc.upload',
 										'doc.delete',
-									)
-								"
-							>
-								<RouterLink
-									to="/admin/documents"
-									class="admin-nav-item"
-									:class="{
-										active: $route.path.startsWith('/admin/documents'),
-									}"
-									@click="mobileMenuOpen = false"
-								>
-									<span class="admin-item-icon icon-org"
-										><FolderOpen :size="15"
-									/></span>
+										'certificate.view',
+										'certificate.manage',
+									))
+							" class="admin-group-header">
+								<span class="admin-group-pill pill-org">
+									<Layout :size="12" /> Tổ chức
+								</span>
+							</li>
+							<li v-if="
+								!sidebarCollapsed &&
+								(authStore.isAdmin ||
+									authStore.hasAnyPermission(
+										'user.manage',
+										'doc.view',
+										'doc.upload',
+										'doc.delete',
+										'certificate.view',
+										'certificate.manage',
+									))
+							" class="admin-group-divider" />
+
+							<li v-if="
+								authStore.isAdmin || authStore.hasPermission('user.manage')
+							">
+								<RouterLink to="/admin/departments" class="admin-nav-item" :class="{
+									active: $route.path.startsWith('/admin/departments'),
+								}" @click="mobileMenuOpen = false">
+									<span class="admin-item-icon icon-org">
+										<Building2 :size="15" />
+									</span>
+									<span class="nav-text">Danh sách Phòng ban</span>
+								</RouterLink>
+							</li>
+							<li v-if="
+								authStore.isAdmin || authStore.hasPermission('user.manage')
+							">
+								<RouterLink to="/admin/staff" class="admin-nav-item"
+									:class="{ active: $route.path.startsWith('/admin/staff') }"
+									@click="mobileMenuOpen = false">
+									<span class="admin-item-icon icon-org">
+										<UserCog :size="15" />
+									</span>
+									<span class="nav-text">Quản trị Nhân sự</span>
+								</RouterLink>
+							</li>
+							<li v-if="
+								authStore.isAdmin ||
+								authStore.hasAnyPermission(
+									'user.manage',
+									'doc.view',
+									'doc.upload',
+									'doc.delete',
+								)
+							">
+								<RouterLink to="/admin/documents" class="admin-nav-item" :class="{
+									active: $route.path.startsWith('/admin/documents'),
+								}" @click="mobileMenuOpen = false">
+									<span class="admin-item-icon icon-org">
+										<FolderOpen :size="15" />
+									</span>
 									<span class="nav-text">Kho Tài liệu nội bộ</span>
 								</RouterLink>
 							</li>
-							<li
-								v-if="
-									authStore.isAdmin ||
-									authStore.hasAnyPermission(
-										'certificate.view',
-										'certificate.manage',
-									)
-								"
-							>
-								<RouterLink
-									to="/admin/certificates"
-									class="admin-nav-item"
+							<li v-if="
+								authStore.isAdmin ||
+								authStore.hasAnyPermission(
+									'certificate.view',
+									'certificate.manage',
+								)
+							">
+								<RouterLink to="/admin/certificates" class="admin-nav-item"
 									:class="{ active: $route.path === '/admin/certificates' }"
-									@click="mobileMenuOpen = false"
-								>
-									<span class="admin-item-icon icon-org"
-										><Award :size="15"
-									/></span>
+									@click="mobileMenuOpen = false">
+									<span class="admin-item-icon icon-org">
+										<Award :size="15" />
+									</span>
 									<span class="nav-text">Quản lý Chứng chỉ</span>
 								</RouterLink>
 							</li>
 
-							<li
-								v-if="
-									!sidebarCollapsed &&
-									(authStore.isAdmin ||
-										authStore.hasAnyPermission('report.view', 'role.manage'))
-								"
-								class="admin-group-header"
-							>
+							<li v-if="
+								!sidebarCollapsed &&
+								(authStore.isAdmin ||
+									authStore.hasAnyPermission('report.view', 'role.manage'))
+							" class="admin-group-header">
 								<span class="admin-group-pill pill-system">
 									<Shield :size="12" /> Hệ thống
 								</span>
 							</li>
-							<li
-								v-if="
-									!sidebarCollapsed &&
-									(authStore.isAdmin ||
-										authStore.hasAnyPermission('report.view', 'role.manage'))
-								"
-								class="admin-group-divider"
-							/>
+							<li v-if="
+								!sidebarCollapsed &&
+								(authStore.isAdmin ||
+									authStore.hasAnyPermission('report.view', 'role.manage'))
+							" class="admin-group-divider" />
 
-							<li
-								v-if="
-									authStore.isAdmin || authStore.hasPermission('report.view')
-								"
-							>
-								<RouterLink
-									to="/admin/reports"
-									class="admin-nav-item"
+							<li v-if="
+								authStore.isAdmin || authStore.hasPermission('report.view')
+							">
+								<RouterLink to="/admin/reports" class="admin-nav-item"
 									:class="{ active: $route.path === '/admin/reports' }"
-									@click="mobileMenuOpen = false"
-								>
-									<span class="admin-item-icon icon-system"
-										><PieChart :size="15"
-									/></span>
+									@click="mobileMenuOpen = false">
+									<span class="admin-item-icon icon-system">
+										<PieChart :size="15" />
+									</span>
 									<span class="nav-text">Báo cáo &amp; Nhắc nhở</span>
 								</RouterLink>
 							</li>
-							<li
-								v-if="
-									authStore.isAdmin || authStore.hasPermission('role.manage')
-								"
-							>
-								<RouterLink
-									to="/admin/rbac"
-									class="admin-nav-item"
-									:class="{ active: $route.path === '/admin/rbac' }"
-									@click="mobileMenuOpen = false"
-								>
-									<span class="admin-item-icon icon-system"
-										><KeyRound :size="15"
-									/></span>
+							<li v-if="
+								authStore.isAdmin || authStore.hasPermission('role.manage')
+							">
+								<RouterLink to="/admin/rbac" class="admin-nav-item"
+									:class="{ active: $route.path === '/admin/rbac' }" @click="mobileMenuOpen = false">
+									<span class="admin-item-icon icon-system">
+										<KeyRound :size="15" />
+									</span>
 									<span class="nav-text">Phân quyền (RBAC)</span>
 								</RouterLink>
 							</li>
@@ -439,52 +302,18 @@
 			</div>
 		</aside>
 
-		<main
-			class="main-content"
-			:class="{ 'sidebar-collapsed': sidebarCollapsed }"
-		>
+		<main class="main-content" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
 			<header class="main-header glass">
-				<button
-					class="btn-icon btn-ghost mobile-only"
-					@click="mobileMenuOpen = !mobileMenuOpen"
-				>
+				<button class="btn-icon btn-ghost mobile-only" @click="mobileMenuOpen = !mobileMenuOpen">
 					<Menu :size="22" />
 				</button>
 
 				<div class="header-search desktop-tablet-only">
 					<Search :size="18" />
-					<input
-						type="text"
-						placeholder="Tìm kiếm khóa học, tài liệu..."
-						class="search-input"
-					/>
+					<input type="text" placeholder="Tìm kiếm khóa học, tài liệu..." class="search-input" />
 				</div>
 
-				<div class="mobile-logo mobile-only" @click="$router.push('/')">
-					<svg width="24" height="24" viewBox="0 0 28 28" fill="none">
-						<rect width="28" height="28" rx="8" fill="url(#logo-gradient-m)" />
-						<path
-							d="M8 14L12 18L20 10"
-							stroke="white"
-							stroke-width="2.5"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-						<defs>
-							<linearGradient
-								id="logo-gradient-m"
-								x1="0"
-								y1="0"
-								x2="28"
-								y2="28"
-							>
-								<stop stop-color="#6366f1" />
-								<stop offset="1" stop-color="#a855f7" />
-							</linearGradient>
-						</defs>
-					</svg>
-					<span class="mobile-logo-text">POWERTECH LMS</span>
-				</div>
+
 
 				<div class="header-actions">
 					<button class="btn-icon btn-ghost mobile-only">
@@ -497,23 +326,15 @@
 
 					<NotificationDropdown v-if="authStore.isAuthenticated" />
 
-					<div
-						ref="userMenuRef"
-						class="user-menu"
-						@click="showUserMenu = !showUserMenu"
-					>
-						<div
-							v-if="avatarUrl"
-							class="user-avatar"
-							:style="{
-								backgroundImage: `url('${avatarUrl}')`,
-								backgroundSize: 'cover',
-								backgroundPosition: 'center',
-								color: 'transparent',
-							}"
-						/>
-						<div v-else class="user-avatar">
-							{{ authStore.user?.fullName?.charAt(0) }}
+					<div ref="userMenuRef" class="user-menu" @click="showUserMenu = !showUserMenu">
+						<div class="user-avatar overflow-hidden">
+							<img
+								v-if="avatarUrl && !avatarError"
+								:src="avatarUrl"
+								@error="handleAvatarError"
+								class="w-100 h-100 object-fit-cover"
+							/>
+							<span v-else>{{ authStore.user?.fullName?.charAt(0) }}</span>
 						</div>
 						<span class="user-name desktop-tablet-only">{{
 							authStore.user?.fullName
@@ -523,18 +344,16 @@
 						<Transition name="dropdown">
 							<div v-if="showUserMenu" class="user-dropdown" @click.stop>
 								<div class="dropdown-header">
-									<div
-										v-if="avatarUrl"
-										class="user-avatar lg"
-										:style="{
-											backgroundImage: `url('${avatarUrl}')`,
-											backgroundSize: 'cover',
-											backgroundPosition: 'center',
-											color: 'transparent',
-										}"
-									/>
-									<div v-else class="user-avatar lg">
-										{{ authStore.user?.fullName?.charAt(0) }}
+									<div class="user-avatar lg overflow-hidden">
+										<img
+											v-if="avatarUrl && !avatarError"
+											:src="avatarUrl"
+											@error="handleAvatarError"
+											class="w-100 h-100 object-fit-cover"
+										/>
+										<span v-else>{{
+											authStore.user?.fullName?.charAt(0)
+										}}</span>
 									</div>
 									<div>
 										<div class="dropdown-name">
@@ -546,13 +365,10 @@
 									</div>
 								</div>
 								<div class="dropdown-divider" />
-								<div
-									class="dropdown-item"
-									@click="
-										$router.push('/profile');
-										showUserMenu = false;
-									"
-								>
+								<div class="dropdown-item" @click="
+									$router.push('/profile');
+								showUserMenu = false;
+								">
 									<User :size="16" /> Hồ sơ cá nhân
 								</div>
 								<div class="dropdown-item" @click="doLogout">
@@ -612,6 +428,11 @@ const mobileMenuOpen = ref(false);
 const showUserMenu = ref(false);
 const isDark = ref(false);
 const userMenuRef = ref(null);
+const avatarError = ref(false);
+
+const handleAvatarError = () => {
+	avatarError.value = true;
+};
 
 const openGroups = ref({
 	learning: false,
@@ -661,7 +482,19 @@ const syncSidebarGroups = () => {
 	}
 };
 
-watch(() => router.currentRoute.value.path, syncSidebarGroups);
+watch(
+	() => router.currentRoute.value.path,
+	() => {
+		syncSidebarGroups();
+	},
+);
+
+watch(
+	() => authStore.user?.avatar,
+	() => {
+		avatarError.value = false;
+	},
+);
 
 const roleBadge = computed(() => {
 	const role = authStore.user?.role;
@@ -675,7 +508,7 @@ const avatarUrl = computed(() => {
 	const url = authStore.user.avatar;
 	const base = url.startsWith("http")
 		? url
-		: `${import.meta.env.VITE_API_URL || ""}${url}`;
+		: `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${url}`;
 	return `${base}?t=${authStore.avatarUpdateTime}`;
 });
 
@@ -751,12 +584,14 @@ onUnmounted(() => {
 
 @media (max-width: 768px) {
 	.sidebar {
-		width: 260px;
-		transform: translateX(-100%);
+		width: 0;
+		transform: none;
 		box-shadow: none;
 	}
+
 	.sidebar.mobile-open {
-		transform: translateX(0);
+		width: 260px;
+		transform: none;
 		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
 	}
 }
@@ -771,6 +606,7 @@ onUnmounted(() => {
 	opacity: 0;
 	transition: opacity 0.3s ease;
 }
+
 @media (max-width: 768px) {
 	.mobile-backdrop.active {
 		display: block;
@@ -781,19 +617,29 @@ onUnmounted(() => {
 .sidebar-header {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
+	justify-content: center;
 	padding: var(--space-md);
-	height: var(--header-height);
+	height: 120px;
 	flex-shrink: 0;
-	overflow: hidden;
+	overflow: visible;
+	position: relative;
 }
 
 .sidebar.collapsed .sidebar-header {
 	justify-content: center;
 	padding: var(--space-md) 0;
 }
+
+.sidebar-header .toggle-btn,
+.sidebar-header .mobile-close-btn {
+	position: absolute;
+	right: var(--space-md);
+}
+
 .sidebar.collapsed .toggle-btn {
-	display: none;
+	display: flex;
+	margin: 0 auto;
+	position: static;
 }
 
 .logo {
@@ -802,7 +648,7 @@ onUnmounted(() => {
 	gap: var(--space-sm);
 	cursor: pointer;
 	min-width: 0;
-	overflow: hidden;
+	overflow: visible;
 }
 
 .logo-text {
@@ -819,6 +665,7 @@ onUnmounted(() => {
 		opacity var(--transition-base),
 		max-width var(--transition-base);
 }
+
 .sidebar.collapsed .logo-text {
 	opacity: 0;
 	max-width: 0;
@@ -829,12 +676,9 @@ onUnmounted(() => {
 	justify-content: center;
 	width: 100%;
 }
+
 .sidebar.collapsed:hover .sidebar-header {
-	justify-content: space-between;
-	padding: var(--space-md);
-}
-.sidebar.collapsed:hover .toggle-btn.desktop-only {
-	display: flex;
+	justify-content: center;
 }
 
 .dlabnav {
@@ -854,13 +698,16 @@ onUnmounted(() => {
 .dlabnav-scroll::-webkit-scrollbar {
 	width: 4px;
 }
+
 .dlabnav-scroll::-webkit-scrollbar-track {
 	background: transparent;
 }
+
 .dlabnav-scroll::-webkit-scrollbar-thumb {
 	background: rgba(255, 255, 255, 0.1);
 	border-radius: 10px;
 }
+
 .sidebar:hover .dlabnav-scroll::-webkit-scrollbar-thumb {
 	background: rgba(255, 255, 255, 0.2);
 }
@@ -874,7 +721,7 @@ ul.doc-metismenu {
 }
 
 .nav-label {
-	padding: 20px 24px 6px;
+	padding: 10px 24px 6px;
 	font-size: 10.5px;
 	font-weight: 700;
 	color: #94a3b8;
@@ -897,12 +744,11 @@ ul.doc-metismenu {
 .nav-label-admin {
 	color: rgba(var(--primary-rgb), 0.7);
 }
+
 .nav-label-admin::after {
-	background: linear-gradient(
-		to right,
-		rgba(var(--primary-rgb), 0.3),
-		transparent
-	);
+	background: linear-gradient(to right,
+			rgba(var(--primary-rgb), 0.3),
+			transparent);
 }
 
 .sidebar.collapsed .nav-label {
@@ -912,7 +758,7 @@ ul.doc-metismenu {
 	overflow: hidden;
 }
 
-ul.doc-metismenu > li > a {
+ul.doc-metismenu>li>a {
 	display: flex;
 	align-items: center;
 	padding: 10px 16px;
@@ -927,15 +773,15 @@ ul.doc-metismenu > li > a {
 	gap: 10px;
 }
 
-ul.doc-metismenu > li > a.router-link-active,
-ul.doc-metismenu > li > a.active {
+ul.doc-metismenu>li>a.router-link-active,
+ul.doc-metismenu>li>a.active {
 	color: var(--sidebar-text-active) !important;
 	background-color: var(--sidebar-bg-active);
 	font-weight: 600;
 }
 
-ul.doc-metismenu > li > a.router-link-active::before,
-ul.doc-metismenu > li > a.active::before {
+ul.doc-metismenu>li>a.router-link-active::before,
+ul.doc-metismenu>li>a.active::before {
 	content: "";
 	position: absolute;
 	left: -10px;
@@ -946,7 +792,7 @@ ul.doc-metismenu > li > a.active::before {
 	border-radius: 0 3px 3px 0;
 }
 
-ul.doc-metismenu > li > a:hover:not(.active):not(.router-link-active) {
+ul.doc-metismenu>li>a:hover:not(.active):not(.router-link-active) {
 	background-color: rgba(var(--primary-rgb), 0.05);
 	color: var(--text-primary);
 }
@@ -955,8 +801,9 @@ ul.doc-metismenu > li > a:hover:not(.active):not(.router-link-active) {
 	flex-shrink: 0;
 	opacity: 0.75;
 }
-ul.doc-metismenu > li > a.active .nav-icon,
-ul.doc-metismenu > li > a.router-link-active .nav-icon {
+
+ul.doc-metismenu>li>a.active .nav-icon,
+ul.doc-metismenu>li>a.router-link-active .nav-icon {
 	opacity: 1;
 }
 
@@ -997,7 +844,7 @@ ul.doc-metismenu > li > a.router-link-active .nav-icon {
 	flex-shrink: 0;
 }
 
-.doc-metismenu li.mm-active > a.doc-has-arrow::after {
+.doc-metismenu li.mm-active>a.doc-has-arrow::after {
 	transform: rotate(135deg);
 	margin-top: -6px;
 	opacity: 0.7;
@@ -1061,7 +908,7 @@ ul.doc-metismenu > li > a.router-link-active .nav-icon {
 	background: var(--primary);
 }
 
-.sidebar.collapsed .doc-metismenu > li > a {
+.sidebar.collapsed .doc-metismenu>li>a {
 	padding: 10px 0;
 	margin: 2px 8px;
 	justify-content: center;
@@ -1100,8 +947,9 @@ ul.doc-metismenu > li > a.router-link-active .nav-icon {
 	padding: 0 var(--space-xl);
 	position: sticky;
 	top: 0;
-	z-index: 100;
-	gap: var(--space-md);
+	z-index: 1100;
+	border-bottom: 1px solid var(--border-color);
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
 @media (max-width: 768px) {
@@ -1116,15 +964,24 @@ ul.doc-metismenu > li > a.router-link-active .nav-icon {
 	gap: var(--space-sm);
 	background: var(--bg-tertiary);
 	border: 1px solid var(--border-color);
-	border-radius: var(--radius-full);
-	padding: 0.5rem 1rem;
-	width: 360px;
-	flex-shrink: 0;
+	border-radius: 99px;
+	padding: 0.6rem 1.25rem;
+	width: 500px;
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	transition: all 0.2s ease;
+}
+
+.header-search:focus-within {
+	background: var(--bg-card);
+	box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+	border-color: var(--primary);
 }
 
 @media (max-width: 1024px) {
 	.header-search {
-		width: 200px;
+		width: 300px;
 	}
 }
 
@@ -1136,6 +993,7 @@ ul.doc-metismenu > li > a.router-link-active .nav-icon {
 	width: 100%;
 	font-size: var(--font-size-sm);
 }
+
 .search-input::placeholder {
 	color: var(--text-tertiary);
 }
@@ -1146,6 +1004,7 @@ ul.doc-metismenu > li > a.router-link-active .nav-icon {
 	gap: 8px;
 	cursor: pointer;
 }
+
 .mobile-logo-text {
 	font-size: var(--font-size-lg);
 	font-weight: 800;
@@ -1172,6 +1031,7 @@ ul.doc-metismenu > li > a.router-link-active .nav-icon {
 	border-radius: var(--radius-full);
 	transition: background var(--transition-fast);
 }
+
 .user-menu:hover {
 	background: var(--bg-glass);
 }
@@ -1189,6 +1049,7 @@ ul.doc-metismenu > li > a.router-link-active .nav-icon {
 	font-size: var(--font-size-sm);
 	flex-shrink: 0;
 }
+
 .user-avatar.lg {
 	width: 40px;
 	height: 40px;
@@ -1248,6 +1109,7 @@ ul.doc-metismenu > li > a.router-link-active .nav-icon {
 	cursor: pointer;
 	transition: all var(--transition-fast);
 }
+
 .dropdown-item:hover {
 	background: var(--bg-glass);
 	color: var(--text-primary);
@@ -1268,9 +1130,11 @@ ul.doc-metismenu > li > a.router-link-active .nav-icon {
 .desktop-only {
 	display: flex;
 }
+
 .mobile-only {
 	display: none;
 }
+
 .desktop-tablet-only {
 	display: flex;
 }
@@ -1279,13 +1143,16 @@ ul.doc-metismenu > li > a.router-link-active .nav-icon {
 	.desktop-only {
 		display: none !important;
 	}
+
 	.mobile-only {
 		display: flex !important;
 	}
+
 	.desktop-tablet-only {
 		display: none !important;
 	}
 }
+
 @media (min-width: 769px) and (max-width: 1024px) {
 	.desktop-only {
 		display: none !important;
@@ -1296,6 +1163,7 @@ ul.doc-metismenu > li > a.router-link-active .nav-icon {
 .dropdown-leave-active {
 	transition: all 0.15s ease;
 }
+
 .dropdown-enter-from,
 .dropdown-leave-to {
 	opacity: 0;
@@ -1320,9 +1188,9 @@ ul.doc-metismenu > li > a.router-link-active .nav-icon {
 }
 
 .pill-training {
-	background: rgba(99, 102, 241, 0.07);
-	color: #9fa3f5;
-	border: 1px solid rgba(99, 102, 241, 0.13);
+	background: rgba(var(--primary-rgb), 0.08);
+	color: var(--primary-500);
+	border: 1px solid rgba(var(--primary-rgb), 0.15);
 }
 
 .pill-org {
@@ -1394,13 +1262,15 @@ ul.doc-metismenu > li > a.router-link-active .nav-icon {
 }
 
 .icon-training {
-	background: rgba(99, 102, 241, 0.07);
-	color: #a5a8f6;
+	background: rgba(var(--primary-rgb), 0.08);
+	color: var(--primary-500);
 }
+
 .icon-org {
 	background: rgba(71, 130, 160, 0.08);
 	color: #7bafc8;
 }
+
 .icon-system {
 	background: rgba(148, 163, 184, 0.08);
 	color: #94a3b8;
@@ -1408,14 +1278,16 @@ ul.doc-metismenu > li > a.router-link-active .nav-icon {
 
 .admin-nav-item.active .icon-training,
 .admin-nav-item.router-link-active .icon-training {
-	background: rgba(99, 102, 241, 0.13);
-	color: #c7c9fb;
+	background: rgba(var(--primary-rgb), 0.15);
+	color: var(--primary-600);
 }
+
 .admin-nav-item.active .icon-org,
 .admin-nav-item.router-link-active .icon-org {
 	background: rgba(71, 130, 160, 0.14);
 	color: #a8d0e6;
 }
+
 .admin-nav-item.active .icon-system,
 .admin-nav-item.router-link-active .icon-system {
 	background: rgba(148, 163, 184, 0.13);
@@ -1432,9 +1304,11 @@ ul.doc-metismenu > li > a.router-link-active .nav-icon {
 	justify-content: center;
 	gap: 0;
 }
+
 .sidebar.collapsed .admin-nav-item .nav-text {
 	display: none;
 }
+
 .sidebar.collapsed .admin-group-header,
 .sidebar.collapsed .admin-group-divider {
 	display: none;

@@ -240,7 +240,7 @@ const avatarUrl = computed(() => {
 	const url = user.value.avatar;
 	const base = url.startsWith("http")
 		? url
-		: `${import.meta.env.VITE_API_URL || ""}${url}`;
+		: `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${url}`;
 	return `${base}?t=${authStore.avatarUpdateTime}`;
 });
 const roleLabel = computed(

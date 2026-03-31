@@ -381,22 +381,24 @@ const cancel = () => {
 }
 
 .glass-card {
-	background: rgba(255, 255, 255, 0.9);
+	background: var(--bg-card);
 	backdrop-filter: blur(20px);
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-2xl);
-	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.03);
+	box-shadow: var(--shadow-sm);
 	overflow: hidden;
 }
 
+
 .glass-card-banner {
-	background: rgba(249, 250, 251, 0.5);
+	background: var(--bg-tertiary);
 	padding: 24px 32px;
 	display: flex;
 	align-items: center;
 	gap: 16px;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+	border-bottom: 1px solid var(--border-color);
 }
+
 
 .banner-icon-bg {
 	width: 40px;
@@ -433,8 +435,9 @@ const cancel = () => {
 }
 
 .border-top-glass {
-	border-top: 1px solid rgba(0, 0, 0, 0.05);
+	border-top: 1px solid var(--border-color);
 }
+
 
 .glass-alert-info {
 	display: flex;
@@ -487,16 +490,18 @@ const cancel = () => {
 	position: relative;
 	display: flex;
 	align-items: center;
-	background: rgba(249, 250, 251, 0.5);
+	background: var(--bg-secondary);
 	border-radius: 12px;
-	border: 1px solid rgba(0, 0, 0, 0.06);
+	border: 1px solid var(--border-color);
 	transition: all 0.3s;
 }
+
 .glass-input-group:focus-within {
-	background: #ffffff;
+	background: var(--bg-tertiary);
 	border-color: var(--primary-400);
 	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 }
+
 .glass-input-group.textarea-group {
 	align-items: flex-start;
 }
@@ -549,19 +554,21 @@ const cancel = () => {
 	align-items: flex-start;
 	gap: 12px;
 	padding: 16px;
-	background: rgba(249, 250, 251, 0.6);
-	border: 1px solid rgba(0, 0, 0, 0.06);
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
 	border-radius: 14px;
 	cursor: pointer;
 	transition: all 0.2s;
 }
 
+
 .cg-select-card:hover {
-	background: #ffffff;
+	background: var(--bg-tertiary);
 	border-color: rgba(99, 102, 241, 0.3);
 	transform: translateY(-2px);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+	box-shadow: var(--shadow-sm);
 }
+
 
 .cg-select-card.selected {
 	background: rgba(99, 102, 241, 0.05);
@@ -607,18 +614,20 @@ const cancel = () => {
 	padding: 2px 8px;
 	border-radius: 6px;
 	font-weight: 700;
-	background: rgba(0, 0, 0, 0.05);
+	background: var(--bg-secondary);
 	color: var(--text-secondary);
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
 }
+
 
 .form-actions-container {
 	padding-top: 32px;
 	margin-top: 8px;
-	border-top: 1px solid rgba(0, 0, 0, 0.05);
+	border-top: 1px solid var(--border-color);
 	display: flex;
 	justify-content: flex-end;
 }
+
 .action-buttons-wrapper {
 	display: flex;
 	gap: 16px;

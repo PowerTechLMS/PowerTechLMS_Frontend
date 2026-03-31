@@ -196,7 +196,7 @@ const startSignalR = async () => {
 		await connection.value.stop().catch(() => {});
 	}
 
-	const hubUrl = `${import.meta.env.VITE_API_URL || ""}/hubs/notifications`;
+	const hubUrl = `${import.meta.env.VITE_API_URL || "http://localhost:5100"}/hubs/notifications`;
 
 	connection.value = new HubConnectionBuilder()
 		.withUrl(hubUrl, {
@@ -258,7 +258,7 @@ onUnmounted(() => {
 	background: var(--bg-secondary);
 	border-radius: var(--radius-lg);
 	border: 1px solid var(--border-color);
-	z-index: 1000;
+	z-index: 2000;
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;

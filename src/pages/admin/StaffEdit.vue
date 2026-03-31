@@ -11,12 +11,13 @@ import {
 	Camera,
 	Save,
 	Loader2,
-	ChevronRight,
-	Pencil,
 	Layout,
+	Shield,
+	Users,
+	User as UserIcon,
 } from "lucide-vue-next";
 import { toast } from "vue3-toastify";
-import { userGroupAPI } from "@/services/api";
+import { userGroupAPI, rbacAPI } from "@/services/api";
 
 const router = useRouter();
 const route = useRoute();
@@ -33,6 +34,7 @@ const userForm = ref({
 	password: "",
 	confirmPassword: "",
 	role: "Employee",
+	position: "",
 	groupId: null as number | null,
 	avatarFile: null as File | null,
 	avatarPreview: "",
@@ -40,6 +42,7 @@ const userForm = ref({
 });
 
 const departments = ref<any[]>([]);
+const roles = ref<any[]>([]);
 
 const fetchUserData = async () => {
 	loading.value = true;
@@ -49,13 +52,14 @@ const fetchUserData = async () => {
 		userForm.value.fullName = data.fullName;
 		userForm.value.email = data.email;
 		userForm.value.role = data.role;
+		userForm.value.position = data.position || "";
 		userForm.value.isActive = data.isActive;
 		userForm.value.groupId = data.groupId || null;
 
 		if (data.avatar) {
 			userForm.value.avatarPreview = data.avatar.startsWith("http")
 				? data.avatar
-				: `${import.meta.env.VITE_API_URL || ""}${data.avatar}`;
+				: `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${data.avatar}`;
 		}
 	} catch {
 		toast.error("Không thể tải dữ liệu nhân sự");
@@ -68,8 +72,12 @@ const fetchUserData = async () => {
 onMounted(async () => {
 	fetchUserData();
 	try {
-		const res = await userGroupAPI.getAll();
-		departments.value = res.data.items || res.data;
+		const [deptRes, roleRes] = await Promise.all([
+			userGroupAPI.getAll(),
+			rbacAPI.getRoles(),
+		]);
+		departments.value = deptRes.data.items || deptRes.data;
+		roles.value = roleRes.data || [];
 	} catch {}
 });
 
@@ -111,6 +119,7 @@ const submitForm = async () => {
 			if (userForm.value.password)
 				payload.append("Password", userForm.value.password);
 			payload.append("Role", userForm.value.role);
+			payload.append("Position", userForm.value.position);
 			payload.append("IsActive", String(userForm.value.isActive));
 			if (userForm.value.groupId) {
 				payload.append("GroupId", String(userForm.value.groupId));
@@ -123,6 +132,7 @@ const submitForm = async () => {
 				fullName: userForm.value.fullName,
 				email: userForm.value.email,
 				role: userForm.value.role,
+				position: userForm.value.position,
 				isActive: userForm.value.isActive,
 				groupId: userForm.value.groupId,
 			};
@@ -338,6 +348,35 @@ const submitForm = async () => {
 									/>
 								</div>
 							</div>
+							<div class="form-group-premium mb-4">
+								<label class="label-premium">Vai trò hệ thống <span class="text-danger">*</span></label>
+								<div class="role-selection-grid">
+									<div 
+										class="role-radio-card danger" 
+										:class="{ active: userForm.role === 'Admin' }"
+										@click="userForm.role = 'Admin'"
+									>
+										<Shield :size="20" class="role-icon" />
+										<span class="role-label">Quản trị viên</span>
+									</div>
+									<div 
+										class="role-radio-card info" 
+										:class="{ active: userForm.role === 'Instructor' }"
+										@click="userForm.role = 'Instructor'"
+									>
+										<UserIcon :size="20" class="role-icon" />
+										<span class="role-label">Giảng viên</span>
+									</div>
+									<div 
+										class="role-radio-card primary" 
+										:class="{ active: userForm.role === 'Employee' }"
+										@click="userForm.role = 'Employee'"
+									>
+										<Users :size="20" class="role-icon" />
+										<span class="role-label">Nhân viên</span>
+									</div>
+								</div>
+							</div>
 
 							<div class="form-group-premium mb-4">
 								<label class="label-premium">Phòng ban / Bộ phận</label>
@@ -476,8 +515,9 @@ const submitForm = async () => {
 	padding-bottom: 24px;
 	flex-wrap: wrap;
 	gap: var(--space-lg);
-	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+	border-bottom: 1px solid var(--border-color);
 }
+
 .header-content {
 	display: flex;
 	align-items: flex-start;
@@ -532,13 +572,14 @@ const submitForm = async () => {
 	justify-content: center;
 	height: 42px;
 	padding: 0 20px;
-	background: rgba(255, 255, 255, 0.8);
+	background: var(--bg-secondary);
 	backdrop-filter: blur(8px);
 	color: var(--text-secondary);
-	border: 1px solid rgba(0, 0, 0, 0.1);
+	border: 1px solid var(--border-color);
 	border-radius: 14px;
 	font-weight: 700;
 	font-size: 13px;
+
 	cursor: pointer;
 	transition: all 0.3s;
 }
@@ -551,15 +592,16 @@ const submitForm = async () => {
 }
 
 .glass-content-card {
-	background: rgba(255, 255, 255, 0.9);
+	background: var(--bg-card);
 	backdrop-filter: blur(20px);
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
 	border-radius: 28px;
-	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.03);
+	box-shadow: var(--shadow-sm);
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
 }
+
 .glass-card-header {
 	padding: 28px 32px;
 }
@@ -603,9 +645,10 @@ const submitForm = async () => {
 .input-glass-ui {
 	width: 100%;
 	padding: 12px 18px;
-	background: rgba(249, 250, 251, 0.7);
-	border: 1px solid rgba(0, 0, 0, 0.06);
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
 	border-radius: 16px;
+
 	font-size: 15px;
 	color: var(--text-primary);
 	transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -617,9 +660,10 @@ const submitForm = async () => {
 	border-radius: 12px;
 }
 .input-glass-ui:focus {
-	background: white;
+	background: var(--bg-tertiary);
 	border-color: var(--primary-300);
 }
+
 
 .input-focus-glow {
 	position: absolute;
@@ -680,27 +724,30 @@ const submitForm = async () => {
 }
 
 .password-change-box {
-	background: rgba(239, 68, 68, 0.03);
-	border: 1px solid rgba(239, 68, 68, 0.1);
+	background: rgba(239, 68, 68, 0.05);
+	border: 1px solid rgba(239, 68, 68, 0.15);
 }
+
 
 .avatar-premium-uploader {
 	display: flex;
 	align-items: center;
 	gap: 24px;
 	padding: 20px;
-	background: rgba(249, 250, 251, 0.5);
-	border: 1px dashed rgba(0, 0, 0, 0.1);
+	background: var(--bg-secondary);
+	border: 1px dashed var(--border-color);
 	border-radius: 20px;
 }
+
 .uploader-circle {
 	position: relative;
 	width: 90px;
 	height: 90px;
 	border-radius: 50%;
-	background: white;
-	border: 3px solid white;
-	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+	background: var(--bg-card);
+	border: 3px solid var(--bg-card);
+	box-shadow: var(--shadow-sm);
+
 	cursor: pointer;
 	overflow: hidden;
 	flex-shrink: 0;
@@ -717,8 +764,9 @@ const submitForm = async () => {
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	background: #fbfcfe;
+	background: var(--bg-tertiary);
 }
+
 .edit-overlay {
 	position: absolute;
 	inset: 0;
@@ -743,16 +791,16 @@ const submitForm = async () => {
 	align-items: center;
 	gap: 14px;
 	padding: 14px 20px;
-	background: white;
-	border: 1px solid rgba(0, 0, 0, 0.06);
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
 	border-radius: 16px;
 	cursor: pointer;
 	transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .role-radio-card:hover {
 	transform: translateX(5px);
-	border-color: rgba(0, 0, 0, 0.1);
-	background: rgba(249, 250, 251, 0.5);
+	border-color: var(--primary-400);
+	background: var(--bg-tertiary);
 }
 .role-icon {
 	color: var(--text-tertiary);
@@ -762,8 +810,8 @@ const submitForm = async () => {
 .role-label {
 	font-size: 14px;
 	font-weight: 700;
-	color: var(--text-secondary);
-	transition: all 0.3s;
+	color: var(--text-primary);
+	transition: all 0.2s;
 }
 
 .role-radio-card.active {
@@ -806,10 +854,11 @@ const submitForm = async () => {
 	color: var(--success-700);
 }
 .premium-status-box.inactive {
-	background: rgba(0, 0, 0, 0.03);
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
 	color: var(--text-secondary);
 }
+
 
 .status-dot {
 	width: 8px;
@@ -836,8 +885,9 @@ const submitForm = async () => {
 	position: absolute;
 	cursor: pointer;
 	inset: 0;
-	background: #cbd5e1;
+	background: var(--border-color);
 	transition: 0.4s;
+
 	border-radius: 34px;
 }
 .switch-slider:before {
@@ -862,9 +912,10 @@ input:checked + .switch-slider:before {
 .btn-glass-secondary {
 	height: 48px;
 	padding: 0 24px;
-	background: transparent;
-	border: 1px solid rgba(0, 0, 0, 0.1);
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
 	color: var(--text-secondary);
+
 	border-radius: var(--radius-full);
 	font-weight: 700;
 	font-size: 14px;

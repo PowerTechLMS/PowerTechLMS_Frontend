@@ -5,8 +5,18 @@ const api = axios.create({
 	timeout: 600000,
 });
 
+const getCookie = (name) => {
+	const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+	if (match) return match[2];
+	return null;
+};
+
+const eraseCookie = (name) => {
+	document.cookie = name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+};
+
 api.interceptors.request.use((config) => {
-	const token = localStorage.getItem("lms_token");
+	const token = getCookie("lms_token") || sessionStorage.getItem("lms_token");
 	if (token) config.headers.Authorization = `Bearer ${token}`;
 	return config;
 });
@@ -15,9 +25,11 @@ api.interceptors.response.use(
 	(response) => response,
 	(error) => {
 		if (error.response?.status === 401) {
-			localStorage.removeItem("lms_token");
-			localStorage.removeItem("lms_user");
-			window.location.href = "/login";
+			eraseCookie("lms_token");
+			eraseCookie("lms_user");
+			sessionStorage.removeItem("lms_token");
+			sessionStorage.removeItem("lms_user");
+			window.location.href = "/#/";
 		}
 		return Promise.reject(error);
 	},
@@ -76,8 +88,8 @@ export const lessonAPI = {
 export const enrollmentAPI = {
 	enroll: (courseId) => api.post("/enrollments", { courseId }),
 	adminEnroll: (data) => api.post("/enrollments/admin", data),
-	approve: (id, approved) =>
-		api.put(`/enrollments/${id}/approve`, { approved }),
+	approve: (id, approved, reason = null) =>
+		api.put(`/enrollments/${id}/approve`, { approved, reason }),
 	getMy: () => api.get("/enrollments/my"),
 	getByCourse: (courseId) => api.get(`/enrollments/course/${courseId}`),
 	getPending: () => api.get("/enrollments/pending"),
@@ -116,6 +128,10 @@ export const quizAPI = {
 	submit: (attemptId, answers) =>
 		api.post(`/quizzes/${attemptId}/submit`, { answers }),
 	getResults: (quizId) => api.get(`/quizzes/${quizId}/results`),
+	update: (quizId, data) => api.put(`/quizzes/${quizId}`, data),
+	updateQuestion: (questionId, data) =>
+		api.put(`/quizzes/questions/${questionId}`, data),
+	deleteQuestion: (questionId) => api.delete(`/quizzes/questions/${questionId}`),
 };
 
 export const certificateAPI = {

@@ -68,9 +68,10 @@
 			<div
 				class="glass-card-header-premium p-4 border-bottom-glass d-flex align-items-center justify-content-between flex-wrap gap-4"
 			>
-				<h5 class="fw-bold mb-0 d-flex align-items-center gap-2 text-dark">
+				<h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
 					<Layers :size="20" class="text-primary" /> Danh sách Lộ trình
 				</h5>
+
 
 				<div class="glass-search">
 					<Search :size="18" class="text-tertiary" />
@@ -97,7 +98,8 @@
 					<div class="empty-icon-box mb-4">
 						<Route :size="64" class="opacity-20 animate-pulse" />
 					</div>
-					<h5 class="fw-bold text-dark">Chưa có Lộ trình nào</h5>
+					<h5 class="fw-bold">Chưa có Lộ trình nào</h5>
+
 					<p class="text-tertiary fs-14 mb-0">
 						Tạo lộ trình để nhóm các khóa học lại với nhau.
 					</p>
@@ -209,14 +211,15 @@
 			>
 				<div class="fs-13 text-tertiary fw-medium">
 					Hiển thị
-					<span class="text-dark fw-bold"
+					<span class="fw-bold"
 						>{{ (currentPage - 1) * itemsPerPage + 1 }} -
 						{{
 							Math.min(currentPage * itemsPerPage, filteredPaths.length)
 						}}</span
 					>
 					trên tổng
-					<span class="text-dark fw-bold">{{ filteredPaths.length }}</span>
+					<span class="fw-bold">{{ filteredPaths.length }}</span>
+
 				</div>
 				<div class="glass-pagination d-flex gap-1">
 					<button
@@ -367,9 +370,11 @@ const deletePath = async (path: any) => {
 		var(--text-secondary)
 	);
 	-webkit-background-clip: text;
+	background-clip: text;
 	-webkit-text-fill-color: transparent;
 	margin: 0 0 4px 0;
 }
+
 .page-desc {
 	color: var(--text-secondary);
 	font-size: 15px;
@@ -542,31 +547,32 @@ const deletePath = async (path: any) => {
 }
 
 .glass-content-card {
-	background: rgba(255, 255, 255, 0.9);
+	background: var(--bg-secondary);
 	backdrop-filter: blur(20px);
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
 	border-radius: 28px;
 	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.03);
 	overflow: hidden;
 }
 .border-bottom-glass {
-	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+	border-bottom: 1px solid var(--border-color);
 }
 .border-top-glass {
-	border-top: 1px solid rgba(0, 0, 0, 0.05);
+	border-top: 1px solid var(--border-color);
 }
 
 .glass-search {
 	display: flex;
 	align-items: center;
-	background: white;
-	border: 1px solid rgba(0, 0, 0, 0.1);
+	background: var(--bg-tertiary);
+	border: 1px solid var(--border-color);
 	border-radius: 16px;
 	padding: 0 18px;
 	width: 300px;
 	height: 48px;
 	transition: all 0.3s;
 }
+
 .glass-search:focus-within {
 	border-color: var(--primary-300);
 	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
@@ -588,38 +594,38 @@ const deletePath = async (path: any) => {
 	border-spacing: 0;
 }
 .glass-table-ui th {
-	background: rgba(249, 250, 251, 0.5);
+	background: var(--bg-secondary);
 	padding: 16px;
 	font-size: 11px;
 	font-weight: 800;
 	color: var(--text-tertiary);
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
-	border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+	border-bottom: 2px solid var(--border-color);
 }
 .glass-table-ui td {
 	padding: 18px 16px;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+	border-bottom: 1px solid var(--border-color);
 	vertical-align: middle;
-}
-.glass-table-ui tbody tr {
-	transition: all 0.2s;
+	color: var(--text-primary);
 }
 .glass-table-ui tbody tr:hover td {
-	background: rgba(249, 250, 251, 0.4);
+	background: var(--bg-tertiary);
 }
+
 
 .dept-id-badge {
 	display: inline-block;
-	background: #f1f5f9;
-	color: #475569;
+	background: var(--bg-tertiary);
+	color: var(--text-tertiary);
 	font-weight: 700;
 	font-size: 12px;
 	font-family: monospace;
 	padding: 4px 10px;
 	border-radius: 8px;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 }
+
 
 .dept-info-cell {
 	display: flex;
@@ -715,8 +721,8 @@ const deletePath = async (path: any) => {
 	width: 36px;
 	height: 36px;
 	border-radius: 10px;
-	border: 1px solid rgba(0, 0, 0, 0.05);
-	background: white;
+	border: 1px solid var(--border-color);
+	background: var(--bg-secondary);
 	color: var(--text-secondary);
 	display: flex;
 	align-items: center;
@@ -725,10 +731,11 @@ const deletePath = async (path: any) => {
 	font-weight: 600;
 }
 .pag-btn:hover:not(:disabled) {
-	background: var(--primary-50);
-	color: var(--primary-600);
-	border-color: var(--primary-200);
+	background: var(--bg-tertiary);
+	color: var(--primary-500);
+	border-color: var(--primary-500);
 }
+
 .pag-btn.active {
 	background: var(--primary-500);
 	color: white;
@@ -757,7 +764,7 @@ const deletePath = async (path: any) => {
 	min-height: 300px;
 }
 .empty-icon-box {
-	background: rgba(0, 0, 0, 0.02);
+	background: var(--bg-tertiary);
 	width: 100px;
 	height: 100px;
 	border-radius: 50%;
@@ -766,14 +773,8 @@ const deletePath = async (path: any) => {
 	justify-content: center;
 }
 
-@media (max-width: 1200px) {
-	.page-header {
-		justify-content: center;
-		text-align: center;
-	}
-	.header-content {
-		flex-direction: column;
-		align-items: center;
-	}
+:is([data-bs-theme="dark"], [data-theme="dark"]) .glass-stat-card {
+	border-color: rgba(255, 255, 255, 0.05);
 }
 </style>
+

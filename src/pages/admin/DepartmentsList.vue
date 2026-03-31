@@ -402,10 +402,12 @@ const deleteDepartment = async (dept: any) => {
 	font-weight: 800;
 	letter-spacing: -0.02em;
 	background: linear-gradient(90deg, var(--primary-600), var(--primary-400));
+	background-clip: text;
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 	margin-bottom: 8px;
 }
+
 .page-desc {
 	font-size: var(--font-size-base);
 	color: var(--text-secondary);
@@ -427,16 +429,17 @@ const deleteDepartment = async (dept: any) => {
 	border: none;
 }
 .btn-primary {
-	background: var(--primary-500);
+	background: var(--primary-600);
 	color: white;
 }
 .btn-glow {
-	box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+	box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
 }
 .btn-glow:hover {
 	transform: translateY(-2px);
 	box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
 }
+
 
 .stats-grid {
 	display: grid;
@@ -445,19 +448,20 @@ const deleteDepartment = async (dept: any) => {
 	margin-bottom: var(--space-xl);
 }
 .glass-stat-card {
-	background: rgba(255, 255, 255, 0.8);
+	background: var(--bg-card);
 	backdrop-filter: blur(20px);
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-2xl);
 	padding: var(--space-xl);
 	display: flex;
 	align-items: center;
 	gap: var(--space-lg);
-	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.03);
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 	transition: all 0.3s;
 	position: relative;
 	overflow: hidden;
 }
+
 .glass-stat-card:hover {
 	transform: translateY(-4px);
 	box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
@@ -532,12 +536,13 @@ const deleteDepartment = async (dept: any) => {
 }
 
 .glass-card {
-	background: rgba(255, 255, 255, 0.9);
+	background: var(--bg-card);
 	backdrop-filter: blur(20px);
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-2xl);
-	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.03);
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
+
 
 .section-bar {
 	display: flex;
@@ -563,16 +568,17 @@ const deleteDepartment = async (dept: any) => {
 .glass-search.inline {
 	display: flex;
 	align-items: center;
-	background: #ffffff;
-	border: 1px solid rgba(0, 0, 0, 0.1);
+	background: var(--bg-tertiary);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-full);
 	padding: 4px 16px;
-	box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+	box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
 	width: 100%;
 	max-width: 350px;
 	box-sizing: border-box;
 	transition: all 0.3s;
 }
+
 .glass-search.inline:focus-within {
 	border-color: var(--primary-400);
 	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
@@ -625,42 +631,45 @@ const deleteDepartment = async (dept: any) => {
 }
 .glass-table td {
 	padding: 20px 16px;
-	background: rgba(249, 250, 251, 0.5);
-	border-top: 1px solid rgba(0, 0, 0, 0.02);
-	border-bottom: 1px solid rgba(0, 0, 0, 0.02);
+	background: var(--bg-secondary);
+	border-top: 1px solid var(--border-color);
+	border-bottom: 1px solid var(--border-color);
 	transition: all 0.2s;
 	vertical-align: middle;
 }
 .glass-table td:first-child {
-	border-left: 1px solid rgba(0, 0, 0, 0.02);
+	border-left: 1px solid var(--border-color);
 	border-top-left-radius: 16px;
 	border-bottom-left-radius: 16px;
 }
 .glass-table td:last-child {
-	border-right: 1px solid rgba(0, 0, 0, 0.02);
+	border-right: 1px solid var(--border-color);
 	border-top-right-radius: 16px;
 	border-bottom-right-radius: 16px;
 }
+
 .glass-table tbody tr:hover td {
-	background: #ffffff;
-	border-color: rgba(99, 102, 241, 0.1);
+	background: var(--bg-tertiary);
+	border-color: var(--primary-400);
 }
 .glass-table tbody tr:hover {
 	transform: translateY(-2px);
-	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
+
 
 .dept-id-badge {
 	display: inline-block;
-	background: #f1f5f9;
-	color: #475569;
+	background: var(--bg-tertiary);
+	color: var(--text-secondary);
 	font-weight: 700;
 	font-size: 12px;
 	font-family: monospace;
 	padding: 4px 10px;
 	border-radius: 8px;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 }
+
 
 .dept-info-cell {
 	display: flex;
@@ -702,12 +711,13 @@ const deleteDepartment = async (dept: any) => {
 	justify-content: center;
 	gap: 8px;
 	padding: 6px 16px;
-	background: rgba(0, 0, 0, 0.02);
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	background: var(--bg-tertiary);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-full);
 	font-size: 14px;
 	color: var(--text-primary);
 }
+
 .icon-primary {
 	color: var(--primary-500);
 }
@@ -757,10 +767,11 @@ const deleteDepartment = async (dept: any) => {
 	color: var(--text-tertiary);
 }
 .btn-ghost-icon.view:hover {
-	color: var(--primary-600);
-	background: rgba(99, 102, 241, 0.1);
-	border-color: rgba(99, 102, 241, 0.2);
+	color: #818cf8;
+	background: rgba(99, 102, 241, 0.15);
+	border-color: rgba(99, 102, 241, 0.3);
 }
+
 .btn-ghost-icon.edit:hover {
 	color: var(--success-600);
 	background: rgba(16, 185, 129, 0.1);
@@ -787,13 +798,24 @@ const deleteDepartment = async (dept: any) => {
 	background: rgba(249, 250, 251, 0.5);
 	border: 1px solid rgba(0, 0, 0, 0.02);
 }
-.skel-avatar {
-	width: 40px;
-	height: 40px;
-	border-radius: 12px;
-	background: rgba(0, 0, 0, 0.05);
-	animation: pulse 1.5s infinite;
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .dept-name {
+	color: #f8fafc !important;
 }
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .member-count-badge strong {
+	color: #f8fafc !important;
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .glass-table th {
+	border-bottom-color: var(--border-color);
+}
+
+:is([data-bs-theme="dark"], [data-theme="dark"]) .skeleton-row {
+	background: var(--bg-secondary) !important;
+	border-color: var(--border-color) !important;
+}
+
 .skel-info {
 	flex: 1;
 	display: flex;

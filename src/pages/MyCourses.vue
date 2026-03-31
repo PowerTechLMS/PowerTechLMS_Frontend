@@ -7,7 +7,7 @@
 				</div>
 				<div>
 					<h1 class="page-title">
-						<span class="title-gradient">Khóa học</span> của tôi
+						<span class="title-gradient">Khóa học của tôi</span>
 					</h1>
 					<p class="page-subtitle text-secondary fw-medium mb-0 mt-1">
 						Tiếp tục hành trình chinh phục tri thức của bạn.
@@ -33,7 +33,7 @@
 					<component :is="stat.icon" :size="24" />
 				</div>
 				<div class="stat-info">
-					<div class="stat-value text-dark">
+					<div class="stat-value">
 						{{ stat.value }}
 					</div>
 					<div class="stat-label fw-bold">
@@ -45,7 +45,7 @@
 
 		<div v-if="featuredEnrollment" class="featured-section animate-slide-up">
 			<div class="section-header">
-				<h2 class="section-title text-dark fw-900">Tiếp tục học</h2>
+				<h2 class="section-title fw-900">Tiếp tục học</h2>
 			</div>
 			<div
 				class="featured-card glass transition-all"
@@ -55,10 +55,11 @@
 					class="featured-image"
 					:style="
 						featuredEnrollment.coverImageUrl
-							? { backgroundImage: `url(${featuredEnrollment.coverImageUrl})` }
+							? { backgroundImage: `url(${getFullMediaUrl(featuredEnrollment.coverImageUrl)})` }
 							: { background: 'var(--gradient-card)' }
 					"
 				>
+
 					<div class="featured-overlay">
 						<span class="badge-glass primary fw-bold shadow-sm">
 							<Play :size="12" class="me-1" /> Đang học dở
@@ -113,7 +114,7 @@
 			style="animation-delay: 0.1s"
 		>
 			<div class="section-header">
-				<h2 class="section-title text-dark fw-900">Tất cả khóa học</h2>
+				<h2 class="section-title fw-900">Tất cả khóa học</h2>
 				<div class="filter-toolbar glass shadow-sm">
 					<div class="filter-pills-wrapper">
 						<div class="active-pill-bg" :style="activePillStyle" />
@@ -190,7 +191,7 @@
 						<div class="progress-group">
 							<span
 								class="percent-label"
-								:class="Math.round(e.progressPercent) >= 100"
+								:class="{ 'text-success': Math.round(e.progressPercent) >= 100 }"
 								>{{ Math.round(e.progressPercent || 0) }}%</span
 							>
 							<div class="progress-mini">
@@ -216,7 +217,7 @@
 				<div class="empty-glow shadow-sm">
 					<GraduationCap :size="56" class="text-primary" />
 				</div>
-				<h3 class="fw-900 text-dark">Chưa có dữ liệu</h3>
+				<h3 class="fw-900">Chưa có dữ liệu</h3>
 				<p class="text-secondary mb-4">
 					Không tìm thấy khóa học nào trong danh mục này.
 				</p>
@@ -226,7 +227,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
 import { enrollmentAPI } from "@/services/api";
 import {
 	GraduationCap,
@@ -245,7 +246,7 @@ const loading = ref(true);
 const activeFilter = ref("learning");
 const activeFilterIndex = ref(0);
 const filterButtons = ref([]);
-const activePillStyle = ref({ width: "0px", transform: "translateX(0px)" });
+const activePillStyle = ref({ width: "0px", transform: "translate(0px, 0px)" });
 
 const filters = [
 	{ id: "learning", label: "Đang học" },
@@ -259,8 +260,8 @@ const stats = computed(() => [
 		label: "Tổng khóa học",
 		value: enrollments.value.length,
 		icon: BookOpen,
-		bg: "rgba(99, 102, 241, 0.1)",
-		color: "#4f46e5",
+		bg: "rgba(var(--primary-rgb), 0.1)",
+		color: "var(--primary-600)",
 	},
 	{
 		label: "Đang học",
@@ -323,12 +324,14 @@ function updateActivePillPosition() {
 		const activeBtn = filterButtons.value[activeFilterIndex.value];
 		activePillStyle.value = {
 			width: `${activeBtn.offsetWidth}px`,
-			transform: `translateX(${activeBtn.offsetLeft}px)`,
+			height: `${activeBtn.offsetHeight}px`,
+			transform: `translate(${activeBtn.offsetLeft}px, ${activeBtn.offsetTop}px)`,
 		};
 	}
 }
 
 onMounted(async () => {
+	window.addEventListener("resize", updateActivePillPosition);
 	try {
 		const { data } = await enrollmentAPI.getMy();
 		enrollments.value = data.filter(
@@ -340,6 +343,18 @@ onMounted(async () => {
 		loading.value = false;
 	}
 });
+
+function getFullMediaUrl(url) {
+	if (!url) return "";
+	return url.startsWith("http")
+		? url
+		: `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${url.startsWith("/") ? "" : "/"}${url}`;
+}
+
+onUnmounted(() => {
+	window.removeEventListener("resize", updateActivePillPosition);
+});
+
 </script>
 
 <style scoped>
@@ -381,10 +396,12 @@ onMounted(async () => {
 	border: 1px solid transparent;
 }
 .badge-glass.primary {
-	background: rgba(99, 102, 241, 0.15);
-	color: var(--primary-400);
-	border-color: rgba(99, 102, 241, 0.3);
+	background: rgba(99, 102, 241, 0.9);
+	color: #ffffff;
+	border-color: rgba(255, 255, 255, 0.2);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
+
 .badge-glass.success {
 	background: rgba(34, 197, 94, 0.15);
 	color: var(--success-400);
@@ -426,17 +443,12 @@ onMounted(async () => {
 .title-gradient {
 	font-size: 2.8rem;
 	font-weight: 900;
-	background: var(--gradient-primary);
+	background: linear-gradient(90deg, var(--primary-700), var(--primary-500));
 	background-clip: text;
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 }
 
-[data-theme="dark"] .title-gradient {
-	background: none !important;
-	-webkit-text-fill-color: var(--text-primary) !important;
-	color: var(--text-primary) !important;
-}
 .header-decoration-bg {
 	position: absolute;
 	width: 200px;
@@ -595,8 +607,8 @@ onMounted(async () => {
 	font-size: 1rem;
 	border: none;
 	color: white;
-	background: linear-gradient(135deg, #6366f1, #4f46e5);
-	box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+	background: var(--gradient-primary);
+	box-shadow: var(--shadow-glow);
 	display: flex;
 	align-items: center;
 	transition: all 0.3s;
@@ -619,8 +631,8 @@ onMounted(async () => {
 .filter-toolbar {
 	padding: 0.4rem;
 	border-radius: 30px;
-	background: var(--bg-card, #ffffff);
-	border: 1px solid var(--border-color, #e2e8f0);
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 }
 .filter-pills-wrapper {
 	display: inline-flex;
@@ -631,13 +643,12 @@ onMounted(async () => {
 	position: absolute;
 	top: 0;
 	left: 0;
-	height: 100%;
-	background: var(--primary);
+	background: var(--gradient-primary);
 	border-radius: 20px;
 	transition:
 		transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
 		width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-	box-shadow: var(--shadow-glow);
+	box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
 	z-index: 1;
 }
 .pill-btn {
@@ -655,7 +666,7 @@ onMounted(async () => {
 	white-space: nowrap;
 }
 .pill-btn:hover:not(.active) {
-	color: #4f46e5;
+	color: var(--primary-600);
 }
 .pill-btn.active {
 	color: white;
@@ -697,7 +708,7 @@ onMounted(async () => {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	color: #4f46e5;
+	color: var(--primary-500);
 }
 .icon-box-soft.is-completed {
 	background: linear-gradient(
@@ -749,7 +760,7 @@ onMounted(async () => {
 }
 .progress-mini-fill {
 	height: 100%;
-	background: linear-gradient(90deg, #6366f1, #4f46e5);
+	background: var(--gradient-primary);
 	border-radius: 4px;
 }
 .progress-mini-fill.bg-success {
@@ -769,7 +780,7 @@ onMounted(async () => {
 	transition: all 0.2s;
 }
 .enrollment-row:hover .btn-icon-soft {
-	background: #4f46e5;
+	background: var(--primary-600);
 	color: white;
 	transform: translateX(5px);
 }
@@ -801,7 +812,7 @@ onMounted(async () => {
 .skeleton-item {
 	height: 90px;
 	border-radius: 20px;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 }
 
 @keyframes slideInUp {
@@ -856,15 +867,89 @@ onMounted(async () => {
 }
 
 @media (max-width: 768px) {
-	.row-progress,
-	.row-action {
-		display: none;
-	}
-	.stats-overview {
-		grid-template-columns: repeat(2, 1fr);
+	.my-courses-page {
+		padding: 0;
 	}
 	.title-gradient {
-		font-size: 2.2rem;
+		font-size: 2rem;
+	}
+	.stats-overview {
+		grid-template-columns: 1fr 1fr;
+		gap: 12px;
+	}
+	.stat-card {
+		padding: 16px;
+		gap: 12px;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+	.featured-body {
+		padding: 20px;
+	}
+	.featured-meta {
+		flex-wrap: wrap;
+	}
+	.featured-title {
+		font-size: 1.4rem;
+	}
+	.progress-info {
+		flex-direction: column;
+		gap: 6px;
+	}
+	.btn-neon {
+		width: 100%;
+		justify-content: center;
+	}
+	.filter-toolbar {
+		width: 100%;
+		border-radius: 16px;
+	}
+	.filter-pills-wrapper {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		justify-content: center;
+		width: 100%;
+	}
+	.pill-btn {
+		font-size: 12.5px;
+		padding: 8px 12px;
+	}
+	.enrollment-row {
+		padding: 16px;
+		gap: 16px;
+	}
+	.course-meta-small {
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+	.enrollment-row {
+		flex-wrap: wrap;
+		position: relative;
+	}
+	.row-main {
+		flex: 1;
+		min-width: 0;
+	}
+	.row-progress {
+		display: block;
+		width: 100%;
+		margin-top: 8px;
+		padding-top: 12px;
+		border-top: 1px dashed var(--border-color);
+	}
+	.progress-group {
+		text-align: left;
+		display: flex;
+		align-items: center;
+		gap: 16px;
+	}
+	.progress-mini {
+		flex: 1;
+		margin-top: 0;
+	}
+	.row-action {
+		display: none;
 	}
 }
 </style>

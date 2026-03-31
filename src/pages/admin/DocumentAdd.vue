@@ -186,8 +186,9 @@ const getExtBg = (ext: string) => {
 						>
 					</li>
 					<li class="breadcrumb-item active">
-						<a href="javascript:void(0);" class="text-dark fw-bold">Thêm mới</a>
+						<a href="javascript:void(0);" class="text-primary fw-bold">Thêm mới</a>
 					</li>
+
 				</ol>
 			</div>
 		</div>
@@ -195,39 +196,43 @@ const getExtBg = (ext: string) => {
 		<form @submit.prevent="submitAddForm">
 			<div class="row g-4 mb-4">
 				<div class="col-lg-7">
-					<div class="card shadow-sm border-0 h-100">
-						<div class="card-header bg-white border-bottom py-3">
+					<div class="card shadow-sm border-0 h-100" style="background: var(--bg-card) !important">
+						<div class="card-header border-bottom py-3" style="background: var(--bg-card) !important; border-color: var(--border-color) !important">
 							<p class="doc-section-label mb-0">Thông tin tài liệu</p>
 						</div>
 						<div class="card-body">
 							<div class="form-group mb-3">
-								<label class="form-label fw-bold text-dark fs-13"
+								<label class="form-label fw-bold fs-13" style="color: var(--text-primary) !important"
 									>Tên tài liệu <span class="text-danger">*</span></label
 								>
 								<input
 									v-model="documentForm.Title"
 									type="text"
 									class="form-control form-control-lg"
+									style="background: var(--bg-secondary); color: var(--text-primary); border-color: var(--border-color)"
 									required
 								/>
 							</div>
 							<div class="form-group mb-3">
-								<label class="form-label fw-bold text-dark fs-13"
+								<label class="form-label fw-bold fs-13" style="color: var(--text-primary) !important"
 									>Mô tả chi tiết</label
 								>
 								<textarea
 									v-model="documentForm.Description"
 									class="form-control"
+									style="background: var(--bg-secondary); color: var(--text-primary); border-color: var(--border-color)"
 									rows="3"
 								></textarea>
 							</div>
 							<div class="form-group mb-0">
 								<label
-									class="form-label fw-bold text-dark fs-13 text-uppercase mb-3 d-flex align-items-center gap-2"
+									class="form-label fw-bold fs-13 text-uppercase mb-3 d-flex align-items-center gap-2"
+									style="color: var(--text-primary) !important"
 								>
 									<Filter :size="16" class="text-primary" /> Thẻ phân loại
 									(Tags)
 								</label>
+
 
 								<div
 									class="selected-tags-display mb-3 p-3 rounded-3"
@@ -259,13 +264,15 @@ const getExtBg = (ext: string) => {
 
 								<div
 									class="input-group mb-4 shadow-sm rounded-3 overflow-hidden border"
+									style="border-color: var(--border-color) !important"
 								>
-									<span class="input-group-text bg-white border-0"
+									<span class="input-group-text border-0" style="background: var(--bg-secondary) !important"
 										><Tag :size="16" class="text-muted"
 									/></span>
 									<input
 										type="text"
 										class="form-control border-0 fs-13"
+										style="background: var(--bg-secondary); color: var(--text-primary)"
 										placeholder="Nhập thẻ khác và nhấn Enter..."
 										v-model="customTagInput"
 										@keydown.enter.prevent="addCustomTag"
@@ -278,6 +285,7 @@ const getExtBg = (ext: string) => {
 										THÊM
 									</button>
 								</div>
+
 
 								<div
 									class="tag-library p-3 rounded-4 bg-light-soft border-0 custom-scrollbar"
@@ -320,10 +328,11 @@ const getExtBg = (ext: string) => {
 				</div>
 
 				<div class="col-lg-5">
-					<div class="card shadow-sm border-0 h-100">
-						<div class="card-header bg-white border-bottom py-3">
+					<div class="card shadow-sm border-0 h-100" style="background: var(--bg-card) !important">
+						<div class="card-header border-bottom py-3" style="background: var(--bg-card) !important; border-color: var(--border-color) !important">
 							<p class="doc-section-label mb-0">File đính kèm</p>
 						</div>
+
 						<div class="card-body d-flex flex-column">
 							<label
 								for="fileInput"
@@ -333,9 +342,10 @@ const getExtBg = (ext: string) => {
 									<i
 										class="fa fa-cloud-upload fs-2 text-primary mb-2 d-block"
 									></i>
-									<p class="fw-bold text-dark mb-1">Nhấn để chọn file</p>
+									<p class="fw-bold fs-14 mb-1" style="color: var(--text-primary)">Nhấn để chọn file</p>
 									<p class="text-muted fs-12 mb-0">Hỗ trợ PDF, DOCX, XLSX...</p>
 								</div>
+
 								<div v-else class="d-flex align-items-center gap-3 w-100 px-2">
 									<div
 										class="doc-file-ext-badge"
@@ -348,11 +358,12 @@ const getExtBg = (ext: string) => {
 										>
 									</div>
 									<div class="text-start flex-fill overflow-hidden">
-										<p class="fw-bold text-dark mb-0 text-truncate">
+										<p class="fw-bold mb-0 text-truncate" style="color: var(--text-primary)">
 											{{ fileInfo.name }}
 										</p>
 										<small class="text-muted">{{ fileInfo.size }}</small>
 									</div>
+
 								</div>
 								<input
 									id="fileInput"
@@ -376,9 +387,10 @@ const getExtBg = (ext: string) => {
 						<div class="card-body">
 							<div class="row g-4">
 								<div class="col-sm-6">
-									<label class="form-label fw-bold text-dark fs-13"
+									<label class="form-label fw-bold fs-13" style="color: var(--text-primary) !important"
 										>Ngày bắt đầu hiển thị</label
 									>
+
 									<VueDatePicker
 										v-model="documentForm.AccessStartDate"
 										:enable-time-picker="false"
@@ -387,9 +399,10 @@ const getExtBg = (ext: string) => {
 									/>
 								</div>
 								<div class="col-sm-6">
-									<label class="form-label fw-bold text-dark fs-13"
+									<label class="form-label fw-bold fs-13" style="color: var(--text-primary) !important"
 										>Ngày gỡ bỏ</label
 									>
+
 									<VueDatePicker
 										v-model="documentForm.AccessEndDate"
 										:enable-time-picker="false"
@@ -404,8 +417,10 @@ const getExtBg = (ext: string) => {
 			</div>
 
 			<div
-				class="doc-action-bar d-flex justify-content-end gap-2 bg-white p-3 rounded shadow-sm sticky-bottom mt-4"
+				class="doc-action-bar d-flex justify-content-end gap-2 p-3 rounded shadow-sm sticky-bottom mt-4"
+				style="background: var(--bg-card); border: 1px solid var(--border-color)"
 			>
+
 				<button
 					type="button"
 					class="btn btn-light border"
@@ -439,14 +454,15 @@ const getExtBg = (ext: string) => {
 	padding-left: 0.6rem;
 }
 .doc-upload-zone {
-	border: 2px dashed #c9d6e3;
+	border: 2px dashed var(--border-color);
 	border-radius: 12px;
 	padding: 2rem 1rem;
 	cursor: pointer;
-	background: #f8fbff;
+	background: var(--bg-tertiary);
 	min-height: 150px;
 	transition: border-color 0.2s;
 }
+
 .doc-upload-zone:hover {
 	border-color: #1a56db;
 }
@@ -478,22 +494,25 @@ const getExtBg = (ext: string) => {
 }
 
 .bg-light-soft {
-	background-color: #f9fbff;
+	background-color: var(--bg-tertiary);
 }
+
 .letter-spacing-1 {
 	letter-spacing: 0.05em;
 }
 
 .selected-tags-display {
-	background: white;
-	border: 1px solid #eef2f7;
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
 	min-height: 50px;
 	transition: all 0.2s;
 }
+
 .selected-tags-display.has-tags {
-	background: #f0f7ff;
-	border-color: #cbdcf7;
+	background: var(--bg-secondary);
+	border-color: var(--primary-400);
 }
+
 
 .tag-chip {
 	display: inline-flex;
@@ -534,11 +553,12 @@ const getExtBg = (ext: string) => {
 	font-size: 11px;
 	font-weight: 600;
 	cursor: pointer;
-	background: white;
-	color: #64748b;
-	border: 1px solid #e2e8f0;
+	background: var(--bg-card);
+	color: var(--text-tertiary);
+	border: 1px solid var(--border-color);
 	transition: all 0.2s;
 }
+
 .suggested-pill:hover {
 	border-color: #cbd5e1;
 	background: #f8fafc;

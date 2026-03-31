@@ -18,9 +18,10 @@
 					class="hero-bg-overlay"
 					:style="
 						course.coverImageUrl
-							? { backgroundImage: `url(${course.coverImageUrl})` }
+							? { backgroundImage: `url(${getFullMediaUrl(course.coverImageUrl)})` }
 							: { background: 'var(--gradient-card)' }
 					"
+
 				/>
 				<div class="hero-content-wrapper container">
 					<div class="hero-main-info animate-slide-up">
@@ -153,6 +154,7 @@
 											{{ mod.title }}
 										</h3>
 									</div>
+
 									<div class="module-meta-info">
 										<span class="lesson-count-badge"
 											>{{ mod.lessons.length }} bài học</span
@@ -249,6 +251,7 @@
 												<div v-else class="play-btn-circle">
 													<Play :size="14" fill="currentColor" />
 												</div>
+
 											</div>
 										</div>
 									</div>
@@ -303,10 +306,11 @@
 									class="card-image-preview"
 									:style="
 										course.coverImageUrl
-											? { backgroundImage: `url(${course.coverImageUrl})` }
+											? { backgroundImage: `url(${getFullMediaUrl(course.coverImageUrl)})` }
 											: { background: 'var(--gradient-primary)' }
 									"
 								>
+
 									<div
 										v-if="isEnrolled && progress"
 										class="progress-overlay-glass"
@@ -418,8 +422,9 @@
 													<Lock :size="20" /> CHƯA ĐỦ ĐIỀU KIỆN
 												</template>
 												<template v-else>
-													<UserPlus :size="20" /> ĐĂNG KÝ NGAY
+													<UserPlus :size="20" /> ĐĂNG KÝ KHÓA HỌC
 												</template>
+
 											</button>
 										</template>
 
@@ -458,9 +463,10 @@
 											{{
 												progress?.progressPercent > 0
 													? "TIẾP TỤC HỌC"
-													: "BẮT ĐẦU HỌC"
+													: "VÀO HỌC NGAY"
 											}}
 										</button>
+
 									</div>
 
 									<div v-if="isEnrolled" class="completion-requirements mt-4">
@@ -555,7 +561,16 @@ import {
 
 const route = useRoute();
 const router = useRouter();
+
+function getFullMediaUrl(url) {
+	if (!url) return "";
+	return url.startsWith("http")
+		? url
+		: `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${url.startsWith("/") ? "" : "/"}${url}`;
+}
+
 const course = ref(null);
+
 const progress = ref(null);
 const lessonProgresses = ref([]);
 const isEnrolled = ref(false);
@@ -639,10 +654,13 @@ function canAccessLesson(lesson) {
 }
 
 function goToLesson(lesson) {
-	if (canAccessLesson(lesson)) {
+	if (isEnrolled.value || lesson.isFreePreview) {
 		router.push(`/learn/${route.params.id}/${lesson.id}`);
+	} else {
+		showToast("Vui lòng đăng ký khóa học này để bắt đầu bài học.");
 	}
 }
+
 
 function startLearning() {
 	const allLessons = course.value?.modules?.flatMap((m) => m.lessons) ?? [];
@@ -733,28 +751,46 @@ onMounted(async () => {
 	min-height: 100vh;
 }
 
-.glass {
-	background: rgba(255, 255, 255, 0.7);
-	backdrop-filter: blur(20px);
-	-webkit-backdrop-filter: blur(20px);
-	border: 1px solid rgba(255, 255, 255, 0.4);
+:root {
+	--glass-bg: rgba(255, 255, 255, 0.7);
+	--glass-border: rgba(255, 255, 255, 0.4);
+	--card-text: #1e293b;
+	--muted-text: #64748b;
+	--bg-lesson: rgba(255, 255, 255, 0.4);
+	--bg-lesson-hover: #ffffff;
+	--border-color: rgba(0, 0, 0, 0.05);
+	--instructor-bg: rgba(255, 255, 255, 0.5);
 }
 
-.title-gradient {
-	background: linear-gradient(90deg, #1e293b, #4f46e5, #a855f7);
-	background-clip: text;
-	-webkit-background-clip: text;
-	-webkit-text-fill-color: transparent;
+:is([data-bs-theme="dark"], [data-theme="dark"]) .course-detail-page {
+	--glass-bg: rgba(16, 24, 40, 0.8);
+	--glass-border: rgba(255, 255, 255, 0.1);
+	--card-text: #f8fafc;
+	--muted-text: #94a3b8;
+	--bg-lesson: rgba(30, 41, 59, 0.6);
+	--bg-lesson-hover: #1e293b;
+	--border-color: rgba(255, 255, 255, 0.1);
+	--instructor-bg: rgba(30, 41, 59, 0.8);
+}
+
+
+
+.glass {
+	background: var(--glass-bg);
+	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(20px);
+	border: 1px solid var(--glass-border);
 }
 
 .huge-text-gradient {
 	font-size: 2rem;
 	font-weight: 900;
-	background: linear-gradient(135deg, #4f46e5, #a855f7);
+	background: linear-gradient(135deg, #6366f1, #a855f7);
 	background-clip: text;
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 }
+
 
 .badge-glass {
 	padding: 6px 14px;
@@ -847,8 +883,12 @@ onMounted(async () => {
 	line-height: 1.1;
 	margin-bottom: 1.5rem;
 	letter-spacing: -2px;
-	color: white;
+	background: linear-gradient(90deg, #ffffff, #818cf8, #c084fc);
+	background-clip: text;
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
 }
+
 
 .hero-desc-wrapper {
 	max-width: 650px;
@@ -894,9 +934,10 @@ onMounted(async () => {
 .section-title {
 	font-size: 1.25rem;
 	font-weight: 900;
-	color: #1e293b;
+	color: var(--card-text);
 	letter-spacing: 2px;
 }
+
 
 .module-card {
 	border-radius: 20px;
@@ -914,12 +955,13 @@ onMounted(async () => {
 }
 
 .module-header-premium:hover {
-	background: rgba(255, 255, 255, 0.8);
+	background: rgba(99, 102, 241, 0.05);
 }
 .module-header-premium.is-active {
 	background: rgba(79, 70, 229, 0.03);
-	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+	border-bottom: 1px solid var(--border-color);
 }
+
 
 .module-info-main {
 	display: flex;
@@ -944,17 +986,18 @@ onMounted(async () => {
 .module-title-text {
 	font-size: 1.1rem;
 	font-weight: 800;
-	color: #1e293b;
+	color: var(--card-text);
 	margin: 0;
 }
 .lesson-count-badge {
 	font-size: 0.8rem;
 	font-weight: 700;
-	color: #64748b;
-	background: #f1f5f9;
+	color: var(--muted-text);
+	background: var(--border-color);
 	padding: 4px 10px;
 	border-radius: 8px;
 }
+
 
 .lesson-row-premium {
 	display: flex;
@@ -962,18 +1005,20 @@ onMounted(async () => {
 	padding: 1.25rem 1.5rem;
 	gap: 1.25rem;
 	cursor: pointer;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+	border-bottom: 1px solid var(--border-color);
 	transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-	background: rgba(255, 255, 255, 0.4);
+	background: var(--bg-lesson);
 }
+
 
 .lesson-row-premium:last-child {
 	border-bottom: none;
 }
 .lesson-row-premium:hover {
-	background: white;
+	background: var(--bg-lesson-hover);
 	transform: translateX(8px);
 }
+
 
 .type-icon-box {
 	width: 38px;
@@ -982,10 +1027,11 @@ onMounted(async () => {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: #f1f5f9;
-	color: #64748b;
+	background: var(--border-color);
+	color: var(--muted-text);
 	transition: all 0.3s;
 }
+
 .lesson-row-premium:hover .type-icon-box {
 	background: #4f46e5;
 	color: white;
@@ -1009,10 +1055,11 @@ onMounted(async () => {
 .type-tag {
 	font-size: 0.75rem;
 	font-weight: 700;
-	color: #64748b;
+	color: var(--muted-text);
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
 }
+
 
 .hover-play {
 	color: #4f46e5;
@@ -1033,14 +1080,16 @@ onMounted(async () => {
 	height: 80px;
 	border-radius: 20px;
 	object-fit: cover;
-	border: 3px solid white;
+	border: 3px solid var(--glass-border);
 	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
+
 .instructor-name {
 	font-size: 1.25rem;
 	font-weight: 800;
-	color: #1e293b;
+	color: var(--card-text);
 }
+
 .instructor-dept {
 	color: #4f46e5;
 	font-weight: 700;
@@ -1048,11 +1097,12 @@ onMounted(async () => {
 	margin-bottom: 0.5rem;
 }
 .instructor-bio {
-	color: #64748b;
+	color: var(--muted-text);
 	font-size: 0.95rem;
 	margin: 0;
 	line-height: 1.5;
 }
+
 
 .discussion-placeholder {
 	text-align: center;
@@ -1062,17 +1112,19 @@ onMounted(async () => {
 }
 
 .detailed-progress-box {
-	background: rgba(255, 255, 255, 0.5);
+	background: var(--bg-lesson);
 	padding: 1.25rem;
 	border-radius: 20px;
-	border: 1px solid white;
+	border: 1px solid var(--glass-border);
 }
+
 .label-premium {
 	font-size: 0.8rem;
 	font-weight: 800;
-	color: #64748b;
+	color: var(--muted-text);
 	letter-spacing: 1px;
 }
+
 .percent-premium {
 	font-weight: 900;
 	color: #4f46e5;
@@ -1091,21 +1143,23 @@ onMounted(async () => {
 .stat-val {
 	display: block;
 	font-weight: 800;
-	color: #1e293b;
+	color: var(--card-text);
 	font-size: 1.1rem;
 }
 .stat-lbl {
 	font-size: 0.75rem;
 	font-weight: 700;
-	color: #94a3b8;
+	color: var(--muted-text);
 }
+
 
 .mini-title {
 	font-size: 0.9rem;
 	font-weight: 900;
-	color: #1e293b;
+	color: var(--card-text);
 	letter-spacing: 1px;
 }
+
 .req-list {
 	list-style: none;
 	padding: 0;
@@ -1117,9 +1171,10 @@ onMounted(async () => {
 	gap: 10px;
 	font-size: 0.85rem;
 	font-weight: 600;
-	color: #94a3b8;
+	color: var(--muted-text);
 	margin-bottom: 8px;
 }
+
 .req-list li.completed {
 	color: #10b981;
 }
@@ -1216,8 +1271,9 @@ onMounted(async () => {
 .enroll-card {
 	border-radius: 28px;
 	overflow: hidden;
-	border: 1px solid white;
+	border: 1px solid var(--glass-border);
 }
+
 
 .card-image-preview {
 	height: 200px;
@@ -1229,14 +1285,14 @@ onMounted(async () => {
 .progress-overlay-glass {
 	position: absolute;
 	inset: 0;
-	background: rgba(15, 23, 42, 0.6);
-	backdrop-filter: blur(8px);
+	background: linear-gradient(to top, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.2));
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	padding: 2rem;
 	color: white;
 }
+
 
 .progress-info-mini {
 	display: flex;
@@ -1282,14 +1338,15 @@ onMounted(async () => {
 }
 
 .btn-glass {
-	background: rgba(0, 0, 0, 0.05);
-	border: 1px solid rgba(0, 0, 0, 0.1);
+	background: var(--border-color);
+	border: 1px solid var(--glass-border);
 	padding: 0.8rem;
 	border-radius: 14px;
 	font-weight: 700;
-	color: #475569;
+	color: var(--card-text);
 	transition: all 0.2s;
 }
+
 .btn-glass:hover {
 	background: rgba(0, 0, 0, 0.08);
 }

@@ -18,12 +18,12 @@ import { toast } from "vue3-toastify";
 
 interface Slacker {
 	userId: number;
-	userName: string;
+	fullName: string;
 	email: string;
 	courseId: number;
 	courseTitle: string;
-	enrolledAt: string;
-	daysSinceEnroll: number;
+	lastActiveDate: string;
+	inactiveDays: number;
 }
 
 const reportData = ref<Slacker[]>([]);
@@ -49,21 +49,22 @@ onMounted(fetchInactiveUsers);
 
 const totalInactive = computed(() => reportData.value.length);
 const criticalRisk = computed(
-	() => reportData.value.filter((u) => u.daysSinceEnroll > 30).length,
+	() => reportData.value.filter((u) => (u.inactiveDays || 0) > 30).length,
 );
 const moderateRisk = computed(
 	() =>
 		reportData.value.filter(
-			(u) => u.daysSinceEnroll >= 15 && u.daysSinceEnroll <= 30,
+			(u) => (u.inactiveDays || 0) >= 15 && (u.inactiveDays || 0) <= 30,
 		).length,
 );
 
 const filteredData = computed(() => {
+	const query = searchQuery.value.toLowerCase();
 	return reportData.value.filter(
 		(u) =>
-			u.userName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-			u.email.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-			u.courseTitle.toLowerCase().includes(searchQuery.value.toLowerCase()),
+			(u.fullName || "").toLowerCase().includes(query) ||
+			(u.email || "").toLowerCase().includes(query) ||
+			(u.courseTitle || "").toLowerCase().includes(query),
 	);
 });
 
@@ -82,7 +83,7 @@ const toggleSelectAll = (e: Event) => {
 };
 
 const sendReminder = (user: Slacker) => {
-	toast.success(`Đã gửi nhắc nhở tới ${user.userName}`);
+	toast.success(`Đã gửi nhắc nhở tới ${user.fullName}`);
 };
 
 const sendBulkReminder = () => {
@@ -110,11 +111,11 @@ const exportToCSV = () => {
 	];
 	const rows = reportData.value.map((user) => [
 		user.userId,
-		`"${user.userName}"`,
+		`"${user.fullName}"`,
 		`"${user.email}"`,
 		`"${user.courseTitle}"`,
-		new Date(user.enrolledAt).toLocaleDateString("vi-VN"),
-		user.daysSinceEnroll,
+		user.lastActiveDate ? new Date(user.lastActiveDate).toLocaleDateString("vi-VN") : "-",
+		user.inactiveDays,
 	]);
 
 	const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join(
@@ -140,9 +141,10 @@ const exportToCSV = () => {
 	<div class="container-fluid py-4">
 		<div class="row pb-4 mb-4 align-items-center border-bottom">
 			<div class="col-sm-8">
-				<h4 class="mb-1 fw-bold text-dark d-flex align-items-center gap-2">
+				<h4 class="mb-1 fw-bold d-flex align-items-center gap-2">
 					Báo cáo Tiến độ & Nhắc nhở
 				</h4>
+
 				<p class="mb-0 fs-14 text-muted">
 					Theo dõi và đôn đốc các nhân viên đang có dấu hiệu bỏ bê đào tạo
 					(Inactive Learners).
@@ -153,12 +155,14 @@ const exportToCSV = () => {
 		<div class="row g-4 mb-4">
 			<div class="col-xl-4 col-md-6">
 				<div
-					class="card border-0 shadow-sm rounded-4 h-100 bg-white hover-translate-y transition-all overflow-hidden relative-card"
+					class="card border-0 shadow-sm rounded-4 h-100 hover-translate-y transition-all overflow-hidden relative-card"
+					style="background: var(--bg-card) !important; border: 1px solid var(--border-color) !important;"
 				>
 					<div class="card-body p-4 d-flex flex-column position-relative z-1">
 						<div class="d-flex align-items-center gap-3 mb-3">
 							<div
-								class="bg-secondary bg-opacity-10 text-secondary p-3 rounded-4 shadow-sm"
+								class="text-secondary p-3 rounded-4 shadow-sm"
+								style="background: var(--bg-tertiary) !important"
 							>
 								<Users
 									:size="24"
@@ -166,16 +170,17 @@ const exportToCSV = () => {
 								/>
 							</div>
 							<h6
-								class="mb-0 text-uppercase fw-bold text-muted fs-13 tracking-wide"
+								class="mb-0 text-uppercase fw-bold fs-13 tracking-wide"
+								style="color: var(--text-secondary) !important"
 							>
 								Tổng tham gia & chưa xong
 							</h6>
 						</div>
 						<div class="mt-auto d-flex align-items-baseline gap-2">
-							<h2 class="mb-0 fw-black text-dark display-6">
+							<h2 class="mb-0 fw-black display-6" style="color: var(--text-primary) !important">
 								{{ totalInactive }}
 							</h2>
-							<span class="fs-14 fw-bold text-muted">Nhân viên</span>
+							<span class="fs-14 fw-bold text-tertiary">Nhân viên</span>
 						</div>
 					</div>
 					<div class="card-border-left bg-secondary"></div>
@@ -184,12 +189,14 @@ const exportToCSV = () => {
 
 			<div class="col-xl-4 col-md-6">
 				<div
-					class="card border-0 shadow-sm rounded-4 h-100 bg-white hover-translate-y transition-all overflow-hidden relative-card"
+					class="card border-0 shadow-sm rounded-4 h-100 hover-translate-y transition-all overflow-hidden relative-card"
+					style="background: var(--bg-card) !important; border: 1px solid var(--border-color) !important;"
 				>
 					<div class="card-body p-4 d-flex flex-column position-relative z-1">
 						<div class="d-flex align-items-center gap-3 mb-3">
 							<div
-								class="bg-warning bg-opacity-10 text-warning p-3 rounded-4 shadow-sm"
+								class="text-warning p-3 rounded-4 shadow-sm"
+								style="background: var(--bg-tertiary) !important"
 							>
 								<Clock
 									:size="24"
@@ -197,7 +204,8 @@ const exportToCSV = () => {
 								/>
 							</div>
 							<h6
-								class="mb-0 text-uppercase fw-bold text-muted fs-13 tracking-wide"
+								class="mb-0 text-uppercase fw-bold fs-13 tracking-wide"
+								style="color: var(--text-secondary) !important"
 							>
 								Cảnh báo vừa (15-30 ngày)
 							</h6>
@@ -206,7 +214,7 @@ const exportToCSV = () => {
 							<h2 class="mb-0 fw-black text-warning display-6">
 								{{ moderateRisk }}
 							</h2>
-							<span class="fs-14 fw-bold text-muted">Nhân viên</span>
+							<span class="fs-14 fw-bold text-tertiary">Nhân viên</span>
 						</div>
 					</div>
 					<div class="card-border-left bg-warning"></div>
@@ -215,12 +223,14 @@ const exportToCSV = () => {
 
 			<div class="col-xl-4 col-md-12">
 				<div
-					class="card border-0 shadow-sm rounded-4 h-100 bg-white hover-translate-y transition-all overflow-hidden relative-card"
+					class="card border-0 shadow-sm rounded-4 h-100 hover-translate-y transition-all overflow-hidden relative-card"
+					style="background: var(--bg-card) !important; border: 1px solid var(--border-color) !important;"
 				>
 					<div class="card-body p-4 d-flex flex-column position-relative z-1">
 						<div class="d-flex align-items-center gap-3 mb-3">
 							<div
-								class="bg-danger bg-opacity-10 text-danger p-3 rounded-4 shadow-sm"
+								class="text-danger p-3 rounded-4 shadow-sm"
+								style="background: var(--bg-tertiary) !important"
 							>
 								<AlertTriangle
 									:size="24"
@@ -228,16 +238,17 @@ const exportToCSV = () => {
 								/>
 							</div>
 							<h6
-								class="mb-0 text-uppercase fw-bold text-muted fs-13 tracking-wide"
+								class="mb-0 text-uppercase fw-bold fs-13 tracking-wide"
+								style="color: var(--text-secondary) !important"
 							>
-								Rủi ro bỏ lớp (> 30 ngày)
+								Rủi rủi ro bỏ lớp (> 30 ngày)
 							</h6>
 						</div>
 						<div class="mt-auto d-flex align-items-baseline gap-2">
 							<h2 class="mb-0 fw-black text-danger display-6">
 								{{ criticalRisk }}
 							</h2>
-							<span class="fs-14 fw-bold text-muted">Nhân viên</span>
+							<span class="fs-14 fw-bold text-tertiary">Nhân viên</span>
 						</div>
 					</div>
 					<div class="card-border-left bg-danger"></div>
@@ -245,30 +256,39 @@ const exportToCSV = () => {
 			</div>
 		</div>
 
-		<div class="card border-0 shadow-sm rounded-4 bg-white">
+
+		<div
+			class="card border-0 shadow-sm rounded-4 mt-4"
+			style="background: var(--bg-card) !important"
+		>
+
+
 			<div
-				class="card-header bg-transparent border-bottom px-4 py-4 d-flex flex-wrap justify-content-between align-items-center gap-3"
+				class="card-header border-bottom px-4 py-4 d-flex flex-wrap justify-content-between align-items-center gap-3"
+				style="background: var(--bg-card) !important; border-color: var(--border-color) !important;"
 			>
-				<h5 class="fw-bold mb-0 text-dark">Danh sách Học viên Chậm trễ</h5>
+				<h5 class="fw-bold mb-0 text-primary">Danh sách Học viên Chậm trễ</h5>
 
 				<div class="d-flex flex-wrap align-items-center gap-3">
 					<div class="search-box position-relative">
 						<Search
 							:size="18"
-							class="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"
-							style="width: 18px; height: 18px; min-width: 18px"
+							class="position-absolute top-50 start-0 translate-middle-y ms-3"
+							style="width: 18px; height: 18px; min-width: 18px; color: var(--text-tertiary);"
 						/>
 						<input
 							v-model="searchQuery"
 							type="text"
-							class="form-control bg-light border-0 rounded-pill ps-5 pe-4 py-2"
+							class="form-control border-themed rounded-pill ps-5 pe-4 py-2"
+							style="background: var(--bg-secondary) !important; color: var(--text-primary) !important"
 							placeholder="Tìm kiếm học viên/khóa học..."
 						/>
 					</div>
 
 					<div class="d-flex gap-2">
 						<button
-							class="btn btn-light fw-bold rounded-pill px-4 d-inline-flex align-items-center gap-2 export-btn border"
+							class="btn fw-bold rounded-pill px-4 d-inline-flex align-items-center gap-2 export-btn"
+							style="background: var(--bg-secondary) !important; color: var(--text-secondary) !important; border: 1px solid var(--border-color) !important"
 							@click="exportToCSV"
 						>
 							<Download
@@ -277,6 +297,7 @@ const exportToCSV = () => {
 							/>
 							Xuất Báo Cáo
 						</button>
+
 						<button
 							class="btn btn-danger fw-bold rounded-pill px-4 d-inline-flex align-items-center gap-2 btn-hover shadow-sm"
 							@click="sendBulkReminder"
@@ -300,21 +321,46 @@ const exportToCSV = () => {
 				</div>
 
 				<div v-else class="table-responsive">
-					<table class="table table-hover align-middle mb-0 native-grid">
-						<thead class="bg-light">
+					<table class="table table-hover align-middle mb-0 native-grid" style="background: transparent !important">
+						<thead style="background: var(--bg-secondary) !important">
 							<tr>
-								<th class="ps-4" style="width: 40px">
+								<th
+									class="ps-4"
+									style="width: 40px; background: transparent !important; color: var(--text-primary) !important; border-color: var(--border-color) !important;"
+								>
 									<input
 										type="checkbox"
 										class="form-check-input custom-check"
 										@change="toggleSelectAll"
 									/>
 								</th>
-								<th>Thông tin Nhân viên</th>
-								<th>Khóa học đang học</th>
-								<th>Ngày ghi danh</th>
-								<th class="text-center">Số ngày bỏ bê</th>
-								<th class="text-end pe-4">Hành động</th>
+								<th
+									style="background: transparent !important; color: var(--text-primary) !important; border-color: var(--border-color) !important;"
+								>
+									Thông tin Nhân viên
+								</th>
+								<th
+									style="background: transparent !important; color: var(--text-primary) !important; border-color: var(--border-color) !important;"
+								>
+									Khóa học đang học
+								</th>
+								<th
+									style="background: transparent !important; color: var(--text-primary) !important; border-color: var(--border-color) !important;"
+								>
+									Ngày ghi danh
+								</th>
+								<th
+									class="text-center"
+									style="background: transparent !important; color: var(--text-primary) !important; border-color: var(--border-color) !important;"
+								>
+									Số ngày bỏ bê
+								</th>
+								<th
+									class="text-end pe-4"
+									style="background: transparent !important; color: var(--text-primary) !important; border-color: var(--border-color) !important;"
+								>
+									Hành động
+								</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -322,13 +368,15 @@ const exportToCSV = () => {
 								<td colspan="6" class="text-center py-5 text-muted">
 									<CheckCircle
 										:size="48"
-										class="mb-3 opacity-25"
+										class="mb-3 text-primary opacity-50"
 										style="width: 48px; height: 48px; min-width: 48px"
 									/>
-									<h6 class="fw-bold text-dark">Lớp học rất chăm chỉ!</h6>
-									<p class="mb-0 fs-14">
+									<h6 class="fw-bold text-primary">Lớp học rất chăm chỉ!</h6>
+									<p class="mb-0 fs-14 text-tertiary">
 										Không tìm thấy nhân viên nào phù hợp với tìm kiếm.
 									</p>
+
+
 								</td>
 							</tr>
 							<tr
@@ -349,37 +397,39 @@ const exportToCSV = () => {
 										<div
 											class="avatar-sm bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold"
 										>
-											{{ user.userName.charAt(0).toUpperCase() }}
+											{{ (user.fullName || "U").charAt(0).toUpperCase() }}
 										</div>
 										<div>
-											<h6 class="mb-1 fw-bold text-dark fs-14">
-												{{ user.userName }}
+											<h6 class="mb-1 fw-bold fs-14">
+												{{ user.fullName }}
 											</h6>
-											<span class="text-muted fs-12">{{ user.email }}</span>
+											<span class="text-tertiary fs-12">{{ user.email }}</span>
 										</div>
 									</div>
 								</td>
 								<td>
-									<span class="fw-bold text-dark fs-14">{{
+									<span class="fw-bold fs-14">{{
 										user.courseTitle
 									}}</span>
 								</td>
+
 								<td>
-									<div class="d-flex align-items-center gap-2 text-muted fs-14">
+									<div class="d-flex align-items-center gap-2 text-tertiary fs-14">
 										<Calendar
 											:size="14"
 											style="width: 14px; height: 14px; min-width: 14px"
 										/>
-										{{ new Date(user.enrolledAt).toLocaleDateString("vi-VN") }}
+										{{ user.lastActiveDate ? new Date(user.lastActiveDate).toLocaleDateString("vi-VN") : "Chưa có" }}
 									</div>
 								</td>
+
 								<td class="text-center">
 									<span
 										class="badge rounded-pill px-3 py-2 fw-bold fs-12 d-inline-flex align-items-center gap-1"
 										:class="
-											user.daysSinceEnroll > 30
+											(user.inactiveDays || 0) > 30
 												? 'bg-danger-subtle text-danger'
-												: user.daysSinceEnroll >= 15
+												: (user.inactiveDays || 0) >= 15
 													? 'bg-warning-subtle text-warning-emphasis'
 													: 'bg-info-subtle text-info'
 										"
@@ -388,7 +438,7 @@ const exportToCSV = () => {
 											:size="12"
 											style="width: 12px; height: 12px; min-width: 12px"
 										/>
-										{{ user.daysSinceEnroll }} Ngày
+										{{ user.inactiveDays || 0 }} Ngày
 									</span>
 								</td>
 								<td class="text-end pe-4">
@@ -411,31 +461,37 @@ const exportToCSV = () => {
 
 			<div
 				v-if="!loading && filteredData.length > 0"
-				class="card-footer bg-white border-top px-4 py-3 d-flex flex-wrap justify-content-between align-items-center"
+				class="card-footer border-top px-4 py-3 d-flex flex-wrap justify-content-between align-items-center"
+				style="background: var(--bg-secondary)"
 			>
-				<span class="text-muted fs-14">
+
+
+				<span class="text-tertiary fs-14">
 					Hiển thị
-					<span class="fw-bold text-dark">{{
+					<span class="fw-bold">{{
 						(currentPage - 1) * itemsPerPage + 1
 					}}</span>
 					đến
-					<span class="fw-bold text-dark">{{
+					<span class="fw-bold">{{
 						Math.min(currentPage * itemsPerPage, filteredData.length)
 					}}</span>
 					trong tổng số
-					<span class="fw-bold text-dark">{{ filteredData.length }}</span> kết
+					<span class="fw-bold">{{ filteredData.length }}</span> kết
 					quả
 				</span>
 
+
 				<div class="d-flex align-items-center gap-3 mt-3 mt-sm-0">
 					<div class="d-flex align-items-center gap-2">
-						<span class="text-muted fs-14">Hiển thị:</span>
+						<span class="text-tertiary fs-14">Hiển thị:</span>
 						<select
 							v-model="itemsPerPage"
-							class="form-select form-select-sm border-0 bg-light rounded-3 fw-bold cursor-pointer"
-							style="width: 70px"
+							class="form-select form-select-sm border-themed rounded-3 fw-bold cursor-pointer"
+							style="width: 70px; background: var(--bg-tertiary); color: var(--text-primary)"
 							@change="currentPage = 1"
 						>
+
+
 							<option :value="5">5</option>
 							<option :value="10">10</option>
 							<option :value="20">20</option>
@@ -445,7 +501,7 @@ const exportToCSV = () => {
 
 					<div class="pagination-ui d-flex gap-1">
 						<button
-							class="btn btn-sm btn-light rounded-2 border px-2 text-muted hover-dark"
+							class="btn btn-sm btn-secondary-subtle rounded-2 border-themed px-2 text-tertiary hover-dark"
 							:disabled="currentPage === 1"
 							@click="currentPage--"
 						>
@@ -455,6 +511,7 @@ const exportToCSV = () => {
 							/>
 						</button>
 
+
 						<button
 							v-for="page in totalPages"
 							:key="page"
@@ -462,8 +519,9 @@ const exportToCSV = () => {
 							:class="
 								page === currentPage
 									? 'btn-primary shadow-sm'
-									: 'btn-light border text-muted hover-dark'
+									: 'btn-secondary-subtle border-themed text-tertiary hover-dark'
 							"
+
 							@click="currentPage = page"
 							v-show="
 								Math.abs(page - currentPage) <= 1 ||
@@ -524,22 +582,45 @@ const exportToCSV = () => {
 }
 
 .native-grid th {
-	color: #64748b;
+	color: var(--text-tertiary);
 	font-size: 0.75rem;
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 	padding: 16px;
-	border-bottom: 2px solid #e2e8f0;
+	border-bottom: 2px solid var(--border-color);
 }
 .native-grid td {
 	padding: 16px;
-	color: #475569;
-	border-bottom: 1px solid #f8fafc;
+	color: var(--text-secondary);
+	border-bottom: 1px solid var(--border-color);
+	background: transparent !important;
 }
 .hover-bg:hover td {
-	background-color: #f8fafc;
+	background-color: var(--bg-secondary) !important;
 }
+.bg-card-ui {
+	background: var(--bg-card) !important;
+}
+.border-themed {
+	border-color: var(--border-color) !important;
+}
+.form-control::placeholder {
+	color: var(--text-tertiary) !important;
+	opacity: 0.7;
+}
+
+.btn-secondary-subtle {
+	background-color: var(--bg-secondary);
+	color: var(--text-secondary);
+	border: 1px solid var(--border-color);
+}
+.btn-secondary-subtle:hover {
+	background-color: var(--bg-tertiary);
+	color: var(--text-primary);
+}
+
+
 .custom-check {
 	transform: scale(1.1);
 	cursor: pointer;
