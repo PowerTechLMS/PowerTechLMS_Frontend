@@ -1363,6 +1363,14 @@ const submitCourse = async () => {
 		return;
 	}
 
+	if (courseQuiz.value.questions.length === 0) {
+		toast.warning(
+			"Khóa học bắt buộc phải có ít nhất một câu hỏi trong Bài thi cuối khóa!",
+		);
+		activeTab.value = "quiz";
+		return;
+	}
+
 	isSaving.value = true;
 	try {
 		const coursePayload = {

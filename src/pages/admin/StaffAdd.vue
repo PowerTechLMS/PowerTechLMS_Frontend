@@ -4,16 +4,14 @@ import { useRouter } from "vue-router";
 import { userAPI } from "@/services/api";
 import {
 	ArrowLeft,
-	UserPlus,
 	IdCard,
 	Mail,
 	Lock,
 	Eye,
 	EyeOff,
-	Camera,
-	CheckCircle2,
 	Layout,
 	Shield,
+	Save,
 } from "lucide-vue-next";
 import { toast } from "vue3-toastify";
 import { onMounted } from "vue";
@@ -30,8 +28,7 @@ const userForm = ref({
 	role: "Employee",
 	groupId: null as number | null,
 	position: "",
-	avatarFile: null as File | null,
-	avatarPreview: "",
+	position: "",
 	isActive: true,
 });
 
@@ -52,58 +49,22 @@ onMounted(async () => {
 const showPassword = ref(false);
 const showConfirmPassword = ref(false);
 
-const handleAvatarChange = (event: Event) => {
-	const target = event.target as HTMLInputElement;
-	if (target.files && target.files.length > 0) {
-		const file = target.files[0];
-		if (file.size > 2 * 1024 * 1024) {
-			toast.error("Ảnh không được vượt quá 2MB");
-			return;
-		}
-		userForm.value.avatarFile = file;
-
-		const reader = new FileReader();
-		reader.onload = (e) =>
-			(userForm.value.avatarPreview = e.target?.result as string);
-		reader.readAsDataURL(file);
-	}
-};
-
-const triggerFileInput = () =>
-	document.getElementById("hiddenAvatarInput")?.click();
-
 const submitForm = async () => {
 	if (userForm.value.password !== userForm.value.confirmPassword) {
 		toast.error("Mật khẩu xác nhận không khớp!");
 		return;
 	}
 
-	submitting.value = true;
 	try {
-		let payload: any;
-		if (userForm.value.avatarFile) {
-			payload = new FormData();
-			payload.append("FullName", userForm.value.fullName);
-			payload.append("Email", userForm.value.email);
-			payload.append("Password", userForm.value.password);
-			payload.append("Role", userForm.value.role);
-			payload.append("Position", userForm.value.position);
-			payload.append("IsActive", String(userForm.value.isActive));
-			if (userForm.value.groupId) {
-				payload.append("GroupId", String(userForm.value.groupId));
-			}
-			payload.append("AvatarFile", userForm.value.avatarFile);
-		} else {
-			payload = {
-				fullName: userForm.value.fullName,
-				email: userForm.value.email,
-				password: userForm.value.password,
-				role: userForm.value.role,
-				position: userForm.value.position,
-				isActive: userForm.value.isActive,
-				groupId: userForm.value.groupId,
-			};
-		}
+		const payload = {
+			fullName: userForm.value.fullName,
+			email: userForm.value.email,
+			password: userForm.value.password,
+			role: userForm.value.role,
+			position: userForm.value.position,
+			isActive: userForm.value.isActive,
+			groupId: userForm.value.groupId,
+		};
 
 		await userAPI.create(payload);
 		toast.success(`Đã tạo thành công nhân sự: ${userForm.value.fullName}`);
@@ -253,42 +214,6 @@ const submitForm = async () => {
 					</div>
 
 					<div class="dp-card-body d-flex flex-column flex-grow-1">
-						<div class="avatar-section">
-							<div class="avatar-uploader" @click="triggerFileInput">
-								<img
-									v-if="userForm.avatarPreview"
-									:src="userForm.avatarPreview"
-									class="avatar-preview"
-								/>
-								<div v-else class="avatar-placeholder">
-									<Camera :size="32" class="opacity-50 mb-2" />
-									<span class="placeholder-text">Tải ảnh lên</span>
-								</div>
-								<div class="avatar-edit-badge">
-									<UserPlus :size="14" />
-								</div>
-							</div>
-
-							<div class="avatar-info">
-								<h6 class="avatar-title">
-									Ảnh đại diện
-									<CheckCircle2
-										v-if="userForm.avatarPreview"
-										:size="16"
-										class="text-success ml-2"
-									/>
-								</h6>
-								<p class="avatar-desc">Hỗ trợ JPG, PNG. Tối đa 2MB.</p>
-							</div>
-							<input
-								type="file"
-								id="hiddenAvatarInput"
-								class="hidden-input"
-								accept="image/*"
-								@change="handleAvatarChange"
-							/>
-						</div>
-
 						<div class="form-group mb-4">
 							<label class="dp-label"
 								>Vai trò hệ thống <span class="text-danger">*</span></label
@@ -651,91 +576,6 @@ const submitForm = async () => {
 .dp-input:focus ~ .dp-input-focus {
 	opacity: 1;
 	transform: scale(1);
-}
-
-.avatar-section {
-	text-align: center;
-	margin-bottom: 32px;
-	padding-bottom: 32px;
-	border-bottom: 1px solid var(--border-color);
-}
-.avatar-uploader {
-	position: relative;
-	width: 140px;
-	height: 140px;
-	margin: 0 auto 16px auto;
-	cursor: pointer;
-	border-radius: 50%;
-	transition: transform 0.3s;
-}
-.avatar-uploader:hover {
-	transform: scale(1.05);
-}
-.avatar-preview {
-	width: 100%;
-	height: 100%;
-	border-radius: 50%;
-	object-fit: cover;
-	border: 4px solid var(--bg-card);
-	box-shadow: var(--shadow-sm);
-}
-
-.avatar-placeholder {
-	width: 100%;
-	height: 100%;
-	border-radius: 50%;
-	border: 2px dashed var(--border-color);
-	background: var(--bg-secondary);
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	color: var(--text-tertiary);
-	box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.02);
-}
-.placeholder-text {
-	font-size: 12px;
-	font-weight: 600;
-}
-.avatar-edit-badge {
-	position: absolute;
-	bottom: 4px;
-	right: 4px;
-	width: 36px;
-	height: 36px;
-	background: var(--primary-500);
-	color: white;
-	border-radius: 50%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border: 3px solid var(--bg-card);
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-
-	z-index: 2;
-	transition: all 0.3s;
-}
-.avatar-uploader:hover .avatar-edit-badge {
-	transform: scale(1.1);
-	background: var(--primary-600);
-}
-.avatar-info {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-}
-.avatar-title {
-	font-size: 15px;
-	font-weight: 700;
-	color: var(--text-primary);
-	margin: 0 0 4px 0;
-	display: flex;
-	align-items: center;
-}
-.avatar-desc {
-	font-size: 12px;
-	color: var(--text-tertiary);
-	margin: 0;
 }
 
 .role-grid {

@@ -81,6 +81,7 @@ import {
 	CheckCircle,
 	AlertCircle,
 	Info,
+	Edit3,
 } from "lucide-vue-next";
 import { notificationAPI } from "@/services/api";
 import dayjs from "dayjs";
@@ -158,6 +159,10 @@ const getIcon = (type) => {
 			return Route;
 		case "Reminder":
 			return Info;
+		case "NewLesson":
+			return BookOpen;
+		case "LessonUpdated":
+			return Edit3;
 		default:
 			return Bell;
 	}
@@ -175,6 +180,10 @@ const getTypeClass = (type) => {
 			return "info";
 		case "Reminder":
 			return "danger";
+		case "NewLesson":
+			return "success";
+		case "LessonUpdated":
+			return "info";
 		default:
 			return "";
 	}

@@ -16,6 +16,8 @@ import {
 	X,
 	UploadCloud,
 	File,
+	Shield,
+	Users,
 } from "lucide-vue-next";
 
 const router = useRouter();
@@ -212,9 +214,9 @@ const handleSave = async () => {
 
 		if (!form.value.isPublic) {
 			const permPayload = {
-				roleIds: [],
+				roleIds: selectedRoles.value || [],
 				groupIds: selectedGroups.value || [],
-				userIds: [],
+				userIds: selectedUsers.value || [],
 			};
 			await documentAPI.updatePermissions(docId, permPayload);
 		} else {
@@ -547,37 +549,118 @@ const handleSave = async () => {
 							v-if="!form.isPublic"
 							class="permissions-container animate-fade-up"
 						>
-							<div class="col-md-12">
-								<div class="perm-box glass-card p-4 h-100">
-									<div class="d-flex align-items-center mb-4 text-primary">
-										<Building2 :size="20" class="me-2" />
-										<span class="fw-bold fs-16">Phân quyền theo Phòng ban</span>
+							<div class="row g-4">
+								<div class="col-md-6">
+									<div class="perm-box glass-card p-4 h-100">
+										<div class="d-flex align-items-center mb-4 text-primary">
+											<Shield :size="20" class="me-2" />
+											<span class="fw-bold fs-16">Phân quyền theo Vai trò</span>
+										</div>
+										<div
+											class="custom-scrollbar"
+											style="max-height: 300px; overflow-y: auto"
+										>
+											<div class="row g-2">
+												<div v-for="r in allRoles" :key="r.id" class="col-12">
+													<label
+														class="d-flex align-items-center gap-2 p-2 px-3 rounded-3 hover-bg border"
+														style="
+															border-color: var(--border-color) !important;
+															cursor: pointer;
+														"
+													>
+														<input
+															type="checkbox"
+															class="form-check-input"
+															:value="r.id"
+															v-model="selectedRoles"
+														/>
+														<span class="fs-14 fw-semibold">{{ r.name }}</span>
+													</label>
+												</div>
+											</div>
+										</div>
 									</div>
-									<div
-										class="custom-scrollbar"
-										style="max-height: 400px; overflow-y: auto"
-									>
-										<div class="row g-2">
-											<div
-												v-for="g in allGroups"
-												:key="g.id"
-												class="col-md-6 col-lg-4"
+								</div>
+
+								<div class="col-md-6">
+									<div class="perm-box glass-card p-4 h-100">
+										<div class="d-flex align-items-center mb-4 text-primary">
+											<Building2 :size="20" class="me-2" />
+											<span class="fw-bold fs-16"
+												>Phân quyền theo Phòng ban</span
 											>
-												<label
-													class="d-flex align-items-center gap-2 p-3 rounded-3 hover-bg border"
-													style="
-														border-color: var(--border-color) !important;
-														cursor: pointer;
-													"
+										</div>
+										<div
+											class="custom-scrollbar"
+											style="max-height: 300px; overflow-y: auto"
+										>
+											<div class="row g-2">
+												<div v-for="g in allGroups" :key="g.id" class="col-12">
+													<label
+														class="d-flex align-items-center gap-2 p-2 px-3 rounded-3 hover-bg border"
+														style="
+															border-color: var(--border-color) !important;
+															cursor: pointer;
+														"
+													>
+														<input
+															type="checkbox"
+															class="form-check-input"
+															:value="g.id"
+															v-model="selectedGroups"
+														/>
+														<span class="fs-14 fw-semibold">{{ g.name }}</span>
+													</label>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div class="col-12">
+									<div class="perm-box glass-card p-4">
+										<div class="d-flex align-items-center mb-4 text-primary">
+											<Users :size="20" class="me-2" />
+											<span class="fw-bold fs-16"
+												>Chỉ định đích danh Người dùng</span
+											>
+										</div>
+										<div
+											class="custom-scrollbar"
+											style="max-height: 350px; overflow-y: auto"
+										>
+											<div class="row g-2">
+												<div
+													v-for="u in allUsers"
+													:key="u.id"
+													class="col-md-6 col-lg-4 col-xl-3"
 												>
-													<input
-														type="checkbox"
-														class="form-check-input"
-														:value="g.id"
-														v-model="selectedGroups"
-													/>
-													<span class="fs-14 fw-semibold">{{ g.name }}</span>
-												</label>
+													<label
+														class="d-flex align-items-center gap-2 p-2 px-3 rounded-3 hover-bg border"
+														style="
+															border-color: var(--border-color) !important;
+															cursor: pointer;
+														"
+													>
+														<input
+															type="checkbox"
+															class="form-check-input"
+															:value="u.id"
+															v-model="selectedUsers"
+														/>
+														<div class="d-flex flex-column">
+															<span class="fs-13 fw-bold">{{
+																u.fullName
+															}}</span>
+															<span
+																class="fs-11 text-tertiary text-truncate"
+																style="max-width: 150px"
+																>{{ u.email }}</span
+															>
+														</div>
+													</label>
+												</div>
 											</div>
 										</div>
 									</div>

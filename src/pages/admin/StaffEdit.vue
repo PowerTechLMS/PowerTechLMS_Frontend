@@ -8,13 +8,14 @@ import {
 	Lock,
 	Eye,
 	EyeOff,
-	Camera,
 	Save,
 	Loader2,
 	Layout,
 	Shield,
 	Users,
 	User as UserIcon,
+	Pencil,
+	ChevronRight,
 } from "lucide-vue-next";
 import { toast } from "vue3-toastify";
 import { userGroupAPI, rbacAPI } from "@/services/api";
@@ -36,8 +37,6 @@ const userForm = ref({
 	role: "Employee",
 	position: "",
 	groupId: null as number | null,
-	avatarFile: null as File | null,
-	avatarPreview: "",
 	isActive: true,
 });
 
@@ -55,12 +54,6 @@ const fetchUserData = async () => {
 		userForm.value.position = data.position || "";
 		userForm.value.isActive = data.isActive;
 		userForm.value.groupId = data.groupId || null;
-
-		if (data.avatar) {
-			userForm.value.avatarPreview = data.avatar.startsWith("http")
-				? data.avatar
-				: `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${data.avatar}`;
-		}
 	} catch {
 		toast.error("Không thể tải dữ liệu nhân sự");
 		router.push("/admin/staff");
@@ -81,26 +74,6 @@ onMounted(async () => {
 	} catch {}
 });
 
-const handleAvatarChange = (event: Event) => {
-	const target = event.target as HTMLInputElement;
-	if (target.files && target.files.length > 0) {
-		const file = target.files[0];
-		if (file.size > 2 * 1024 * 1024) {
-			toast.error("Ảnh không được vượt quá 2MB");
-			return;
-		}
-		userForm.value.avatarFile = file;
-
-		const reader = new FileReader();
-		reader.onload = (e) =>
-			(userForm.value.avatarPreview = e.target?.result as string);
-		reader.readAsDataURL(file);
-	}
-};
-
-const triggerFileInput = () =>
-	document.getElementById("hiddenAvatarEditInput")?.click();
-
 const submitForm = async () => {
 	if (userForm.value.password || userForm.value.confirmPassword) {
 		if (userForm.value.password !== userForm.value.confirmPassword) {
@@ -111,33 +84,15 @@ const submitForm = async () => {
 
 	submitting.value = true;
 	try {
-		let payload: any;
-		if (userForm.value.avatarFile) {
-			payload = new FormData();
-			payload.append("FullName", userForm.value.fullName);
-			payload.append("Email", userForm.value.email);
-			if (userForm.value.password)
-				payload.append("Password", userForm.value.password);
-			payload.append("Role", userForm.value.role);
-			payload.append("Position", userForm.value.position);
-			payload.append("IsActive", String(userForm.value.isActive));
-			if (userForm.value.groupId) {
-				payload.append("GroupId", String(userForm.value.groupId));
-			} else {
-				payload.append("GroupId", "");
-			}
-			payload.append("AvatarFile", userForm.value.avatarFile);
-		} else {
-			payload = {
-				fullName: userForm.value.fullName,
-				email: userForm.value.email,
-				role: userForm.value.role,
-				position: userForm.value.position,
-				isActive: userForm.value.isActive,
-				groupId: userForm.value.groupId,
-			};
-			if (userForm.value.password) payload.password = userForm.value.password;
-		}
+		const payload: any = {
+			fullName: userForm.value.fullName,
+			email: userForm.value.email,
+			role: userForm.value.role,
+			position: userForm.value.position,
+			isActive: userForm.value.isActive,
+			groupId: userForm.value.groupId,
+		};
+		if (userForm.value.password) payload.password = userForm.value.password;
 
 		await userAPI.update(userId, payload);
 		toast.success("Đã cập nhật dữ liệu thành công");
@@ -319,56 +274,29 @@ const submitForm = async () => {
 						</div>
 
 						<div class="glass-card-body pt-0">
-							<div class="avatar-premium-uploader mb-5">
-								<div class="uploader-circle" @click="triggerFileInput">
-									<img
-										v-if="userForm.avatarPreview"
-										:src="userForm.avatarPreview"
-										class="preview-img"
-									/>
-									<div v-else class="placeholder-content">
-										<Camera :size="32" class="mb-2 text-tertiary" />
-										<span class="fs-11 fw-bold text-tertiary">TẢI ẢNH</span>
-									</div>
-									<div class="edit-overlay">
-										<Pencil :size="20" color="white" />
-									</div>
-								</div>
-								<div class="uploader-info mt-3">
-									<h6 class="fw-bold mb-1 fs-14">Ảnh đại diện nhân sự</h6>
-									<p class="fs-11 text-tertiary">
-										PNG, JPG tối đa 2MB. Tỉ lệ 1:1 là tốt nhất.
-									</p>
-									<input
-										type="file"
-										id="hiddenAvatarEditInput"
-										class="d-none"
-										accept="image/*"
-										@change="handleAvatarChange"
-									/>
-								</div>
-							</div>
 							<div class="form-group-premium mb-4">
-								<label class="label-premium">Vai trò hệ thống <span class="text-danger">*</span></label>
+								<label class="label-premium"
+									>Vai trò hệ thống <span class="text-danger">*</span></label
+								>
 								<div class="role-selection-grid">
-									<div 
-										class="role-radio-card danger" 
+									<div
+										class="role-radio-card danger"
 										:class="{ active: userForm.role === 'Admin' }"
 										@click="userForm.role = 'Admin'"
 									>
 										<Shield :size="20" class="role-icon" />
 										<span class="role-label">Quản trị viên</span>
 									</div>
-									<div 
-										class="role-radio-card info" 
+									<div
+										class="role-radio-card info"
 										:class="{ active: userForm.role === 'Instructor' }"
 										@click="userForm.role = 'Instructor'"
 									>
 										<UserIcon :size="20" class="role-icon" />
 										<span class="role-label">Giảng viên</span>
 									</div>
-									<div 
-										class="role-radio-card primary" 
+									<div
+										class="role-radio-card primary"
 										:class="{ active: userForm.role === 'Employee' }"
 										@click="userForm.role = 'Employee'"
 									>
@@ -664,7 +592,6 @@ const submitForm = async () => {
 	border-color: var(--primary-300);
 }
 
-
 .input-focus-glow {
 	position: absolute;
 	inset: -2px;
@@ -726,59 +653,6 @@ const submitForm = async () => {
 .password-change-box {
 	background: rgba(239, 68, 68, 0.05);
 	border: 1px solid rgba(239, 68, 68, 0.15);
-}
-
-
-.avatar-premium-uploader {
-	display: flex;
-	align-items: center;
-	gap: 24px;
-	padding: 20px;
-	background: var(--bg-secondary);
-	border: 1px dashed var(--border-color);
-	border-radius: 20px;
-}
-
-.uploader-circle {
-	position: relative;
-	width: 90px;
-	height: 90px;
-	border-radius: 50%;
-	background: var(--bg-card);
-	border: 3px solid var(--bg-card);
-	box-shadow: var(--shadow-sm);
-
-	cursor: pointer;
-	overflow: hidden;
-	flex-shrink: 0;
-}
-.preview-img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-}
-.placeholder-content {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	background: var(--bg-tertiary);
-}
-
-.edit-overlay {
-	position: absolute;
-	inset: 0;
-	background: rgba(0, 0, 0, 0.3);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	opacity: 0;
-	transition: opacity 0.3s;
-}
-.uploader-circle:hover .edit-overlay {
-	opacity: 1;
 }
 
 .role-selection-grid {
@@ -858,7 +732,6 @@ const submitForm = async () => {
 	border: 1px solid var(--border-color);
 	color: var(--text-secondary);
 }
-
 
 .status-dot {
 	width: 8px;
