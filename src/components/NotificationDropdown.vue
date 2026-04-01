@@ -205,7 +205,7 @@ const startSignalR = async () => {
 		await connection.value.stop().catch(() => {});
 	}
 
-	const hubUrl = `${import.meta.env.VITE_API_URL || "http://localhost:5100"}/hubs/notifications`;
+	const hubUrl = `${import.meta.env.VITE_API_URL || ""}/hubs/notifications`;
 
 	connection.value = new HubConnectionBuilder()
 		.withUrl(hubUrl, {

@@ -2174,9 +2174,10 @@ function isYouTubeUrl(url) {
 }
 
 function getFullMediaUrl(url) {
+	const baseUrl = import.meta.env.VITE_API_URL || "";
 	return url?.startsWith("http")
 		? url
-		: `http://localhost:5100${url?.startsWith("/") ? "" : "/"}${url}`;
+		: `${baseUrl}${url?.startsWith("/") ? "" : "/"}${url}`;
 }
 
 function getEmbedUrl(url) {
