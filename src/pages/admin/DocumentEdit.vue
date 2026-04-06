@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
+import { useAuthStore } from "@/stores/auth";
 import { useRouter, useRoute } from "vue-router";
 import { documentAPI, userGroupAPI, rbacAPI, userAPI } from "@/services/api";
 import { toast } from "vue3-toastify";
@@ -17,16 +18,20 @@ import {
 	UploadCloud,
 	File,
 	Shield,
-	Users,
+	Users as UsersIcon,
 } from "lucide-vue-next";
 
 const router = useRouter();
 const route = useRoute();
+const authStore = useAuthStore();
 const docId = Number(route.params.id);
 
 const activeTab = ref("general");
 const isLoading = ref(true);
 const isSubmitting = ref(false);
+
+const isAdmin = computed(() => authStore.hasRole("Admin"));
+const isInstructor = computed(() => authStore.hasRole("Instructor") && !isAdmin.value);
 
 const selectedFile = ref<File | null>(null);
 const changeNote = ref("");
@@ -550,7 +555,7 @@ const handleSave = async () => {
 							class="permissions-container animate-fade-up"
 						>
 							<div class="row g-4">
-								<div class="col-md-6">
+								<div v-if="!isInstructor" class="col-md-6">
 									<div class="perm-box glass-card p-4 h-100">
 										<div class="d-flex align-items-center mb-4 text-primary">
 											<Shield :size="20" class="me-2" />
@@ -583,7 +588,7 @@ const handleSave = async () => {
 									</div>
 								</div>
 
-								<div class="col-md-6">
+								<div :class="isInstructor ? 'col-12' : 'col-md-6'">
 									<div class="perm-box glass-card p-4 h-100">
 										<div class="d-flex align-items-center mb-4 text-primary">
 											<Building2 :size="20" class="me-2" />
@@ -618,10 +623,10 @@ const handleSave = async () => {
 									</div>
 								</div>
 
-								<div class="col-12">
+								<div v-if="!isInstructor" class="col-12 mt-4">
 									<div class="perm-box glass-card p-4">
 										<div class="d-flex align-items-center mb-4 text-primary">
-											<Users :size="20" class="me-2" />
+											<UsersIcon :size="20" class="me-2" />
 											<span class="fw-bold fs-16"
 												>Chỉ định đích danh Người dùng</span
 											>

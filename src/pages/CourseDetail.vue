@@ -18,10 +18,11 @@
 					class="hero-bg-overlay"
 					:style="
 						course.coverImageUrl
-							? { backgroundImage: `url(${getFullMediaUrl(course.coverImageUrl)})` }
+							? {
+									backgroundImage: `url(${getFullMediaUrl(course.coverImageUrl)})`,
+								}
 							: { background: 'var(--gradient-card)' }
 					"
-
 				/>
 				<div class="hero-content-wrapper container">
 					<div class="hero-main-info animate-slide-up">
@@ -58,17 +59,24 @@
 						</div>
 
 						<div
-							v-if="(course.level === 2 && !isLevel1Completed && !isEnrolled) || (course.level === 3 && (!isLevel1Completed || !isLevel2Completed) && !isEnrolled)"
+							v-if="
+								(course.level === 2 && !isLevel1Completed && !isEnrolled) ||
+								(course.level === 3 &&
+									(!isLevel1Completed || !isLevel2Completed) &&
+									!isEnrolled)
+							"
 							class="prerequisite-warning glass mb-4"
 						>
 							<Lock :size="20" class="text-danger" />
 							<div class="warning-text">
 								<div class="fw-bold">Yêu cầu hoàn thành cấp bậc trước</div>
 								<div v-if="course.level === 2">
-									Bạn cần hoàn thành tất cả các khóa học Cấp 1 để đăng ký khóa học này.
+									Bạn cần hoàn thành tất cả các khóa học Cấp 1 để đăng ký khóa
+									học này.
 								</div>
 								<div v-else-if="course.level === 3">
-									Bạn cần hoàn thành tất cả các khóa học Cấp 1 và Cấp 2 để đăng ký khóa học này.
+									Bạn cần hoàn thành tất cả các khóa học Cấp 1 và Cấp 2 để đăng
+									ký khóa học này.
 								</div>
 							</div>
 						</div>
@@ -86,7 +94,7 @@
 							</div>
 							<div v-if="totalDuration > 0" class="meta-item-glass">
 								<Clock :size="16" class="text-info" />
-								<span>⏱ {{ Math.ceil(totalDuration / 60) }} Phút</span>
+								<span>⏱ {{ formatDuration(totalDuration) }}</span>
 							</div>
 							<div class="meta-item-glass">
 								<Users :size="16" class="text-warning" />
@@ -112,7 +120,13 @@
 								<template v-else-if="enrolling">
 									<Loader2 :size="18" class="spin" /> Đang ghi danh...
 								</template>
-								<template v-else-if="(course.level === 2 && !isLevel1Completed) || (course.level === 3 && (!isLevel1Completed || !isLevel2Completed))">
+								<template
+									v-else-if="
+										(course.level === 2 && !isLevel1Completed) ||
+										(course.level === 3 &&
+											(!isLevel1Completed || !isLevel2Completed))
+									"
+								>
 									<Lock :size="18" /> Chưa đủ điều kiện
 								</template>
 								<template v-else>
@@ -235,9 +249,7 @@
 														class="duration-tag"
 													>
 														<Clock :size="12" class="me-1" />
-														⏱
-														{{ Math.floor(lesson.videoDurationSeconds / 60) }}
-														phút
+														{{ formatDuration(lesson.videoDurationSeconds) }}
 													</span>
 												</div>
 											</div>
@@ -253,7 +265,6 @@
 												<div v-else class="play-btn-circle">
 													<Play :size="14" fill="currentColor" />
 												</div>
-
 											</div>
 										</div>
 									</div>
@@ -308,11 +319,12 @@
 									class="card-image-preview"
 									:style="
 										course.coverImageUrl
-											? { backgroundImage: `url(${getFullMediaUrl(course.coverImageUrl)})` }
+											? {
+													backgroundImage: `url(${getFullMediaUrl(course.coverImageUrl)})`,
+												}
 											: { background: 'var(--gradient-primary)' }
 									"
 								>
-
 									<div
 										v-if="isEnrolled && progress"
 										class="progress-overlay-glass"
@@ -419,14 +431,17 @@
 													<Loader2 :size="20" class="spin" /> ĐANG XỬ LÝ...
 												</template>
 												<template
-													v-else-if="(course.level === 2 && !isLevel1Completed) || (course.level === 3 && (!isLevel1Completed || !isLevel2Completed))"
+													v-else-if="
+														(course.level === 2 && !isLevel1Completed) ||
+														(course.level === 3 &&
+															(!isLevel1Completed || !isLevel2Completed))
+													"
 												>
 													<Lock :size="20" /> CHƯA ĐỦ ĐIỀU KIỆN
 												</template>
 												<template v-else>
 													<UserPlus :size="20" /> ĐĂNG KÝ KHÓA HỌC
 												</template>
-
 											</button>
 										</template>
 
@@ -468,7 +483,6 @@
 													: "VÀO HỌC NGAY"
 											}}
 										</button>
-
 									</div>
 
 									<div v-if="isEnrolled" class="completion-requirements mt-4">
@@ -583,6 +597,20 @@ const loading = ref(true);
 const toast = ref("");
 let toastTimer = null;
 
+function formatDuration(seconds) {
+	if (!seconds || isNaN(seconds)) return "";
+	if (seconds > 360000) return "-:--";
+
+	const h = Math.floor(seconds / 3600);
+	const m = Math.floor((seconds % 3600) / 60);
+	const s = Math.floor(seconds % 60);
+
+	if (h > 0) {
+		return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+	}
+	return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
 const isLevel1Completed = ref(false);
 const isLevel2Completed = ref(false);
 
@@ -591,12 +619,25 @@ async function checkPrerequisites() {
 	try {
 		const { data: enrollments } = await enrollmentAPI.getMy();
 		const { data: allCourses } = await courseAPI.getAll({ pageSize: 1000 });
-		const level1Ids = allCourses.items.filter(c => c.level === 1).map(c => c.id);
-		const level2Ids = allCourses.items.filter(c => c.level === 2).map(c => c.id);
-		const doneIds = enrollments.filter(e => e.status === 'Completed' || e.status === 'Finished' || e.progressPercent >= 100).map(e => e.courseId);
-		
-		isLevel1Completed.value = level1Ids.length === 0 || level1Ids.every(id => doneIds.includes(id));
-		isLevel2Completed.value = level2Ids.length === 0 || level2Ids.every(id => doneIds.includes(id));
+		const level1Ids = allCourses.items
+			.filter((c) => c.level === 1)
+			.map((c) => c.id);
+		const level2Ids = allCourses.items
+			.filter((c) => c.level === 2)
+			.map((c) => c.id);
+		const doneIds = enrollments
+			.filter(
+				(e) =>
+					e.status === "Completed" ||
+					e.status === "Finished" ||
+					e.progressPercent >= 100,
+			)
+			.map((e) => e.courseId);
+
+		isLevel1Completed.value =
+			level1Ids.length === 0 || level1Ids.every((id) => doneIds.includes(id));
+		isLevel2Completed.value =
+			level2Ids.length === 0 || level2Ids.every((id) => doneIds.includes(id));
 	} catch {}
 }
 
@@ -678,7 +719,6 @@ function goToLesson(lesson) {
 	}
 }
 
-
 function startLearning() {
 	const allLessons = course.value?.modules?.flatMap((m) => m.lessons) ?? [];
 	if (!allLessons.length) {
@@ -693,8 +733,10 @@ function startLearning() {
 }
 
 async function handleEnroll() {
-	const isLocked = (course.value.level === 2 && !isLevel1Completed.value) || 
-	                 (course.value.level === 3 && (!isLevel1Completed.value || !isLevel2Completed.value));
+	const isLocked =
+		(course.value.level === 2 && !isLevel1Completed.value) ||
+		(course.value.level === 3 &&
+			(!isLevel1Completed.value || !isLevel2Completed.value));
 	if (isLocked) {
 		showToast(
 			"Bạn phải hoàn thành tất cả các khóa học cấp bậc trước khi đăng ký.",
@@ -789,8 +831,6 @@ onMounted(async () => {
 	--instructor-bg: rgba(30, 41, 59, 0.8);
 }
 
-
-
 .glass {
 	background: var(--glass-bg);
 	backdrop-filter: blur(20px);
@@ -806,7 +846,6 @@ onMounted(async () => {
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 }
-
 
 .badge-glass {
 	padding: 6px 14px;
@@ -905,7 +944,6 @@ onMounted(async () => {
 	-webkit-text-fill-color: transparent;
 }
 
-
 .hero-desc-wrapper {
 	max-width: 650px;
 	background: rgba(255, 255, 255, 0.05);
@@ -954,7 +992,6 @@ onMounted(async () => {
 	letter-spacing: 2px;
 }
 
-
 .module-card {
 	border-radius: 20px;
 	overflow: hidden;
@@ -977,7 +1014,6 @@ onMounted(async () => {
 	background: rgba(79, 70, 229, 0.03);
 	border-bottom: 1px solid var(--border-color);
 }
-
 
 .module-info-main {
 	display: flex;
@@ -1014,7 +1050,6 @@ onMounted(async () => {
 	border-radius: 8px;
 }
 
-
 .lesson-row-premium {
 	display: flex;
 	align-items: center;
@@ -1026,7 +1061,6 @@ onMounted(async () => {
 	background: var(--bg-lesson);
 }
 
-
 .lesson-row-premium:last-child {
 	border-bottom: none;
 }
@@ -1034,7 +1068,6 @@ onMounted(async () => {
 	background: var(--bg-lesson-hover);
 	transform: translateX(8px);
 }
-
 
 .type-icon-box {
 	width: 38px;
@@ -1075,7 +1108,6 @@ onMounted(async () => {
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
 }
-
 
 .hover-play {
 	color: #4f46e5;
@@ -1118,7 +1150,6 @@ onMounted(async () => {
 	margin: 0;
 	line-height: 1.5;
 }
-
 
 .discussion-placeholder {
 	text-align: center;
@@ -1167,7 +1198,6 @@ onMounted(async () => {
 	font-weight: 700;
 	color: var(--muted-text);
 }
-
 
 .mini-title {
 	font-size: 0.9rem;
@@ -1290,7 +1320,6 @@ onMounted(async () => {
 	border: 1px solid var(--glass-border);
 }
 
-
 .card-image-preview {
 	height: 200px;
 	background-size: cover;
@@ -1301,14 +1330,17 @@ onMounted(async () => {
 .progress-overlay-glass {
 	position: absolute;
 	inset: 0;
-	background: linear-gradient(to top, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.2));
+	background: linear-gradient(
+		to top,
+		rgba(15, 23, 42, 0.9),
+		rgba(15, 23, 42, 0.2)
+	);
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	padding: 2rem;
 	color: white;
 }
-
 
 .progress-info-mini {
 	display: flex;

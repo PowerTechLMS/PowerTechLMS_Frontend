@@ -285,7 +285,7 @@
 							<span class="checkmark" />
 							<span>Ghi nhớ đăng nhập</span>
 						</label>
-						<a class="forgot-link" href="#">Quên mật khẩu?</a>
+						<RouterLink class="forgot-link" to="/forgot-password">Quên mật khẩu?</RouterLink>
 					</div>
 
 					<button type="submit" class="btn-signin" :disabled="loading">

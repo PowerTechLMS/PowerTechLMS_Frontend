@@ -189,9 +189,9 @@ export const useAuthStore = defineStore("auth", () => {
 
 	function updateProfileData(profileData) {
 		if (!user.value) return;
-		user.value.fullName = profileData.fullName;
-		user.value.email = profileData.email;
-		user.value.avatar = profileData.avatar;
+		if (profileData.fullName) user.value.fullName = profileData.fullName;
+		if (profileData.email) user.value.email = profileData.email;
+		if (profileData.avatar !== undefined) user.value.avatar = profileData.avatar;
 
 		const userStr = encodeURIComponent(JSON.stringify(user.value));
 		if (getCookie("lms_user")) {

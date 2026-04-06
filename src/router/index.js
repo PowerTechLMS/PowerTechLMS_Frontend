@@ -16,6 +16,12 @@ const routes = [
 		component: () => import("@/pages/auth/LoginPage.vue"),
 		meta: { guest: true, title: `Đăng nhập – ${APP_NAME}` },
 	},
+	{
+		path: "/forgot-password",
+		name: "ForgotPassword",
+		component: () => import("@/pages/auth/ForgotPassword.vue"),
+		meta: { guest: true, title: `Quên mật khẩu – ${APP_NAME}` },
+	},
 
 	{
 		path: "/",

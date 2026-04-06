@@ -137,15 +137,20 @@
 									class="d-flex justify-content-between align-items-center mb-4"
 								>
 									<h4 class="syllabus-title h5 mb-0">
-										<CheckCircle :size="18" class="text-primary me-2" />Giáo
-										trình chi tiết
+										<CheckCircle :size="18" class="text-primary me-2" />Thông tin khóa học
 									</h4>
-									<span class="badge-glass dark"
-										>{{ syllabus.length }} Chương</span
-									>
+									<div class="tabs-premium-nav">
+										<button class="nav-tab-btn" :class="{ active: activeTab === 'syllabus' }" @click="activeTab = 'syllabus'">
+											<List :size="16" /> Giáo trình
+										</button>
+										<button v-if="isAdmin" class="nav-tab-btn" :class="{ active: activeTab === 'students' }" @click="activeTab = 'students'">
+											<Users :size="16" /> Học viên ({{ enrolledStudents.length }})
+										</button>
+									</div>
 								</div>
 
-								<div class="accordion-syllabus">
+								<div v-if="activeTab === 'syllabus'" class="tab-pane-glass animate-fade-in">
+									<div class="accordion-syllabus">
 									<div
 										v-for="(module, index) in syllabus"
 										:key="module.id"
@@ -295,6 +300,59 @@
 										</div>
 									</div>
 								</div>
+								</div>
+
+								<div v-else-if="activeTab === 'students' && isAdmin" class="tab-pane-glass animate-fade-in">
+									<div v-if="enrolledStudents.length === 0" class="empty-state-glass py-5">
+										<Users :size="48" class="opacity-20 mb-3" />
+										<p class="text-tertiary">Chưa có học viên nào tham gia khóa học này.</p>
+									</div>
+									<div v-else class="table-responsive">
+										<table class="table-glass-ui">
+											<thead>
+												<tr>
+													<th>Học viên</th>
+													<th>Phòng ban / Chức vụ</th>
+													<th>Tiến độ</th>
+													<th>Ngày tham gia</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr v-for="student in enrolledStudents" :key="student.id">
+													<td>
+														<div class="d-flex align-items-center gap-3">
+															<div class="avatar-glass-sm bg-primary-subtle text-primary">
+																{{ student.fullName?.charAt(0) }}
+															</div>
+															<div>
+																<div class="fw-bold fs-14">{{ student.fullName }}</div>
+																<div class="fs-12 text-tertiary">{{ student.email }}</div>
+															</div>
+														</div>
+													</td>
+													<td>
+														<div class="fs-13 fw-semibold text-primary">{{ student.departmentName || '---' }}</div>
+														<div class="fs-12 text-secondary">{{ student.userPosition || '---' }}</div>
+													</td>
+													<td>
+														<div class="d-flex align-items-center gap-2">
+															<div class="progress-glass w-100" style="height: 6px;">
+																<div class="progress-bar-glass" :style="{ width: student.progressPercent + '%', background: getProgressColor(student.progressPercent) }"></div>
+															</div>
+															<span class="fs-12 fw-bold" :style="{ color: getProgressColor(student.progressPercent) }">{{ student.progressPercent }}%</span>
+														</div>
+													</td>
+													<td>
+														<div class="fs-13 text-tertiary">
+															<Calendar :size="12" class="me-1" />
+															{{ formatDate(student.enrolledAt) }}
+														</div>
+													</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -441,6 +499,7 @@ import { ref, computed, onMounted } from "vue";
 import { RouterLink, useRouter, useRoute } from "vue-router";
 import { courseAPI, enrollmentAPI, quizAPI } from "@/services/api";
 import { toast } from "vue3-toastify";
+import { useAuthStore } from "@/stores/auth";
 import {
 	ChevronUp,
 	ChevronDown,
@@ -462,7 +521,24 @@ import {
 	Calendar,
 	Award,
 	Layers,
+	List,
 } from "lucide-vue-next";
+
+const authStore = useAuthStore();
+const activeTab = ref("syllabus");
+const enrolledStudents = ref<any[]>([]);
+
+const isAdmin = computed(() => {
+	return authStore.hasRole("Admin") || authStore.hasRole("Instructor") || authStore.hasPermission("enrollment.view");
+});
+
+const getProgressColor = (pct: number) => {
+	if (pct >= 100) return "#10b981";
+	if (pct >= 50) return "#6366f1";
+	if (pct > 0) return "#f59e0b";
+	return "#94a3b8";
+};
+
 
 const router = useRouter();
 const route = useRoute();
@@ -611,10 +687,26 @@ onMounted(async () => {
 		try {
 			const enrollRes = await enrollmentAPI.getByCourse(courseId);
 			if (enrollRes.data) {
-				isEnrolled.value = true;
+				if (Array.isArray(enrollRes.data)) {
+					enrolledStudents.value = enrollRes.data;
+					isEnrolled.value = enrollRes.data.some(
+						(e: any) => e.userId === authStore.user?.id,
+					);
+				} else {
+					isEnrolled.value = true;
+				}
 			}
 		} catch {
 			isEnrolled.value = false;
+		}
+
+		if (isAdmin.value && enrolledStudents.value.length === 0) {
+			try {
+				const studentRes = await enrollmentAPI.getByCourse(courseId);
+				enrolledStudents.value = Array.isArray(studentRes.data)
+					? studentRes.data
+					: [];
+			} catch {}
 		}
 	} catch (error: any) {
 		toast.error("Không tìm thấy khóa học này!");
@@ -808,6 +900,76 @@ const isModuleExpanded = (moduleId: number, index: number) => {
 .m-icon.green {
 	background: rgba(16, 185, 129, 0.1);
 	color: #10b981;
+}
+
+.tabs-premium-nav {
+	display: flex;
+	background: var(--bg-secondary);
+	padding: 4px;
+	border-radius: 12px;
+	gap: 4px;
+}
+.nav-tab-btn {
+	border: none;
+	background: transparent;
+	padding: 8px 16px;
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--text-tertiary);
+	border-radius: 8px;
+	transition: all 0.2s;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.nav-tab-btn.active {
+	background: var(--bg-card);
+	color: var(--primary-600);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.table-glass-ui {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+	margin-top: 1rem;
+}
+.table-glass-ui th {
+	padding: 12px 16px;
+	font-size: 11px;
+	font-weight: 800;
+	color: var(--text-tertiary);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	border-bottom: 1px solid var(--border-color);
+}
+.table-glass-ui td {
+	padding: 16px;
+	border-bottom: 1px solid var(--border-color);
+	vertical-align: middle;
+}
+
+.progress-glass {
+	background: var(--bg-secondary);
+	border-radius: 10px;
+	overflow: hidden;
+}
+.progress-bar-glass {
+	height: 100%;
+	border-radius: 10px;
+	transition: width 0.4s ease;
+}
+
+.avatar-glass-sm {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 800;
+	font-size: 14px;
+	border: 1px solid var(--border-color);
 }
 
 .m-label {

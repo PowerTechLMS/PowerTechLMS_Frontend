@@ -170,7 +170,7 @@ function formatDate(dateString) {
 async function copyCertLink(code) {
 	try {
 		await navigator.clipboard.writeText(
-			`${window.location.origin}/#/verify/${code}`,
+			`${window.location.origin}/verify/${code}`,
 		);
 		toast.info("Đã sao chép link xác thực!", {
 			position: "bottom-center",
@@ -182,7 +182,7 @@ async function copyCertLink(code) {
 }
 
 function viewCertificate(code) {
-	window.open(`${window.location.origin}/#/verify/${code}`, "_blank");
+	window.open(`${window.location.origin}/verify/${code}`, "_blank");
 }
 </script>
 
