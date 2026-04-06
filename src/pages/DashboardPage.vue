@@ -151,7 +151,8 @@ onMounted(async () => {
 
 <template>
 	<div class="theme-provider">
-		<div v-if="!loading" class="dash">
+	<template v-if="!loading">
+		<div class="dash">
 			<section class="top-bar">
 				<div class="greet-box">
 					<div
@@ -357,24 +358,28 @@ onMounted(async () => {
 					<section class="section-group">
 						<h2 class="card-title">Kiểm tra & Đánh giá</h2>
 						<div class="quiz-list">
-							<div v-for="t in testPractice" :key="t.id" class="quiz-item">
-								<div
-									class="quiz-icon"
-									:style="`background:${t.cover}15; color:${t.cover}`"
-								>
-									<FileText :size="24" />
+							<div
+								v-for="t in testPractice"
+								:key="t.id"
+								class="quiz-item"
+								@click="$router.push('/my-courses')"
+							>
+								<div class="quiz-card-top">
+									<div
+										class="quiz-icon"
+										:style="`background:${t.cover}15; color:${t.cover}`"
+									>
+										<FileText :size="20" />
+									</div>
+									<span class="badge" :class="t.status">{{ t.badge }}</span>
 								</div>
 								<div class="quiz-content">
-									<span class="badge" :class="t.status">{{ t.badge }}</span>
 									<h3>{{ t.title }}</h3>
 									<p>{{ t.subtitle }}</p>
 								</div>
-								<button
-									class="btn-outline"
-									@click="$router.push('/my-courses')"
-								>
-									Thực hiện →
-								</button>
+								<div class="quiz-card-bot">
+									<span class="action-text">Thực hiện →</span>
+								</div>
 							</div>
 						</div>
 					</section>
@@ -589,11 +594,12 @@ onMounted(async () => {
 				</form>
 			</div>
 		</div>
+	</template>
 
-		<div v-else class="dash-loading-screen">
-			<div class="spinner" />
-			<p>Đang tải dữ liệu học tập...</p>
-		</div>
+	<div v-else class="dash-loading-screen">
+		<div class="spinner" />
+		<p>Đang tải dữ liệu học tập...</p>
+	</div>
 	</div>
 </template>
 
@@ -1324,47 +1330,86 @@ onMounted(async () => {
 }
 
 .quiz-list {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 16px;
 }
 .quiz-item {
 	background: var(--bg-card);
-	padding: 16px;
-	border-radius: 16px;
+	padding: 24px;
+	border-radius: 20px;
 	border: 1px solid var(--border);
 	display: flex;
-	align-items: center;
-	gap: 20px;
+	flex-direction: column;
+	gap: 16px;
+	cursor: pointer;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	position: relative;
+	height: 100%;
 }
-
+.quiz-item:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+		0 8px 10px -6px rgba(0, 0, 0, 0.1);
+	border-color: var(--primary-200);
+}
+.quiz-card-top {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
 .quiz-icon {
-	width: 50px;
-	height: 50px;
+	width: 44px;
+	height: 44px;
 	border-radius: 12px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	transition: transform 0.3s ease;
+}
+.quiz-item:hover .quiz-icon {
+	transform: scale(1.1);
 }
 .quiz-content {
 	flex: 1;
 }
 .quiz-content h3 {
 	font-size: 15px;
-	margin: 4px 0;
+	font-weight: 700;
+	margin: 0 0 4px;
+	color: var(--text-main);
+	line-height: 1.4;
 }
 .quiz-content p {
 	font-size: 12px;
 	color: var(--text-sub);
 	margin: 0;
 }
-
-.badge {
-	font-size: 9px;
+.quiz-card-bot {
+	display: flex;
+	justify-content: flex-end;
+	padding-top: 12px;
+	border-top: 1px dashed var(--border);
+}
+.action-text {
+	font-size: 13px;
 	font-weight: 700;
+	color: var(--primary);
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	transition: gap 0.2s ease;
+}
+.quiz-item:hover .action-text {
+	gap: 8px;
+}
+.badge {
+	font-size: 10px;
+	font-weight: 800;
 	text-transform: uppercase;
-	padding: 2px 8px;
-	border-radius: 6px;
+	padding: 4px 10px;
+	border-radius: 8px;
+	letter-spacing: 0.5px;
 }
 .badge.done {
 	background: rgba(34, 197, 94, 0.1);
@@ -1378,20 +1423,8 @@ onMounted(async () => {
 	background: rgba(99, 102, 241, 0.1);
 	color: var(--primary);
 }
-
 .btn-outline {
-	background: transparent;
-	border: 1px solid var(--border);
-	color: var(--primary);
-	padding: 8px 16px;
-	border-radius: 10px;
-	font-size: 12px;
-	font-weight: 600;
-	cursor: pointer;
-	transition: all 0.2s;
-}
-.btn-outline:hover {
-	background: var(--border);
+	display: none;
 }
 
 .side-panel {
@@ -1706,20 +1739,18 @@ onMounted(async () => {
 	.circle-content .lbl {
 		font-size: 12px;
 	}
-	.course-grid {
+	.course-grid,
+	.quiz-list {
 		grid-template-columns: 1fr;
 	}
 	.course-info {
 		padding: 16px;
 	}
 	.quiz-item {
-		flex-direction: column;
-		align-items: flex-start;
+		padding: 20px;
 		gap: 12px;
 	}
-	.quiz-item button {
-		width: 100%;
-	}
+
 	.badge-row {
 		flex-wrap: wrap;
 	}

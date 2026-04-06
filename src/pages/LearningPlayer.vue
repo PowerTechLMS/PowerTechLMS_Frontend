@@ -207,7 +207,6 @@
 													v-if="l.type === 'Video' && l.videoDurationSeconds"
 													class="l-duration"
 												>
-													<Clock :size="12" />
 													{{ formatTime(l.videoDurationSeconds) }}
 												</span>
 												<span
@@ -1812,9 +1811,22 @@ function onVideoLoaded(e) {
 	}, 10000);
 }
 
-function onSeeking() {
-	if (!isSeeking.value) {
-		preSeekTime.value = lastCurrentTime.value;
+function onSeeking(e) {
+	const video = e.target;
+
+	// Cho phép Admin/Instructor hoặc người đã hoàn thành được tua tự do
+	if (isAdmin.value || isCompleted.value) {
+		return;
+	}
+
+	// Nếu đang tua vượt quá phần đã xem (maxWatchedTime)
+	if (video.currentTime > maxWatchedTime.value + 0.5) {
+		video.currentTime = maxWatchedTime.value;
+		const now = Date.now();
+		if (now - lastSeekWarnTime > 3000) {
+			toast.warning("Bạn cần xem hết nội dung này trước khi có thể tua nhanh.");
+			lastSeekWarnTime = now;
+		}
 	}
 	isSeeking.value = true;
 }
@@ -1831,19 +1843,10 @@ function onSeeked(e) {
 		return;
 	}
 
-	if (video.currentTime > maxWatchedTime.value + 1) {
-		const now = Date.now();
-		if (now - lastSeekWarnTime > 3000) {
-			toast.warning(
-				"Bạn không thể tua qua phần nội dung chưa học. Hãy tập trung hoàn thành bài học nhé!",
-			);
-			lastSeekWarnTime = now;
-		}
+	if (video.currentTime > maxWatchedTime.value) {
 		video.currentTime = maxWatchedTime.value;
-		lastCurrentTime.value = maxWatchedTime.value;
-	} else {
-		lastCurrentTime.value = video.currentTime;
 	}
+	lastCurrentTime.value = video.currentTime;
 }
 
 function onTimeUpdate(e) {
@@ -1855,16 +1858,20 @@ function onTimeUpdate(e) {
 		videoDurationRef.value = video.duration;
 
 	if (!isSeeking.value) {
+		// Chỉ cập nhật maxWatchedTime khi xem bình thường (không tua nhanh qua)
 		if (current > maxWatchedTime.value) {
-			if (current - maxWatchedTime.value < 2) {
+			// Chỉ cho phép tiến về phía trước tối đa 0.5 giây trong 1 lần update (vận tốc phát bình thường)
+			if (current - maxWatchedTime.value < 1.5) {
 				maxWatchedTime.value = current;
 			} else if (!isAdmin.value && !isCompleted.value) {
+				// Nếu đột nhiên nhảy vọt (có thể do can thiệp logic), ép quay lại
 				video.currentTime = maxWatchedTime.value;
 			}
 		}
 		lastCurrentTime.value = current;
 	}
 
+	// Đạt 95% thời lượng mới coi là hoàn thành
 	if (
 		!isCompleted.value &&
 		videoDurationRef.value > 0 &&
@@ -1892,6 +1899,18 @@ function syncVideoProgress(currentSeconds, duration) {
 
 function seekVideo(seconds) {
 	if (videoRef.value && seconds !== null) {
+		// Ngăn chặn tua nhanh qua ghi chú nếu chưa học tới
+		if (
+			seconds > maxWatchedTime.value + 1 &&
+			!isAdmin.value &&
+			!isCompleted.value
+		) {
+			toast.warning(
+				"Bạn chưa học đến đoạn này, không thể tua nhanh qua ghi chú.",
+			);
+			return;
+		}
+
 		if (seconds > maxWatchedTime.value) maxWatchedTime.value = seconds;
 		videoRef.value.currentTime = seconds;
 		videoRef.value.play();
@@ -2188,9 +2207,18 @@ function getEmbedUrl(url) {
 	return ytMatch ? `https://www.youtube.com/embed/${ytMatch[1]}` : url;
 }
 
-function formatTime(s) {
-	if (!s) return "0:00";
-	return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+function formatTime(seconds) {
+	if (!seconds || isNaN(seconds)) return "0:00";
+	if (seconds > 360000) return "-:--";
+
+	const h = Math.floor(seconds / 3600);
+	const m = Math.floor((seconds % 3600) / 60);
+	const s = Math.floor(seconds % 60);
+
+	if (h > 0) {
+		return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+	}
+	return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
 function formatDate(d) {

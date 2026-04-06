@@ -38,6 +38,9 @@ api.interceptors.response.use(
 export const authAPI = {
 	login: (data) => api.post("/auth/login", data),
 	register: (data) => api.post("/auth/register", data),
+	forgotPassword: (data) => api.post("/auth/forgot-password", data),
+	verifyOtp: (data) => api.post("/auth/verify-otp", data),
+	resetPassword: (data) => api.post("/auth/reset-password", data),
 };
 
 export const courseAPI = {
@@ -83,6 +86,8 @@ export const lessonAPI = {
 		api.delete(`/modules/${moduleId}/lessons/attachments/${id}`),
 	getAttachmentUrl: (moduleId, id) =>
 		`${import.meta.env.VITE_API_URL || ""}/api/modules/${moduleId}/lessons/attachments/${id}/download`,
+	syncAllDurations: (moduleId) =>
+		api.post(`/modules/${moduleId || 0}/lessons/sync-all-durations`),
 };
 
 export const enrollmentAPI = {

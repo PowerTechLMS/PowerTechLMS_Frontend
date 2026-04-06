@@ -349,12 +349,15 @@
 													style="font-size: 11px"
 													>Số ngày học sau khi đăng ký</label
 												>
-												<input
-													v-model="course.CompletionDeadlineDays"
-													type="number"
-													class="glass-input"
-													style="padding-left: 16px"
-												/>
+												<div class="glass-input-group">
+													<span class="input-icon"><Clock :size="18" /></span>
+													<input
+														v-model="course.CompletionDeadlineDays"
+														type="number"
+														class="glass-input"
+														placeholder="Nhập số ngày..."
+													/>
+												</div>
 											</div>
 											<div class="input-wrapper mb-0">
 												<label
@@ -586,6 +589,60 @@
 															><i class="fas fa-check"></i> Đã có video trên hệ
 															thống.</small
 														>
+													</div>
+
+													<div class="row gx-2 align-items-center bg-white p-2 border rounded mx-0 mt-2">
+														<div class="col-auto">
+															<label class="form-label mb-0 fw-bold fs-12 text-primary">Thời lượng video:</label>
+														</div>
+														<div class="col-auto d-flex align-items-center">
+															<input
+																type="number"
+																class="form-control form-control-sm border-primary text-center"
+																style="width: 60px"
+																placeholder="Phút"
+																:value="Math.floor(lesson.durationSeconds / 60)"
+																@input="(e: Event) => {
+																	const target = e.target as HTMLInputElement;
+																	const m = parseInt(target.value) || 0;
+																	const s = lesson.durationSeconds % 60;
+																	lesson.durationSeconds = m * 60 + s;
+																}"
+															/>
+															<span class="mx-1 fs-12 fw-bold text-muted">phút</span>
+														</div>
+														<div class="col-auto d-flex align-items-center">
+															<input
+																type="number"
+																class="form-control form-control-sm border-primary text-center"
+																style="width: 60px"
+																placeholder="Giây"
+																max="59"
+																:value="lesson.durationSeconds % 60"
+																@input="(e: Event) => {
+																	const target = e.target as HTMLInputElement;
+																	let s = parseInt(target.value) || 0;
+																	if (s > 59) s = 59;
+																	const m = Math.floor(lesson.durationSeconds / 60);
+																	lesson.durationSeconds = m * 60 + s;
+																}"
+															/>
+															<span class="mx-1 fs-12 fw-bold text-muted">giây</span>
+														</div>
+														<div class="col-auto">
+															<button
+																type="button"
+																class="btn btn-warning btn-xs fw-bold ms-2"
+																@click="syncAllDurations"
+																title="Quét lại toàn bộ video để sửa lỗi số phút"
+															>
+																<i class="fas fa-sync-alt me-1"></i>Sửa lỗi số phút
+															</button>
+														</div>
+														<div class="col ps-2">
+															<small class="text-muted fs-11" v-if="lesson.videoType === 'upload'">* Sẽ tự động cập nhật sau khi xử lý xong video. Bạn có thể nhập thủ công nếu muốn.</small>
+															<small class="text-muted fs-11" v-else>* Vui lòng nhập thời lượng cho video từ Link.</small>
+														</div>
 													</div>
 												</div>
 												<div v-else class="bg-light p-3 rounded">
@@ -1805,6 +1862,15 @@ function handleImportQuestions(questions: any[]) {
 	}
 }
 
+const syncAllDurations = async () => {
+	try {
+		const res = await lessonAPI.syncAllDurations();
+		toast.success(res.data.message || "Đã bắt đầu xử lý đồng bộ thời lượng.");
+	} catch (error: any) {
+		toast.error("Không thể yêu cầu đồng bộ: " + (error.response?.data?.message || "Lỗi hệ thống"));
+	}
+};
+
 const suggestAIContent = async (mIdx: number, lIdx: number) => {
 	const lesson = curriculum.value[mIdx].lessons[lIdx];
 	if (!lesson.title) {
@@ -1928,34 +1994,36 @@ const submitCourse = async () => {
 			await courseAPI.uploadCover(courseId as string, formData);
 		}
 
-		for (const mod of curriculum.value) {
+		for (let mIdx = 0; mIdx < curriculum.value.length; mIdx++) {
+			const mod = curriculum.value[mIdx];
 			let currentModuleId = mod.id;
 			if (currentModuleId < 0) {
 				const resMod = await moduleAPI.create(courseId as string, {
 					title: mod.title,
-					sortOrder: 0,
+					sortOrder: mIdx,
 				});
 				currentModuleId = resMod.data.id;
 			} else {
 				await moduleAPI.update(courseId as string, currentModuleId, {
 					title: mod.title,
-					sortOrder: 0,
+					sortOrder: mIdx,
 				});
 			}
 
-			for (const les of mod.lessons) {
+			for (let lIdx = 0; lIdx < mod.lessons.length; lIdx++) {
+				const les = mod.lessons[lIdx];
 				const lessonPayload = {
 					title: les.title,
 					type: les.type,
 					content: les.content,
 					videoUrl: les.videoType === "url" ? les.videoUrl : null,
 					isFreePreview: les.isFreePreview,
-					sortOrder: 0,
+					sortOrder: lIdx,
 					videoDurationSeconds:
 						les.type === "Video" ? Number(les.durationSeconds) || 0 : 0,
 					readingDurationSeconds:
 						les.type === "Text" ? Number(les.durationSeconds) || 0 : 0,
-					videoStatus: "Ready",
+					videoStatus: les.videoStatus || "Ready",
 				};
 				let currentLessonId = les.id;
 				if (currentLessonId < 0) {
@@ -2101,8 +2169,8 @@ const submitCourse = async () => {
 						optionB: q.Options.B,
 						optionC: q.Options.C,
 						optionD: q.Options.D,
-						correctAnswer: q.CorrectAnswer,
-						points: 1,
+						CorrectAnswer: q.CorrectAnswer,
+						Points: Number(q.Points) || 1,
 						explanation: q.Explanation || "",
 					};
 
@@ -2237,7 +2305,7 @@ onMounted(async () => {
 	position: relative;
 	display: flex;
 	align-items: center;
-	background: rgba(249, 250, 251, 0.5);
+	background: #ffffff;
 	border-radius: 12px;
 	border: 1px solid rgba(0, 0, 0, 0.06);
 	transition: all 0.3s;
