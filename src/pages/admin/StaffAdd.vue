@@ -28,7 +28,6 @@ const userForm = ref({
 	role: "Employee",
 	groupId: null as number | null,
 	position: "",
-	position: "",
 	isActive: true,
 });
 

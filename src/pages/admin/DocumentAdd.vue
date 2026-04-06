@@ -28,7 +28,9 @@ const isLoading = ref(false);
 const activeTab = ref("general");
 
 const isAdmin = computed(() => authStore.hasRole("Admin"));
-const isInstructor = computed(() => authStore.hasRole("Instructor") && !isAdmin.value);
+const isInstructor = computed(
+	() => authStore.hasRole("Instructor") && !isAdmin.value,
+);
 const fileInfo = ref<{ name: string; size: string; ext: string } | null>(null);
 
 const documentForm = ref({
@@ -62,8 +64,7 @@ onMounted(async () => {
 		allRoles.value = rolesRes.data?.items || rolesRes.data || [];
 		allGroups.value = groupsRes.data?.items || groupsRes.data || [];
 		allUsers.value = usersRes.data?.items || usersRes.data || [];
-	} catch (error) {
-		console.error("Error fetching permissions data:", error);
+	} catch {
 		toast.error("Không thể tải dữ liệu phân quyền.");
 	} finally {
 		isLoading.value = false;
@@ -205,7 +206,6 @@ const submitAddForm = async () => {
 		toast.success("Tải lên tài liệu thành công!");
 		router.push("/admin/documents");
 	} catch (error: any) {
-		console.error("Upload error:", error);
 		toast.error(error.response?.data?.message || "Lỗi khi tải lên tài liệu.");
 	} finally {
 		isSubmitting.value = false;
@@ -283,7 +283,9 @@ const getExtBg = (ext: string) => {
 							<div class="row g-5">
 								<div class="col-lg-7">
 									<div class="form-group mb-4">
-										<label class="form-label fw-bold fs-13 text-uppercase text-muted mb-2">
+										<label
+											class="form-label fw-bold fs-13 text-uppercase text-muted mb-2"
+										>
 											Tên tài liệu <span class="text-danger">*</span>
 										</label>
 										<input
@@ -296,7 +298,9 @@ const getExtBg = (ext: string) => {
 									</div>
 
 									<div class="form-group mb-4">
-										<label class="form-label fw-bold fs-13 text-uppercase text-muted mb-2">
+										<label
+											class="form-label fw-bold fs-13 text-uppercase text-muted mb-2"
+										>
 											Mô tả nội dung
 										</label>
 										<textarea
@@ -309,7 +313,10 @@ const getExtBg = (ext: string) => {
 
 									<div class="row g-3 mb-4">
 										<div class="col-md-6">
-											<label class="form-label fw-bold fs-13 text-uppercase text-muted mb-2">Ngày bắt đầu</label>
+											<label
+												class="form-label fw-bold fs-13 text-uppercase text-muted mb-2"
+												>Ngày bắt đầu</label
+											>
 											<VueDatePicker
 												v-model="documentForm.AccessStartDate"
 												:enable-time-picker="false"
@@ -318,7 +325,10 @@ const getExtBg = (ext: string) => {
 											/>
 										</div>
 										<div class="col-md-6">
-											<label class="form-label fw-bold fs-13 text-uppercase text-muted mb-2">Ngày gỡ bỏ</label>
+											<label
+												class="form-label fw-bold fs-13 text-uppercase text-muted mb-2"
+												>Ngày gỡ bỏ</label
+											>
 											<VueDatePicker
 												v-model="documentForm.AccessEndDate"
 												:enable-time-picker="false"
@@ -329,18 +339,35 @@ const getExtBg = (ext: string) => {
 									</div>
 
 									<div class="form-group mb-0">
-										<label class="form-label fw-bold fs-13 text-uppercase text-muted mb-3 d-flex align-items-center gap-2">
-											<Filter :size="16" class="text-primary" /> Phân loại Thẻ (Tags)
+										<label
+											class="form-label fw-bold fs-13 text-uppercase text-muted mb-3 d-flex align-items-center gap-2"
+										>
+											<Filter :size="16" class="text-primary" /> Phân loại Thẻ
+											(Tags)
 										</label>
 
-										<div class="selected-tags-box mb-3 p-3 rounded-3" :class="{ 'has-tags': selectedTagsArray.length > 0 }">
-											<div v-if="selectedTagsArray.length === 0" class="text-muted fs-13 fst-italic">
+										<div
+											class="selected-tags-box mb-3 p-3 rounded-3"
+											:class="{ 'has-tags': selectedTagsArray.length > 0 }"
+										>
+											<div
+												v-if="selectedTagsArray.length === 0"
+												class="text-muted fs-13 fst-italic"
+											>
 												Nhấp chọn các gợi ý bên dưới hoặc tự nhập...
 											</div>
 											<div v-else class="d-flex flex-wrap gap-2">
-												<span v-for="tag in selectedTagsArray" :key="tag" class="selected-tag-pill">
+												<span
+													v-for="tag in selectedTagsArray"
+													:key="tag"
+													class="selected-tag-pill"
+												>
 													#{{ tag }}
-													<button type="button" class="btn-remove-tag" @click="removeTag(tag)">
+													<button
+														type="button"
+														class="btn-remove-tag"
+														@click="removeTag(tag)"
+													>
 														<X :size="12" />
 													</button>
 												</span>
@@ -355,23 +382,49 @@ const getExtBg = (ext: string) => {
 												v-model="customTagInput"
 												@keydown.enter.prevent="addCustomTag"
 											/>
-											<button type="button" class="btn btn-primary btn-sm rounded-2 px-3" @click="addCustomTag">
+											<button
+												type="button"
+												class="btn btn-primary btn-sm rounded-2 px-3"
+												@click="addCustomTag"
+											>
 												Thêm
 											</button>
 										</div>
 
-										<div class="tag-library p-3 rounded-4 custom-scrollbar" style="max-height: 250px; overflow-y: auto; background: var(--bg-tertiary)">
-											<div class="mb-4" v-for="(group, key) in predefinedTags" :key="key">
-												<div class="mb-2 fs-11 fw-bold text-uppercase text-muted">{{ group.label }}</div>
+										<div
+											class="tag-library p-3 rounded-4 custom-scrollbar"
+											style="
+												max-height: 250px;
+												overflow-y: auto;
+												background: var(--bg-tertiary);
+											"
+										>
+											<div
+												class="mb-4"
+												v-for="(group, key) in predefinedTags"
+												:key="key"
+											>
+												<div
+													class="mb-2 fs-11 fw-bold text-uppercase text-muted"
+												>
+													{{ group.label }}
+												</div>
 												<div class="d-flex flex-wrap gap-2">
 													<span
 														v-for="tag in group.items"
 														:key="tag"
 														class="suggested-pill-glass"
-														:class="[group.colorClass, { active: selectedTagsArray.includes(tag) }]"
+														:class="[
+															group.colorClass,
+															{ active: selectedTagsArray.includes(tag) },
+														]"
 														@click="toggleTag(tag)"
 													>
-														<CheckCircle2 v-if="selectedTagsArray.includes(tag)" :size="12" class="me-1" />
+														<CheckCircle2
+															v-if="selectedTagsArray.includes(tag)"
+															:size="12"
+															class="me-1"
+														/>
 														{{ tag }}
 													</span>
 												</div>
@@ -382,30 +435,66 @@ const getExtBg = (ext: string) => {
 
 								<div class="col-lg-5">
 									<div class="upload-section sticky-top" style="top: 20px">
-										<label class="form-label fw-bold fs-13 text-uppercase text-muted mb-3 d-flex align-items-center gap-2">
-											<UploadCloud :size="16" /> Tải lên Tài liệu <span class="text-danger">*</span>
+										<label
+											class="form-label fw-bold fs-13 text-uppercase text-muted mb-3 d-flex align-items-center gap-2"
+										>
+											<UploadCloud :size="16" /> Tải lên Tài liệu
+											<span class="text-danger">*</span>
 										</label>
 
-										<input id="fileUpload" type="file" class="d-none" @change="onFileChange" required />
-										<label for="fileUpload" class="upload-area-premium p-5 text-center d-flex flex-column align-items-center justify-content-center cursor-pointer mb-4">
+										<input
+											id="fileUpload"
+											type="file"
+											class="d-none"
+											@change="onFileChange"
+											required
+										/>
+										<label
+											for="fileUpload"
+											class="upload-area-premium p-5 text-center d-flex flex-column align-items-center justify-content-center cursor-pointer mb-4"
+										>
 											<div v-if="!fileInfo" class="upload-placeholder">
-												<UploadCloud :size="48" class="text-primary mb-3 opacity-50" />
+												<UploadCloud
+													:size="48"
+													class="text-primary mb-3 opacity-50"
+												/>
 												<h6 class="fw-bold mb-1 text-dark">Nhấp để chọn tệp</h6>
-												<p class="text-muted small mb-0">PDF, Word, Excel (Max 50MB)</p>
+												<p class="text-muted small mb-0">
+													PDF, Word, Excel (Max 50MB)
+												</p>
 											</div>
-											<div v-else class="file-info-active d-flex align-items-center gap-3">
-												<div class="file-ext-icon" :class="getExtBg(fileInfo.ext)">
-													<span :class="getExtColor(fileInfo.ext)" class="fw-bold">{{ fileInfo.ext }}</span>
+											<div
+												v-else
+												class="file-info-active d-flex align-items-center gap-3"
+											>
+												<div
+													class="file-ext-icon"
+													:class="getExtBg(fileInfo.ext)"
+												>
+													<span
+														:class="getExtColor(fileInfo.ext)"
+														class="fw-bold"
+														>{{ fileInfo.ext }}</span
+													>
 												</div>
 												<div class="text-start">
-													<div class="fw-bold text-dark text-truncate" style="max-width: 200px">{{ fileInfo.name }}</div>
-													<div class="text-muted small">{{ fileInfo.size }}</div>
+													<div
+														class="fw-bold text-dark text-truncate"
+														style="max-width: 200px"
+													>
+														{{ fileInfo.name }}
+													</div>
+													<div class="text-muted small">
+														{{ fileInfo.size }}
+													</div>
 												</div>
 											</div>
 										</label>
 
 										<div class="form-group">
-											<label class="form-label fw-bold fs-12 text-tertiary mb-2">Ghi chú cho phiên bản này:</label>
+											<label class="form-label fw-bold fs-12 text-tertiary mb-2"
+												>Ghi chú cho phiên bản này:</label
+											>
 											<input
 												v-model="documentForm.ChangeNote"
 												type="text"
@@ -419,8 +508,13 @@ const getExtBg = (ext: string) => {
 						</div>
 
 						<div v-show="activeTab === 'security'" class="fade-in">
-							<div class="glass-alert mb-5" :class="documentForm.isPublic ? 'public-mode' : 'private-mode'">
-								<div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
+							<div
+								class="glass-alert mb-5"
+								:class="documentForm.isPublic ? 'public-mode' : 'private-mode'"
+							>
+								<div
+									class="d-flex justify-content-between align-items-center flex-wrap gap-4"
+								>
 									<div class="d-flex align-items-start gap-4">
 										<div class="status-icon-box shadow-sm">
 											<Globe v-if="documentForm.isPublic" :size="24" />
@@ -428,7 +522,11 @@ const getExtBg = (ext: string) => {
 										</div>
 										<div>
 											<h5 class="fw-bold mb-1 text-dark">
-												{{ documentForm.isPublic ? "Tài liệu Lưu hành chung (Public)" : "Tài liệu Nội bộ / Hạn chế (Private)" }}
+												{{
+													documentForm.isPublic
+														? "Tài liệu Lưu hành chung (Public)"
+														: "Tài liệu Nội bộ / Hạn chế (Private)"
+												}}
 											</h5>
 											<p class="mb-0 fs-14 text-muted">
 												{{
@@ -441,28 +539,53 @@ const getExtBg = (ext: string) => {
 									</div>
 
 									<div class="form-check form-switch custom-switch-premium">
-										<input class="form-check-input" type="checkbox" role="switch" id="publicSwitch" v-model="documentForm.isPublic" />
-										<label class="form-check-label fw-bold ms-2" for="publicSwitch">{{
-											documentForm.isPublic ? "Đang Mở" : "Đang Khóa"
-										}}</label>
+										<input
+											class="form-check-input"
+											type="checkbox"
+											role="switch"
+											id="publicSwitch"
+											v-model="documentForm.isPublic"
+										/>
+										<label
+											class="form-check-label fw-bold ms-2"
+											for="publicSwitch"
+											>{{
+												documentForm.isPublic ? "Đang Mở" : "Đang Khóa"
+											}}</label
+										>
 									</div>
 								</div>
 							</div>
 
-							<div v-if="!documentForm.isPublic" class="permissions-container animate-fade-up">
+							<div
+								v-if="!documentForm.isPublic"
+								class="permissions-container animate-fade-up"
+							>
 								<div class="row g-4">
 									<div v-if="!isInstructor" class="col-md-6">
 										<div class="perm-box glass-card-nested p-4 h-100">
 											<div class="d-flex align-items-center mb-4 text-primary">
 												<Shield :size="20" class="me-2" />
-												<span class="fw-bold fs-16">Phân quyền theo Vai trò</span>
+												<span class="fw-bold fs-16"
+													>Phân quyền theo Vai trò</span
+												>
 											</div>
-											<div class="custom-scrollbar px-1" style="max-height: 350px; overflow-y: auto">
+											<div
+												class="custom-scrollbar px-1"
+												style="max-height: 350px; overflow-y: auto"
+											>
 												<div class="row g-2">
 													<div v-for="r in allRoles" :key="r.id" class="col-12">
 														<label class="perm-item-label hvr-primary">
-															<input type="checkbox" class="form-check-input me-3" :value="r.id" v-model="selectedRoles" />
-															<span class="fs-14 fw-semibold text-dark">{{ r.name }}</span>
+															<input
+																type="checkbox"
+																class="form-check-input me-3"
+																:value="r.id"
+																v-model="selectedRoles"
+															/>
+															<span class="fs-14 fw-semibold text-dark">{{
+																r.name
+															}}</span>
 														</label>
 													</div>
 												</div>
@@ -474,14 +597,30 @@ const getExtBg = (ext: string) => {
 										<div class="perm-box glass-card-nested p-4 h-100">
 											<div class="d-flex align-items-center mb-4 text-primary">
 												<Building2 :size="20" class="me-2" />
-												<span class="fw-bold fs-16">Phân quyền theo Phòng ban</span>
+												<span class="fw-bold fs-16"
+													>Phân quyền theo Phòng ban</span
+												>
 											</div>
-											<div class="custom-scrollbar px-1" style="max-height: 350px; overflow-y: auto">
+											<div
+												class="custom-scrollbar px-1"
+												style="max-height: 350px; overflow-y: auto"
+											>
 												<div class="row g-2">
-													<div v-for="g in allGroups" :key="g.id" class="col-12">
+													<div
+														v-for="g in allGroups"
+														:key="g.id"
+														class="col-12"
+													>
 														<label class="perm-item-label hvr-info">
-															<input type="checkbox" class="form-check-input me-3" :value="g.id" v-model="selectedGroups" />
-															<span class="fs-14 fw-semibold text-dark">{{ g.name }}</span>
+															<input
+																type="checkbox"
+																class="form-check-input me-3"
+																:value="g.id"
+																v-model="selectedGroups"
+															/>
+															<span class="fs-14 fw-semibold text-dark">{{
+																g.name
+															}}</span>
 														</label>
 													</div>
 												</div>
@@ -493,16 +632,37 @@ const getExtBg = (ext: string) => {
 										<div class="perm-box glass-card-nested p-4">
 											<div class="d-flex align-items-center mb-4 text-primary">
 												<UsersIcon :size="20" class="me-2" />
-												<span class="fw-bold fs-16">Chỉ định đích danh Người dùng</span>
+												<span class="fw-bold fs-16"
+													>Chỉ định đích danh Người dùng</span
+												>
 											</div>
-											<div class="custom-scrollbar px-1" style="max-height: 400px; overflow-y: auto">
+											<div
+												class="custom-scrollbar px-1"
+												style="max-height: 400px; overflow-y: auto"
+											>
 												<div class="row g-3">
-													<div v-for="u in allUsers" :key="u.id" class="col-md-6 col-lg-4 col-xl-3">
-														<label class="perm-item-label user-item hvr-warning">
-															<input type="checkbox" class="form-check-input me-3" :value="u.id" v-model="selectedUsers" />
+													<div
+														v-for="u in allUsers"
+														:key="u.id"
+														class="col-md-6 col-lg-4 col-xl-3"
+													>
+														<label
+															class="perm-item-label user-item hvr-warning"
+														>
+															<input
+																type="checkbox"
+																class="form-check-input me-3"
+																:value="u.id"
+																v-model="selectedUsers"
+															/>
 															<div class="d-flex flex-column overflow-hidden">
-																<span class="fs-13 fw-bold text-dark text-truncate">{{ u.fullName }}</span>
-																<span class="fs-11 text-muted text-truncate">{{ u.email }}</span>
+																<span
+																	class="fs-13 fw-bold text-dark text-truncate"
+																	>{{ u.fullName }}</span
+																>
+																<span class="fs-11 text-muted text-truncate">{{
+																	u.email
+																}}</span>
 															</div>
 														</label>
 													</div>
@@ -514,12 +674,26 @@ const getExtBg = (ext: string) => {
 							</div>
 						</div>
 
-						<div class="mt-5 pt-4 border-top-glass d-flex justify-content-end gap-3">
-							<button type="button" class="btn btn-light-glass px-4" @click="router.push('/admin/documents')">
+						<div
+							class="mt-5 pt-4 border-top-glass d-flex justify-content-end gap-3"
+						>
+							<button
+								type="button"
+								class="btn btn-light-glass px-4"
+								@click="router.push('/admin/documents')"
+							>
 								Hủy bỏ
 							</button>
-							<button type="submit" class="btn btn-neon-premium px-5" :disabled="isSubmitting">
-								<Loader2 v-if="isSubmitting" :size="18" class="spinner-icon me-2" />
+							<button
+								type="submit"
+								class="btn btn-neon-premium px-5"
+								:disabled="isSubmitting"
+							>
+								<Loader2
+									v-if="isSubmitting"
+									:size="18"
+									class="spinner-icon me-2"
+								/>
 								<CheckCircle2 v-else :size="18" class="me-2" />
 								Lưu & Tải lên
 							</button>
@@ -698,10 +872,26 @@ const getExtBg = (ext: string) => {
 	transition: all 0.2s;
 }
 
-.tag-primary.active { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
-.tag-danger.active { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
-.tag-warning.active { background: #fffbeb; border-color: #fde68a; color: #92400e; }
-.tag-success.active { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+.tag-primary.active {
+	background: #eff6ff;
+	border-color: #bfdbfe;
+	color: #1e40af;
+}
+.tag-danger.active {
+	background: #fef2f2;
+	border-color: #fecaca;
+	color: #991b1b;
+}
+.tag-warning.active {
+	background: #fffbeb;
+	border-color: #fde68a;
+	color: #92400e;
+}
+.tag-success.active {
+	background: #f0fdf4;
+	border-color: #bbf7d0;
+	color: #166534;
+}
 
 .glass-alert {
 	padding: 24px;
@@ -709,8 +899,14 @@ const getExtBg = (ext: string) => {
 	border: 1px solid transparent;
 }
 
-.public-mode { background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2); }
-.private-mode { background: rgba(239, 68, 68, 0.03); border-color: rgba(239, 68, 68, 0.1); }
+.public-mode {
+	background: rgba(16, 185, 129, 0.05);
+	border-color: rgba(16, 185, 129, 0.2);
+}
+.private-mode {
+	background: rgba(239, 68, 68, 0.03);
+	border-color: rgba(239, 68, 68, 0.1);
+}
 
 .status-icon-box {
 	width: 56px;
@@ -746,17 +942,65 @@ const getExtBg = (ext: string) => {
 	transition: all 0.2s;
 }
 
-.hvr-primary:hover { border-color: var(--primary-400); background: rgba(99, 102, 241, 0.05); }
-.hvr-info:hover { border-color: #06b6d4; background: rgba(6, 182, 212, 0.05); }
-.hvr-warning:hover { border-color: #f59e0b; background: rgba(245, 158, 11, 0.05); }
+.hvr-primary:hover {
+	border-color: var(--primary-400);
+	background: rgba(99, 102, 241, 0.05);
+}
+.hvr-info:hover {
+	border-color: #06b6d4;
+	background: rgba(6, 182, 212, 0.05);
+}
+.hvr-warning:hover {
+	border-color: #f59e0b;
+	background: rgba(245, 158, 11, 0.05);
+}
 
-.btn-light-glass { background: var(--bg-secondary); border: 1px solid var(--border-color); font-weight: 600; color: var(--text-secondary); border-radius: 12px; }
-.btn-neon-premium { background: var(--primary-600); color: white; font-weight: 700; border-radius: 12px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); border: none; transition: all 0.3s; }
-.btn-neon-premium:hover { background: var(--primary-700); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4); }
+.btn-light-glass {
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
+	font-weight: 600;
+	color: var(--text-secondary);
+	border-radius: 12px;
+}
+.btn-neon-premium {
+	background: var(--primary-600);
+	color: white;
+	font-weight: 700;
+	border-radius: 12px;
+	box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+	border: none;
+	transition: all 0.3s;
+}
+.btn-neon-premium:hover {
+	background: var(--primary-700);
+	transform: translateY(-2px);
+	box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
 
-.custom-scrollbar::-webkit-scrollbar { width: 5px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar {
+	width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+	background: rgba(0, 0, 0, 0.1);
+	border-radius: 10px;
+}
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+@keyframes fadeUp {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
 </style>

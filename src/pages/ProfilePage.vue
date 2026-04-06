@@ -359,7 +359,6 @@ const avatarUrl = computed(() => {
 
 function handleImageError() {
 	imageLoadError.value = true;
-	console.warn("Avatar image failed to load, falling back to initials.");
 }
 
 const roleLabel = computed(
@@ -430,7 +429,6 @@ async function handleAvatarChange(e) {
 		profileMsg.value = "Cập nhật ảnh đại diện thành công!";
 		setTimeout(() => (profileMsg.value = ""), 4000);
 	} catch (error) {
-		console.error("Avatar upload error:", error);
 		profileMsg.value =
 			error.response?.data?.message || "Lỗi khi tải ảnh lên. Vui lòng thử lại.";
 		profileError.value = true;
@@ -531,9 +529,7 @@ onMounted(async () => {
 				userProfile.createdAt,
 			).toLocaleDateString("vi-VN");
 		}
-	} catch (err) {
-		console.error("Error fetching profile:", err);
-	}
+	} catch {}
 
 	try {
 		const { data } = await progressAPI.getMyProgress();

@@ -1287,7 +1287,6 @@ const tabsContainer = ref(null);
 
 const maxWatchedTime = ref(0);
 const lastSavedTime = ref(0);
-const preSeekTime = ref(0);
 const lastCurrentTime = ref(0);
 const isSeeking = ref(false);
 const isVideoWatchedEnough = ref(false);
