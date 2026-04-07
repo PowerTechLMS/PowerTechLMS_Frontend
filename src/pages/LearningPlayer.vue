@@ -1391,11 +1391,6 @@ const canCompleteManual = computed(() => {
 	return true;
 });
 
-const isAdmin = computed(
-	() =>
-		authStore.user?.role === "Admin" || authStore.user?.role === "Instructor",
-);
-
 const completeBtnMessage = computed(() => {
 	if (savingProgress.value) return "Đang lưu tiến độ...";
 
@@ -1813,8 +1808,8 @@ function onVideoLoaded(e) {
 function onSeeking(e) {
 	const video = e.target;
 
-	// Cho phép Admin/Instructor hoặc người đã hoàn thành được tua tự do
-	if (isAdmin.value || isCompleted.value) {
+	// Cho phép người đã hoàn thành được tua tự do
+	if (isCompleted.value) {
 		return;
 	}
 
@@ -1834,7 +1829,7 @@ function onSeeked(e) {
 	const video = e.target;
 	isSeeking.value = false;
 
-	if (isAdmin.value || isCompleted.value) {
+	if (isCompleted.value) {
 		lastCurrentTime.value = video.currentTime;
 		if (video.currentTime > maxWatchedTime.value) {
 			maxWatchedTime.value = video.currentTime;
@@ -1862,7 +1857,7 @@ function onTimeUpdate(e) {
 			// Chỉ cho phép tiến về phía trước tối đa 0.5 giây trong 1 lần update (vận tốc phát bình thường)
 			if (current - maxWatchedTime.value < 1.5) {
 				maxWatchedTime.value = current;
-			} else if (!isAdmin.value && !isCompleted.value) {
+			} else if (!isCompleted.value) {
 				// Nếu đột nhiên nhảy vọt (có thể do can thiệp logic), ép quay lại
 				video.currentTime = maxWatchedTime.value;
 			}
@@ -1899,11 +1894,7 @@ function syncVideoProgress(currentSeconds, duration) {
 function seekVideo(seconds) {
 	if (videoRef.value && seconds !== null) {
 		// Ngăn chặn tua nhanh qua ghi chú nếu chưa học tới
-		if (
-			seconds > maxWatchedTime.value + 1 &&
-			!isAdmin.value &&
-			!isCompleted.value
-		) {
+		if (seconds > maxWatchedTime.value + 1 && !isCompleted.value) {
 			toast.warning(
 				"Bạn chưa học đến đoạn này, không thể tua nhanh qua ghi chú.",
 			);

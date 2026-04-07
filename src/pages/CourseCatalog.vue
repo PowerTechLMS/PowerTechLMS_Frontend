@@ -91,6 +91,31 @@
 				<div class="sb-divider" />
 
 				<div class="sb-section">
+					<div class="sb-heading">Phòng ban</div>
+					<div class="sb-department-filter">
+						<select
+							v-model="selectedDepartmentId"
+							class="sb-select glass"
+							@change="
+								page = 1;
+								fetchCourses();
+							"
+						>
+							<option :value="null">Tất cả phòng ban</option>
+							<option
+								v-for="dept in departments"
+								:key="dept.id"
+								:value="dept.id"
+							>
+								{{ dept.name }}
+							</option>
+						</select>
+					</div>
+				</div>
+
+				<div class="sb-divider" />
+
+				<div class="sb-section">
 					<div class="sb-heading">Sắp xếp theo</div>
 					<div class="sb-sort-list">
 						<button
@@ -339,7 +364,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { courseAPI, enrollmentAPI } from "@/services/api";
+import { courseAPI, enrollmentAPI, userGroupAPI } from "@/services/api";
 import {
 	Search,
 	SearchX,
@@ -362,6 +387,8 @@ const page = ref(1);
 const totalPages = ref(1);
 const sortBy = ref("newest");
 const activeCategory = ref(null);
+const selectedDepartmentId = ref(null);
+const departments = ref([]);
 const viewMode = ref("grid");
 
 const completedCourseIds = ref([]);
@@ -421,6 +448,7 @@ async function fetchCourses() {
 			pageSize: 12,
 			search: search.value || undefined,
 			categoryId: activeCategory.value || undefined,
+			userGroupId: selectedDepartmentId.value || undefined,
 			isPublished: true,
 			level: 3,
 		};
@@ -522,15 +550,23 @@ function changePage(p) {
 	fetchCourses();
 }
 
+async function fetchDepartments() {
+	try {
+		const { data } = await userGroupAPI.getAll({ pageSize: 1234 });
+		departments.value = data.items;
+	} catch {}
+}
+
 function resetFilters() {
 	search.value = "";
 	activeCategory.value = null;
+	selectedDepartmentId.value = null;
 	page.value = 1;
 	fetchCourses();
 }
 
 onMounted(async () => {
-	await Promise.all([fetchCourses(), fetchUserProgress()]);
+	await Promise.all([fetchCourses(), fetchUserProgress(), fetchDepartments()]);
 });
 </script>
 
@@ -1531,5 +1567,32 @@ onMounted(async () => {
 }
 .text-muted {
 	color: var(--text-tertiary) !important;
+}
+.sb-select {
+	width: 100%;
+	padding: 10px 14px;
+	border-radius: 12px;
+	border: 1.5px solid var(--border-color);
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--text-primary);
+	cursor: pointer;
+	transition: all 0.2s;
+	appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 12px center;
+	padding-right: 40px;
+}
+
+.sb-select:focus {
+	border-color: #4f46e5;
+	box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+	outline: none;
+}
+
+.sb-select option {
+	background: var(--bg-secondary);
+	color: var(--text-primary);
 }
 </style>

@@ -1,7 +1,8 @@
+``
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { courseGroupAPI } from "@/services/api";
+import { courseGroupAPI, progressAPI } from "@/services/api";
 import { toast } from "vue3-toastify";
 import {
 	Route,
@@ -10,19 +11,25 @@ import {
 	Layers,
 	CheckCircle2,
 	PlayCircle,
+	Lock,
 } from "lucide-vue-next";
 
 const router = useRouter();
 const route = useRoute();
 const pathId = Number(route.params.id);
 
-const learningPath = ref<any>(null);
+const learningPath = ref(null);
+const userProgress = ref([]);
 const loading = ref(true);
 
 onMounted(async () => {
 	try {
-		const res = await courseGroupAPI.getById(pathId);
-		learningPath.value = res.data;
+		const [pathRes, progressRes] = await Promise.all([
+			courseGroupAPI.getById(pathId),
+			progressAPI.getMyProgress(),
+		]);
+		learningPath.value = pathRes.data;
+		userProgress.value = progressRes.data;
 	} catch {
 		toast.error("Không tìm thấy lộ trình");
 		router.push("/learning-paths");
@@ -31,7 +38,33 @@ onMounted(async () => {
 	}
 });
 
-const goToCourse = (courseId: number) => {
+const isCourseCompleted = (courseId) => {
+	return userProgress.value.some(
+		(p) => p.courseId === courseId && p.isCompleted,
+	);
+};
+
+const isCourseLocked = (course) => {
+	if (!learningPath.value || !learningPath.value.courses) return false;
+	const currentLevel = course.level || 1;
+	if (currentLevel <= 1) return false;
+
+	return learningPath.value.courses.some((c) => {
+		if (c.level < currentLevel) {
+			return !isCourseCompleted(c.id);
+		}
+		return false;
+	});
+};
+
+const goToCourse = (courseId) => {
+	const course = learningPath.value.courses.find((c) => c.id === courseId);
+	if (isCourseLocked(course)) {
+		toast.warning(
+			"Bạn cần hoàn thành các cấp độ trước đó để mở khóa chặng này",
+		);
+		return;
+	}
 	router.push(`/courses/${courseId}`);
 };
 </script>
@@ -105,14 +138,31 @@ const goToCourse = (courseId: number) => {
 						</div>
 
 						<div class="tl-content w-100 ms-4 mb-4">
-							<div class="glass-course-card p-4">
+							<div
+								class="glass-course-card p-4"
+								:class="{ 'is-locked': isCourseLocked(course) }"
+							>
 								<div
 									class="d-flex justify-content-between align-items-start flex-wrap gap-3"
 								>
 									<div class="flex-grow-1">
-										<h5 class="fw-bold mb-2 fs-16 card-title">
-											{{ course.title }}
-										</h5>
+										<div class="d-flex align-items-center mb-2">
+											<h5 class="fw-bold mb-0 fs-16 card-title">
+												{{ course.title }}
+											</h5>
+											<span
+												v-if="isCourseLocked(course)"
+												class="badge bg-danger-subtle text-danger ms-2 rounded-pill fs-11 fw-bold border border-danger-subtle px-2"
+											>
+												<Lock :size="10" class="me-1" /> BỊ KHÓA
+											</span>
+											<span
+												v-else-if="isCourseCompleted(course.id)"
+												class="badge bg-success-subtle text-success ms-2 rounded-pill fs-11 fw-bold border border-success-subtle px-2"
+											>
+												ĐÃ HOÀN THÀNH
+											</span>
+										</div>
 										<p class="fs-14 mb-3 card-desc" style="max-width: 600px">
 											{{
 												course.description ||
@@ -120,13 +170,12 @@ const goToCourse = (courseId: number) => {
 											}}
 										</p>
 
-
 										<div
 											class="d-flex flex-wrap gap-3 fs-13 text-tertiary fw-medium mt-2"
 										>
 											<span class="badge-info-glass"
-												><BookOpen :size="14" class="me-1" /> Học qua Video &
-												Tài liệu</span
+												><BookOpen :size="14" class="me-1" /> LEVEL
+												{{ course.level || 1 }}</span
 											>
 											<span class="badge-success-glass"
 												><CheckCircle2 :size="14" class="me-1" /> Điểm đạt:
@@ -136,9 +185,15 @@ const goToCourse = (courseId: number) => {
 									</div>
 									<button
 										class="btn btn-primary rounded-pill mt-auto"
+										:class="{ disabled: isCourseLocked(course) }"
 										@click="goToCourse(course.id)"
 									>
-										<PlayCircle :size="18" class="me-2" /> Khám phá chặng này
+										<template v-if="isCourseLocked(course)">
+											<Lock :size="18" class="me-2" /> Chưa thể truy cập
+										</template>
+										<template v-else>
+											<PlayCircle :size="18" class="me-2" /> Khám phá chặng này
+										</template>
 									</button>
 								</div>
 							</div>
@@ -185,7 +240,6 @@ const goToCourse = (courseId: number) => {
 :is([data-bs-theme="dark"], [data-theme="dark"]) .card-desc {
 	color: #94a3b8 !important;
 }
-
 
 .spinner {
 	width: 40px;
@@ -298,6 +352,19 @@ const goToCourse = (courseId: number) => {
 	transition: all 0.3s;
 	box-shadow: var(--shadow-sm);
 }
+.glass-course-card.is-locked {
+	opacity: 0.7;
+	filter: grayscale(0.4);
+	border-color: rgba(0, 0, 0, 0.05);
+}
+.glass-course-card.is-locked:hover {
+	transform: none;
+	box-shadow: var(--shadow-sm);
+	border-color: rgba(0, 0, 0, 0.05);
+}
+.glass-course-card.is-locked .btn-primary {
+	background: #94a3b8;
+}
 .glass-course-card:hover {
 	transform: translateY(-3px) translateX(4px);
 	box-shadow: 0 12px 30px rgba(99, 102, 241, 0.1);
@@ -348,7 +415,6 @@ const goToCourse = (courseId: number) => {
 :is([data-bs-theme="dark"], [data-theme="dark"]) .btn-back:hover {
 	color: var(--primary-400);
 }
-
 
 .btn-primary {
 	background: #4f46e5;
