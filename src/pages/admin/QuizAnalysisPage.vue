@@ -67,13 +67,20 @@ const onCourseSelect = async () => {
 			courseDetail.modules.forEach((m: any) => {
 				if (m.lessons) {
 					m.lessons.forEach((l: any) => {
-						if ((l.type === "Quiz" || l.type === "MiniQuiz") && l.quizId) {
+						if (l.quizId) {
 							foundQuizzes.push({ id: l.id, title: l.title, quizId: l.quizId });
 						}
 					});
 				}
 			});
 		}
+
+		if (courseDetail.extraQuizzes) {
+			courseDetail.extraQuizzes.forEach((q: any) => {
+				foundQuizzes.push({ id: q.id, title: q.title, quizId: q.id });
+			});
+		}
+
 		quizzes.value = foundQuizzes;
 
 		if (foundQuizzes.length === 0) {
@@ -486,7 +493,6 @@ const tableData = computed(() => {
 	margin: 0;
 }
 
-
 .desc-text {
 	color: #64748b;
 	margin-top: 4px;
@@ -799,18 +805,19 @@ const tableData = computed(() => {
 	line-height: 1.5;
 }
 
-
 :is([data-bs-theme="dark"], [data-theme="dark"]) :deep(.dt-container) {
 	color: var(--text-primary) !important;
 }
 
-:is([data-bs-theme="dark"], [data-theme="dark"]) :deep(table.dataTable.luxe-table tbody td) {
+:is([data-bs-theme="dark"], [data-theme="dark"])
+	:deep(table.dataTable.luxe-table tbody td) {
 	background: var(--bg-secondary) !important;
 	border-color: var(--border-color) !important;
 	color: var(--text-primary) !important;
 }
 
-:is([data-bs-theme="dark"], [data-theme="dark"]) :deep(table.dataTable.luxe-table tbody tr:hover td) {
+:is([data-bs-theme="dark"], [data-theme="dark"])
+	:deep(table.dataTable.luxe-table tbody tr:hover td) {
 	background: var(--bg-tertiary) !important;
 }
 
@@ -824,7 +831,11 @@ const tableData = computed(() => {
 }
 
 :is([data-bs-theme="dark"], [data-theme="dark"]) .glass-stat-card::before {
-	background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.03), transparent 70%);
+	background: radial-gradient(
+		circle at top right,
+		rgba(255, 255, 255, 0.03),
+		transparent 70%
+	);
 }
 
 :is([data-bs-theme="dark"], [data-theme="dark"]) .btn-ghost-glass {
