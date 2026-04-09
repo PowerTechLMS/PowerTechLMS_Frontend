@@ -1013,7 +1013,7 @@
 															:style="
 																reply.userAvatar
 																	? {
-																			backgroundImage: `url('${getAvatarUrl(reply.userAvatar)}')`,
+																			backgroundImage: `url('${getFullMediaUrl(reply.userAvatar)}')`,
 																		}
 																	: {}
 															"
@@ -1211,6 +1211,7 @@
 </template>
 
 <script setup>
+import { getFullMediaUrl } from "@/utils/media";
 import {
 	ref,
 	onMounted,
@@ -2182,13 +2183,6 @@ function isYouTubeUrl(url) {
 	return url?.includes("youtube.com") || url?.includes("youtu.be");
 }
 
-function getFullMediaUrl(url) {
-	const baseUrl = import.meta.env.VITE_API_URL || "";
-	return url?.startsWith("http")
-		? url
-		: `${baseUrl}${url?.startsWith("/") ? "" : "/"}${url}`;
-}
-
 function getEmbedUrl(url) {
 	if (!url) return "";
 	const ytMatch = url.match(
@@ -2226,12 +2220,6 @@ function getOptionText(questionId, optionKey) {
 	const q = lesson.value.quiz.questions.find((x) => x.id === questionId);
 	if (!q || !q.options || !q.options[optionKey]) return optionKey;
 	return `${optionKey}. ${q.options[optionKey]}`;
-}
-
-function getAvatarUrl(url) {
-	return url?.startsWith("http")
-		? url
-		: `${import.meta.env.VITE_API_URL}${url}`;
 }
 
 onMounted(loadData);

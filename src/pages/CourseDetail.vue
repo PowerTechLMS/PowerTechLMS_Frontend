@@ -577,13 +577,7 @@ import {
 
 const route = useRoute();
 const router = useRouter();
-
-function getFullMediaUrl(url) {
-	if (!url) return "";
-	return url.startsWith("http")
-		? url
-		: `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${url.startsWith("/") ? "" : "/"}${url}`;
-}
+import { getFullMediaUrl } from "@/utils/media";
 
 const course = ref(null);
 

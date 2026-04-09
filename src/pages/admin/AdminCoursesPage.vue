@@ -20,6 +20,7 @@ import {
 	LayoutGrid,
 	BookCheck,
 } from "lucide-vue-next";
+import { getFullMediaUrl } from "@/utils/media";
 import { toast } from "vue3-toastify";
 
 const courses = ref<any[]>([]);
@@ -215,8 +216,9 @@ onMounted(() => {
 					<div class="card-image-wrap">
 						<img
 							:src="
-								course.coverImageUrl ||
-								'https://placehold.co/600x400/e2e8f0/64748b?text=Course+Cover'
+								course.coverImageUrl
+									? getFullMediaUrl(course.coverImageUrl)
+									: 'https://placehold.co/600x400/e2e8f0/64748b?text=Course+Cover'
 							"
 							class="card-img"
 							alt=""
@@ -852,7 +854,7 @@ onMounted(() => {
 	border-top-color: var(--border-color) !important;
 }
 [data-theme="dark"] .btn-card-delete {
-	background: rgba(30,30,30,0.9);
+	background: rgba(30, 30, 30, 0.9);
 	color: #ef4444;
 }
 [data-theme="dark"] .btn-card-delete:hover {

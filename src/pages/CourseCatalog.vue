@@ -202,7 +202,9 @@
 								class="card-cover"
 								:style="
 									course.coverImageUrl
-										? { backgroundImage: `url(${course.coverImageUrl})` }
+										? {
+												backgroundImage: `url(${getFullMediaUrl(course.coverImageUrl)})`,
+											}
 										: { background: getCardGradient(index) }
 								"
 							/>
@@ -268,7 +270,9 @@
 							class="list-cover"
 							:style="
 								course.coverImageUrl
-									? { backgroundImage: `url(${course.coverImageUrl})` }
+									? {
+											backgroundImage: `url(${getFullMediaUrl(course.coverImageUrl)})`,
+										}
 									: { background: getCardGradient(index) }
 							"
 						/>
@@ -365,6 +369,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { courseAPI, enrollmentAPI, userGroupAPI } from "@/services/api";
+import { getFullMediaUrl } from "@/utils/media";
 import {
 	Search,
 	SearchX,

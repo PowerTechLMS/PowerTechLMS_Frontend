@@ -271,6 +271,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from "vue";
+import { getFullMediaUrl } from "@/utils/media";
 import { enrollmentAPI } from "@/services/api";
 import {
 	GraduationCap,
@@ -425,13 +426,6 @@ onMounted(async () => {
 		loading.value = false;
 	}
 });
-
-function getFullMediaUrl(url) {
-	if (!url) return "";
-	return url.startsWith("http")
-		? url
-		: `${import.meta.env.VITE_API_URL || "http://localhost:5100"}${url.startsWith("/") ? "" : "/"}${url}`;
-}
 
 onUnmounted(() => {
 	window.removeEventListener("resize", updateActivePillPosition);
