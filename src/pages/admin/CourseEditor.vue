@@ -535,6 +535,20 @@
 															>Bài đọc</label
 														>
 													</div>
+													<div class="form-check form-check-inline">
+														<input
+															class="form-check-input"
+															type="radio"
+															value="RolePlay"
+															v-model="lesson.type"
+															:id="'rp_' + lesson.id"
+														/>
+														<label
+															class="form-check-label text-info fw-bold"
+															:for="'rp_' + lesson.id"
+															><i class="fas fa-robot me-1"></i>Role Play</label
+														>
+													</div>
 												</div>
 
 												<div
@@ -591,106 +605,13 @@
 														>
 													</div>
 
-													<div class="row gx-2 align-items-center bg-white p-2 border rounded mx-0 mt-2">
-														<div class="col-auto">
-															<label class="form-label mb-0 fw-bold fs-12 text-primary">Thời lượng video:</label>
-														</div>
-														<div class="col-auto d-flex align-items-center">
-															<input
-																type="number"
-																class="form-control form-control-sm border-primary text-center"
-																style="width: 60px"
-																placeholder="Phút"
-																:value="Math.floor(lesson.durationSeconds / 60)"
-																@input="(e: Event) => {
-																	const target = e.target as HTMLInputElement;
-																	const m = parseInt(target.value) || 0;
-																	const s = lesson.durationSeconds % 60;
-																	lesson.durationSeconds = m * 60 + s;
-																}"
-															/>
-															<span class="mx-1 fs-12 fw-bold text-muted">phút</span>
-														</div>
-														<div class="col-auto d-flex align-items-center">
-															<input
-																type="number"
-																class="form-control form-control-sm border-primary text-center"
-																style="width: 60px"
-																placeholder="Giây"
-																max="59"
-																:value="lesson.durationSeconds % 60"
-																@input="(e: Event) => {
-																	const target = e.target as HTMLInputElement;
-																	let s = parseInt(target.value) || 0;
-																	if (s > 59) s = 59;
-																	const m = Math.floor(lesson.durationSeconds / 60);
-																	lesson.durationSeconds = m * 60 + s;
-																}"
-															/>
-															<span class="mx-1 fs-12 fw-bold text-muted">giây</span>
-														</div>
-														<div class="col-auto">
-															<button
-																type="button"
-																class="btn btn-warning btn-xs fw-bold ms-2"
-																@click="syncAllDurations"
-																title="Quét lại toàn bộ video để sửa lỗi số phút"
-															>
-																<i class="fas fa-sync-alt me-1"></i>Sửa lỗi số phút
-															</button>
-														</div>
-														<div class="col ps-2">
-															<small class="text-muted fs-11" v-if="lesson.videoType === 'upload'">* Sẽ tự động cập nhật sau khi xử lý xong video. Bạn có thể nhập thủ công nếu muốn.</small>
-															<small class="text-muted fs-11" v-else>* Vui lòng nhập thời lượng cho video từ Link.</small>
-														</div>
-													</div>
-												</div>
-												<div v-else class="bg-light p-3 rounded">
 													<div
-														class="d-flex justify-content-between align-items-center mb-2"
-													>
-														<label
-															class="form-label mb-0 fw-bold fs-13 text-dark"
-															>Nội dung bài học</label
-														>
-														<button
-															v-if="lesson.title"
-															type="button"
-															class="btn btn-xs btn-outline-primary fw-bold"
-															:disabled="isSuggestingContent[lesson.id]"
-															@click="suggestAIContent(mIdx, lIdx)"
-														>
-															<i
-																v-if="isSuggestingContent[lesson.id]"
-																class="fas fa-spinner fa-spin me-1"
-															></i>
-															<i v-else class="fas fa-magic me-1"></i>
-															Gợi ý bằng AI
-														</button>
-													</div>
-													<textarea
-														v-model="lesson.content"
-														class="form-control mb-2"
-														rows="6"
-														placeholder="Nhập nội dung bài đọc bằng định dạng Markdown..."
-													></textarea>
-													<div v-if="lesson.content" class="mt-3">
-														<label class="fs-12 fw-bold text-muted mb-2"
-															><i class="fas fa-eye me-1"></i> Xem trước nội
-															dung</label
-														>
-														<div
-															class="markdown-preview p-3 border rounded bg-white markdown-body"
-															v-html="renderMarkdown(lesson.content)"
-														></div>
-													</div>
-													<div
-														class="row gx-2 align-items-center bg-white p-2 border rounded mx-0"
+														class="row gx-2 align-items-center bg-white p-2 border rounded mx-0 mt-2"
 													>
 														<div class="col-auto">
 															<label
 																class="form-label mb-0 fw-bold fs-12 text-primary"
-																>Thời gian bài đọc:</label
+																>Thời lượng video:</label
 															>
 														</div>
 														<div class="col-auto d-flex align-items-center">
@@ -737,12 +658,175 @@
 																>giây</span
 															>
 														</div>
+														<div class="col-auto">
+															<button
+																type="button"
+																class="btn btn-warning btn-xs fw-bold ms-2"
+																@click="syncAllDurations"
+																title="Quét lại toàn bộ video để sửa lỗi số phút"
+															>
+																<i class="fas fa-sync-alt me-1"></i>Sửa lỗi số
+																phút
+															</button>
+														</div>
 														<div class="col ps-2">
-															<small class="text-muted fs-11"
-																>* Học viên phải đợi đúng thời gian cài
-																đặt.</small
+															<small
+																class="text-muted fs-11"
+																v-if="lesson.videoType === 'upload'"
+																>* Sẽ tự động cập nhật sau khi xử lý xong video.
+																Bạn có thể nhập thủ công nếu muốn.</small
+															>
+															<small class="text-muted fs-11" v-else
+																>* Vui lòng nhập thời lượng cho video từ
+																Link.</small
 															>
 														</div>
+													</div>
+												</div>
+
+												<div
+													v-else-if="lesson.type === 'RolePlay'"
+													class="bg-info-light p-3 rounded border border-info"
+												>
+													<div class="role-play-config">
+														<div class="mb-3 d-none">
+															<label
+																class="form-label fw-bold small text-info text-uppercase"
+															>
+																<i class="fas fa-brain me-1"></i>Tình huống
+																(Scenario) dựa trên bài học
+															</label>
+														</div>
+
+														<div class="row g-2 mb-3">
+															<div class="col-md-9">
+																<div
+																	class="d-flex justify-content-between align-items-center mb-2"
+																>
+																	<label
+																		class="form-label fw-bold small text-info text-uppercase mb-0"
+																		>Tình huống chi tiết</label
+																	>
+																	<button
+																		v-if="
+																			getEligibleSupportLessons(mIdx, lIdx)
+																				.length > 0
+																		"
+																		type="button"
+																		class="btn btn-xs btn-info fw-bold text-white px-3"
+																		:disabled="isGeneratingScenario[lesson.id]"
+																		@click="generateAiScenario(mIdx, lIdx)"
+																	>
+																		<i
+																			class="fas"
+																			:class="
+																				isGeneratingScenario[lesson.id]
+																					? 'fa-spinner fa-spin'
+																					: 'fa-magic'
+																			"
+																		></i>
+																		{{
+																			isGeneratingScenario[lesson.id]
+																				? "Đang tạo..."
+																				: "Gợi ý tình huống bằng AI"
+																		}}
+																	</button>
+																</div>
+																<textarea
+																	v-model="lesson.rolePlayConfig.Scenario"
+																	class="form-control form-control-sm"
+																	rows="4"
+																	placeholder="Mô tả tình huống cụ thể tại đây hoặc nhấn nút để AI gợi ý..."
+																></textarea>
+															</div>
+															<div class="col-md-3">
+																<label
+																	class="form-label fw-bold small text-info text-uppercase"
+																	>Điểm đạt (≥)</label
+																>
+																<input
+																	v-model.number="
+																		lesson.rolePlayConfig.PassScore
+																	"
+																	type="number"
+																	class="form-control form-control-sm"
+																	min="0"
+																	max="100"
+																/>
+															</div>
+														</div>
+
+														<div class="row g-2">
+															<div class="col-md-6 text-wrapper">
+																<label
+																	class="form-label fw-bold small text-info text-uppercase"
+																	>Tiêu chí chấm điểm</label
+																>
+																<textarea
+																	v-model="
+																		lesson.rolePlayConfig.ScoringCriteria
+																	"
+																	class="form-control form-control-sm"
+																	rows="4"
+																	placeholder="Ví dụ: &#10;- Kỹ năng chào hỏi (2đ) &#10;- Khả năng xử lý từ chối (4đ) &#10;- Thuyết phục khách hàng (4đ)"
+																></textarea>
+															</div>
+															<div class="col-md-6">
+																<label
+																	class="form-label fw-bold small text-info text-uppercase"
+																	>Yêu cầu bổ sung</label
+																>
+																<textarea
+																	v-model="
+																		lesson.rolePlayConfig.AdditionalRequirements
+																	"
+																	class="form-control form-control-sm"
+																	rows="4"
+																	placeholder="Ví dụ: AI hãy tỏ ra khó tính và hay bắt bẻ người học..."
+																></textarea>
+															</div>
+														</div>
+													</div>
+												</div>
+
+												<div v-else class="bg-light p-3 rounded">
+													<div
+														class="d-flex justify-content-between align-items-center mb-2"
+													>
+														<label
+															class="form-label mb-0 fw-bold fs-13 text-dark"
+															>Nội dung bài học</label
+														>
+														<button
+															v-if="lesson.title"
+															type="button"
+															class="btn btn-xs btn-outline-primary fw-bold"
+															:disabled="isSuggestingContent[lesson.id]"
+															@click="suggestAIContent(mIdx, lIdx)"
+														>
+															<i
+																v-if="isSuggestingContent[lesson.id]"
+																class="fas fa-spinner fa-spin me-1"
+															></i>
+															<i v-else class="fas fa-magic me-1"></i>
+															Gợi ý bằng AI
+														</button>
+													</div>
+													<textarea
+														v-model="lesson.content"
+														class="form-control mb-2"
+														rows="6"
+														placeholder="Nhập nội dung bài đọc bằng định dạng Markdown..."
+													></textarea>
+													<div v-if="lesson.content" class="mt-3">
+														<label class="fs-12 fw-bold text-muted mb-2"
+															><i class="fas fa-eye me-1"></i> Xem trước nội
+															dung</label
+														>
+														<div
+															class="markdown-preview p-3 border rounded bg-white markdown-body"
+															v-html="renderMarkdown(lesson.content)"
+														></div>
 													</div>
 												</div>
 											</div>
@@ -1304,6 +1388,7 @@ const activeTab = ref("basic");
 const isSaving = ref(false);
 const isLoadingData = ref(true);
 const isSuggestingContent = ref<Record<number, boolean>>({});
+const isGeneratingScenario = ref<Record<number, boolean>>({});
 const isGeneratingQuiz = ref<Record<string, boolean>>({});
 
 const renderMarkdown = (text: string) => {
@@ -1563,10 +1648,17 @@ const createEmptyQuiz = (title: string): QuizModel => ({
 	questions: [],
 });
 
+interface RolePlayConfig {
+	SupportLessonIds: number[];
+	ScoringCriteria: string;
+	AdditionalRequirements: string;
+	Scenario: string;
+	PassScore: number;
+}
 interface Lesson {
 	id: number;
 	title: string;
-	type: "Video" | "Text";
+	type: "Video" | "Text" | "RolePlay";
 	content: string;
 	videoType: "url" | "upload";
 	videoUrl: string;
@@ -1576,6 +1668,8 @@ interface Lesson {
 	attachments: any[];
 	hasQuiz: boolean;
 	quiz: QuizModel;
+	rolePlayConfig: RolePlayConfig;
+	videoStatus?: string;
 }
 interface Module {
 	id: number;
@@ -1678,6 +1772,14 @@ onMounted(async () => {
 						})),
 						hasQuiz: hasQuiz,
 						quiz: lessonQuiz,
+						rolePlayConfig: {
+							SupportLessonIds: l.rolePlayConfig?.supportLessonIds || [],
+							ScoringCriteria: l.rolePlayConfig?.scoringCriteria || "",
+							AdditionalRequirements:
+								l.rolePlayConfig?.additionalRequirements || "",
+							Scenario: l.rolePlayConfig?.scenario || "",
+							PassScore: l.rolePlayConfig?.passScore || 50,
+						},
 					});
 				}
 				loadedModules.push({
@@ -1754,6 +1856,13 @@ const addLesson = (mIdx: number) => {
 		attachments: [],
 		hasQuiz: false,
 		quiz: createEmptyQuiz("Bài tập"),
+		rolePlayConfig: {
+			SupportLessonIds: [],
+			ScoringCriteria: "",
+			AdditionalRequirements: "",
+			Scenario: "",
+			PassScore: 50,
+		},
 	});
 };
 const removeLesson = (mIdx: number, lIdx: number) => {
@@ -1867,7 +1976,10 @@ const syncAllDurations = async () => {
 		const res = await lessonAPI.syncAllDurations();
 		toast.success(res.data.message || "Đã bắt đầu xử lý đồng bộ thời lượng.");
 	} catch (error: any) {
-		toast.error("Không thể yêu cầu đồng bộ: " + (error.response?.data?.message || "Lỗi hệ thống"));
+		toast.error(
+			"Không thể yêu cầu đồng bộ: " +
+				(error.response?.data?.message || "Lỗi hệ thống"),
+		);
 	}
 };
 
@@ -1906,6 +2018,97 @@ const suggestAIContent = async (mIdx: number, lIdx: number) => {
 		);
 	} finally {
 		isSuggestingContent.value[lesson.id] = false;
+	}
+};
+
+const getEligibleSupportLessons = (mIdx: number, lIdx: number) => {
+	const eligible: { id: number; title: string; moduleTitle: string }[] = [];
+	curriculum.value.forEach((m, mi) => {
+		if (mi > mIdx) return;
+		m.lessons.forEach((l, li) => {
+			if (mi === mIdx && li >= lIdx) return;
+			// For editor, we must ensure the lesson has a real ID (> 0) to be used by AI RAG
+			if (l.type !== "RolePlay" && l.title && l.id > 0) {
+				eligible.push({
+					id: l.id,
+					title: l.title,
+					moduleTitle: m.title,
+				});
+			}
+		});
+	});
+	return eligible;
+};
+
+const generateAiScenario = async (mIdx: number, lIdx: number) => {
+	const lesson = curriculum.value[mIdx].lessons[lIdx];
+	const eligibleLessons = getEligibleSupportLessons(mIdx, lIdx);
+
+	if (eligibleLessons.length === 0) {
+		toast.warning("Không có bài giảng nào phù hợp để làm dữ liệu hỗ trợ.");
+		return;
+	}
+
+	// Show selection modal
+	const { value: selectedIds } = await Swal.fire({
+		title: "Chọn bài giảng bổ trợ",
+		html: `
+      <div class="text-start" style="max-height: 300px; overflow-y: auto;">
+        ${eligibleLessons
+					.map(
+						(l) => `
+          <div class="form-check mb-2">
+            <input class="form-check-input swal-lesson-checkbox" type="checkbox" value="${
+							l.id
+						}" id="swal_l_${l.id}" ${
+							lesson.rolePlayConfig.SupportLessonIds?.includes(l.id)
+								? "checked"
+								: ""
+						}>
+            <label class="form-check-label small" for="swal_l_${l.id}">
+              <strong>[${l.moduleTitle}]</strong> ${l.title}
+            </label>
+          </div>
+        `,
+					)
+					.join("")}
+      </div>
+    `,
+		showCancelButton: true,
+		confirmButtonText: "Tiếp tục tạo bằng AI",
+		cancelButtonText: "Hủy",
+		confirmButtonColor: "#3085d6",
+		preConfirm: () => {
+			const checkboxes = document.querySelectorAll(
+				".swal-lesson-checkbox:checked",
+			) as NodeListOf<HTMLInputElement>;
+			return Array.from(checkboxes).map((cb) => parseInt(cb.value));
+		},
+	});
+
+	if (!selectedIds || selectedIds.length === 0) {
+		if (selectedIds) toast.warning("Vui lòng chọn ít nhất một bài giảng.");
+		return;
+	}
+
+	// Update the support IDs
+	lesson.rolePlayConfig.SupportLessonIds = selectedIds;
+
+	isGeneratingScenario.value[lesson.id] = true;
+	try {
+		const res = await aiAPI.generateScenario(
+			lesson.rolePlayConfig.SupportLessonIds,
+		);
+		const data = res.data.scenario; // res.data.scenario ở đây là object RolePlaySuggestionResponse từ backend
+		lesson.rolePlayConfig.Scenario = data.scenario;
+		lesson.rolePlayConfig.ScoringCriteria = data.scoringCriteria;
+		lesson.rolePlayConfig.AdditionalRequirements = data.additionalRequirements;
+
+		toast.success("Đã tạo cấu hình thành công!");
+	} catch (error) {
+		toast.error("Không thể tạo tình huống tự động.");
+	} finally {
+		isGeneratingScenario.value[lesson.id] = false;
 	}
 };
 
@@ -1994,6 +2197,13 @@ const submitCourse = async () => {
 			await courseAPI.uploadCover(courseId as string, formData);
 		}
 
+		const lessonIdMap = new Map();
+		curriculum.value.forEach((m) =>
+			m.lessons.forEach((l) => {
+				if (l.id > 0) lessonIdMap.set(l.id, l.id);
+			}),
+		);
+
 		for (let mIdx = 0; mIdx < curriculum.value.length; mIdx++) {
 			const mod = curriculum.value[mIdx];
 			let currentModuleId = mod.id;
@@ -2024,11 +2234,25 @@ const submitCourse = async () => {
 					readingDurationSeconds:
 						les.type === "Text" ? Number(les.durationSeconds) || 0 : 0,
 					videoStatus: les.videoStatus || "Ready",
+					rolePlayConfig:
+						les.type === "RolePlay"
+							? {
+									scoringCriteria: les.rolePlayConfig.ScoringCriteria,
+									additionalRequirements:
+										les.rolePlayConfig.AdditionalRequirements,
+									scenario: les.rolePlayConfig.Scenario,
+									passScore: les.rolePlayConfig.PassScore,
+									supportLessonIds: les.rolePlayConfig.SupportLessonIds.map(
+										(id) => lessonIdMap.get(id),
+									).filter((id) => id !== undefined && id > 0),
+								}
+							: null,
 				};
 				let currentLessonId = les.id;
 				if (currentLessonId < 0) {
 					const resLes = await lessonAPI.create(currentModuleId, lessonPayload);
 					currentLessonId = resLes.data.id;
+					lessonIdMap.set(les.id, currentLessonId);
 				} else {
 					await lessonAPI.update(
 						currentModuleId,

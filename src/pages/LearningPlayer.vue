@@ -454,6 +454,291 @@
 						</div>
 
 						<div
+							v-else-if="lesson?.type === 'RolePlay'"
+							class="role-play-theater"
+						>
+							<div class="content-type-badge role-play">
+								<i class="fas fa-robot me-1"></i> TRẢI NGHIỆM ROLE PLAY (AI)
+							</div>
+							<div class="role-play-card glass shadow-sm">
+								<div class="chat-container">
+									<div
+										v-if="isLoadingSession && !currentSession"
+										class="h-100 d-flex flex-column align-items-center justify-content-center p-5"
+									>
+										<div
+											class="spinner-border text-primary mb-3"
+											role="status"
+										></div>
+										<p class="text-muted fw-medium animate-pulse">
+											Đang tải dữ liệu thực hành...
+										</p>
+									</div>
+									<div
+										v-else-if="!currentSession"
+										class="start-session-view text-center py-5"
+									>
+										<Sparkles :size="48" class="text-primary mb-3" />
+										<h4 class="fw-bold">Sẵn sàng cho buổi thực hành với AI?</h4>
+										<p class="text-muted px-4 mb-4">
+											AI sẽ đóng vai khách hàng hoặc đối tác dựa trên kiến thức
+											bài học để giúp bạn rèn luyện kỹ năng thực tế.
+										</p>
+										<button
+											class="btn btn-primary px-4 py-2 fw-bold shadow-sm"
+											@click="startRolePlay"
+											:disabled="isLoadingSession"
+										>
+											<i
+												v-if="isLoadingSession"
+												class="fas fa-spinner fa-spin me-2"
+											></i>
+											BẮT ĐẦU NGAY
+										</button>
+									</div>
+									<template v-else>
+										<div
+											ref="chatBox"
+											class="chat-messages custom-scrollbar"
+											:class="{
+												'blur-sm':
+													currentSession &&
+													currentSession.status &&
+													currentSession.status.toLowerCase() !== 'inprogress',
+											}"
+										>
+											<div
+												v-for="msg in currentSession.messages"
+												:key="msg.id"
+												:class="['message-item', msg.role]"
+											>
+												<div class="message-meta">
+													<span class="role-name">{{
+														msg.role.toUpperCase() === "AI"
+															? "AI Mentor"
+															: "Bạn"
+													}}</span>
+													<span class="msg-time">{{
+														formatTimeAgo(msg.createdAt)
+													}}</span>
+												</div>
+												<div
+													class="message-bubble shadow-sm markdown-body"
+													v-html="renderMarkdown(msg.content)"
+												></div>
+											</div>
+											<div v-if="isAiTyping" class="message-item Ai">
+												<div class="typing-indicator">
+													<span></span><span></span><span></span>
+												</div>
+											</div>
+											<div
+												v-if="finishCountdown !== null"
+												class="message-item Ai mt-2"
+											>
+												<div
+													class="message-bubble bg-light text-muted italic shadow-none border-0"
+												>
+													<i class="fas fa-magic me-2"></i>
+													Bài Role Play này sẽ tự động chấm điểm sau
+													{{ finishCountdown }} giây nữa
+												</div>
+											</div>
+										</div>
+										<div
+											v-if="
+												currentSession.status?.toLowerCase() === 'inprogress'
+											"
+											class="chat-input-area"
+										>
+											<div class="input-wrap shadow-sm">
+												<textarea
+													v-model="userMessage"
+													@keydown.enter.prevent="sendUserMessage"
+													placeholder="Nhập phản hồi của bạn..."
+													rows="1"
+													class="chat-textarea"
+												></textarea>
+												<button
+													class="btn-send"
+													@click="sendUserMessage"
+													:disabled="!userMessage.trim() || isAiTyping"
+												>
+													<Send :size="20" />
+												</button>
+											</div>
+											<div
+												class="chat-footer-actions mt-3 d-flex justify-content-between align-items-center"
+											>
+												<span class="text-muted small italic"
+													><i class="fas fa-info-circle me-1"></i> Nhắn ít nhất
+													3 tin để có kết quả chính xác hơn.</span
+												>
+												<button
+													class="btn btn-sm btn-outline-danger fw-bold"
+													@click="finishRolePlay"
+													:disabled="currentSession.messages.length < 3"
+												>
+													KẾT THÚC & CHẤM ĐIỂM
+												</button>
+											</div>
+										</div>
+										<div
+											v-if="
+												currentSession.status?.toLowerCase() !== 'inprogress' &&
+												showRolePlayResult
+											"
+											class="session-result-overlay"
+										>
+											<div
+												v-if="
+													currentSession.status?.toLowerCase() === 'processing'
+												"
+												class="processing-result text-center"
+											>
+												<div
+													class="spinner-border text-primary mb-3"
+													role="status"
+												></div>
+												<h5 class="fw-bold">AI ĐANG CHẤM ĐIỂM...</h5>
+												<p class="text-muted">
+													Vui lòng đợi trong giây lát để hệ thống đánh giá kỹ
+													năng của bạn.
+												</p>
+											</div>
+											<div
+												v-else-if="
+													currentSession.status?.toLowerCase() === 'completed'
+												"
+												class="completed-result text-center p-4"
+											>
+												<Trophy
+													:size="56"
+													class="text-warning mb-3 animate-bounce"
+												/>
+												<h3 class="fw-bold text-success mb-1">
+													LẦN THỬ THỨ {{ getAttemptNumber(currentSession.id) }}
+												</h3>
+												<div
+													class="history-selector-pills mb-3 d-flex flex-wrap justify-content-center gap-2"
+													v-if="
+														historySessions.length > 0 &&
+														currentSession?.status?.toLowerCase() !==
+															'processing'
+													"
+												>
+													<button
+														v-for="(s, index) in sortedHistorySessions"
+														:key="s.id"
+														class="btn btn-sm px-3 rounded-pill"
+														:class="
+															currentSession?.id === s.id
+																? 'btn-primary'
+																: 'btn-outline-primary'
+														"
+														@click="viewSessionHistory(s.id)"
+													>
+														Lần {{ index + 1 }}
+														<span v-if="s.score !== null"
+															>({{ s.score }}đ)</span
+														>
+													</button>
+												</div>
+												<div class="score-display mb-4">
+													<span class="score-label">ĐIỂM SỐ:</span>
+													<span class="score-value"
+														>{{ currentSession.score }} / 100</span
+													>
+												</div>
+												<div class="feedback-container">
+													<h6 class="text-start fw-bold mb-2">
+														<i class="fas fa-comment-alt-dots me-2"></i>Nhận xét
+														từ AI Mentor:
+													</h6>
+													<div
+														class="feedback-content text-start p-3 bg-white border rounded custom-scrollbar markdown-body"
+														v-html="renderMarkdown(currentSession.feedback)"
+													></div>
+												</div>
+												<div
+													class="d-flex flex-wrap justify-content-center gap-2 mt-4"
+												>
+													<button
+														v-if="!isShowingHistory"
+														class="btn btn-primary px-4 fw-bold shadow"
+														@click="startRolePlay"
+													>
+														THỰC HÀNH LẠI
+													</button>
+													<button
+														v-else
+														class="btn btn-success px-4 fw-bold shadow"
+														@click="startRolePlay"
+													>
+														BẮT ĐẦU PHIÊN MỚI
+													</button>
+													<button
+														class="btn btn-outline-secondary px-4 fw-bold"
+														@click="showRolePlayResult = false"
+													>
+														XEM LỊCH SỬ CHAT
+													</button>
+												</div>
+											</div>
+											<div
+												v-else-if="
+													currentSession.status?.toLowerCase() === 'failed' ||
+													currentSession.status?.toLowerCase() ===
+														'scoringfailed'
+												"
+												class="text-center p-4"
+											>
+												<X :size="48" class="text-danger mb-2" />
+												<h5 class="text-danger fw-bold">CHẤM ĐIỂM THẤT BẠI</h5>
+												<p class="text-muted">
+													Có lỗi xảy ra trong quá trình AI xử lý. Bạn có thể thử
+													kết thúc lại hoặc thực hành mới.
+												</p>
+												<button
+													class="btn btn-outline-primary mt-3"
+													@click="finishRolePlay"
+												>
+													Thử lại
+												</button>
+												<button
+													class="btn btn-primary mt-3 ms-2"
+													@click="startRolePlay"
+												>
+													Bắt đầu phiên mới
+												</button>
+												<button
+													class="btn btn-outline-secondary mt-3 ms-2"
+													@click="showRolePlayResult = false"
+												>
+													Xem lịch sử
+												</button>
+											</div>
+										</div>
+										<div
+											v-if="
+												currentSession.status?.toLowerCase() !== 'inprogress' &&
+												!showRolePlayResult
+											"
+											class="chat-footer-actions mt-3 d-flex justify-content-center"
+										>
+											<button
+												class="btn btn-sm btn-primary fw-bold"
+												@click="showRolePlayResult = true"
+											>
+												XEM KẾT QUẢ CHẤM ĐIỂM
+											</button>
+										</div>
+									</template>
+								</div>
+							</div>
+						</div>
+
+						<div
 							v-if="
 								lesson?.type === 'Text' &&
 								!isCompleted &&
@@ -1228,6 +1513,7 @@ import api, {
 	noteAPI,
 	certificateAPI,
 	quizAPI,
+	rolePlayAPI,
 } from "@/services/api";
 import {
 	AlertCircle,
@@ -1260,6 +1546,7 @@ import {
 	Clock,
 	ArrowRight,
 	Sparkles,
+	Send,
 } from "lucide-vue-next";
 import LessonChat from "@/components/LessonChat.vue";
 import { toast } from "vue3-toastify";
@@ -1349,6 +1636,237 @@ let signalrConnection = null;
 let signalRCurrentLessonId = null;
 let hlsInstance = null;
 
+const currentSession = ref(null);
+const isLoadingSession = ref(false);
+const isAiTyping = ref(false);
+const userMessage = ref("");
+const chatBox = ref(null);
+const showRolePlayResult = ref(true);
+const historySessions = ref([]);
+const isShowingHistory = ref(false);
+const sortedHistorySessions = computed(() => {
+	return [...historySessions.value].sort((a, b) => a.id - b.id);
+});
+
+const getAttemptNumber = (sessionId) => {
+	const index = sortedHistorySessions.value.findIndex(
+		(s) => s.id === sessionId,
+	);
+	return index !== -1
+		? index + 1
+		: historySessions.value.length +
+				(currentSession.value?.id === sessionId && !isShowingHistory.value
+					? 1
+					: 0);
+};
+const finishCountdown = ref(null);
+let finishTimerInterval = null;
+
+const startRolePlay = async () => {
+	isLoadingSession.value = true;
+	isShowingHistory.value = false;
+	try {
+		const res = await rolePlayAPI.startSession(lesson.value.id);
+		currentSession.value = res.data;
+		showRolePlayResult.value = true;
+		nextTick(() => scrollChatToBottom());
+		fetchRolePlayHistory();
+	} catch {
+		toast.error("Không thể bắt đầu phiên Role Play.");
+	} finally {
+		isLoadingSession.value = false;
+	}
+};
+
+const fetchRolePlayHistory = async () => {
+	try {
+		const res = await rolePlayAPI.getHistory(lesson.value.id);
+		historySessions.value = res.data;
+	} catch (_err) {
+		// Silent error or handle appropriately
+	}
+};
+
+const viewSessionHistory = async (sessionId) => {
+	isLoadingSession.value = true;
+	try {
+		const res = await rolePlayAPI.getSessionDetail(sessionId);
+		currentSession.value = res.data;
+		showRolePlayResult.value = true;
+		isShowingHistory.value = true;
+		nextTick(() => scrollChatToBottom());
+	} catch {
+		toast.error("Không thể tải chi tiết phiên này.");
+	} finally {
+		isLoadingSession.value = false;
+	}
+};
+
+const sendUserMessage = async () => {
+	if (!userMessage.value.trim() || isAiTyping.value) return;
+	const content = userMessage.value;
+	userMessage.value = "";
+
+	// 1. Add User Message locally
+	currentSession.value.messages.push({
+		id: Date.now(),
+		role: "User",
+		content: content,
+		createdAt: new Date().toISOString(),
+	});
+	nextTick(() => scrollChatToBottom());
+
+	isAiTyping.value = true;
+
+	// 2. Create placeholder for AI Message
+	const aiMsgId = Date.now() + 1;
+	const aiMsg = {
+		id: aiMsgId,
+		role: "Ai",
+		content: "AI đang suy nghĩ, vui lòng chờ một chút (khoảng 10s)...",
+		createdAt: new Date().toISOString(),
+	};
+	currentSession.value.messages.push(aiMsg);
+	const aiMsgIndex = currentSession.value.messages.length - 1;
+
+	try {
+		const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5100";
+		const token = authStore.token;
+
+		const response = await fetch(
+			`${baseUrl}/api/roleplay/sessions/${currentSession.value.id}/messages/stream`,
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify({ content }),
+			},
+		);
+
+		if (!response.ok) throw new Error("Lỗi kết nối streaming AI");
+
+		const reader = response.body.getReader();
+		const decoder = new TextDecoder();
+
+		let buffer = "";
+		let isFirstChunk = true;
+
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
+
+			buffer += decoder.decode(value, { stream: true });
+			const lines = buffer.split("\n");
+			buffer = lines.pop() || ""; // Keep the last partial line in buffer
+
+			for (const line of lines) {
+				const trimmedLine = line.trim();
+				if (!trimmedLine) continue;
+
+				if (trimmedLine.startsWith("data: ")) {
+					const text = trimmedLine.substring(6);
+					try {
+						const data = JSON.parse(text);
+						if (data.content === "[DONE]") {
+							// AI signal to finish session
+							startFinishCountdown();
+						} else {
+							if (isFirstChunk) {
+								currentSession.value.messages[aiMsgIndex].content = "";
+								isFirstChunk = false;
+							}
+							currentSession.value.messages[aiMsgIndex].content += data.content;
+							scrollChatToBottom();
+						}
+					} catch (_e) {
+						// Fail gracefully if not JSON
+					}
+				}
+			}
+		}
+	} catch (err) {
+		toast.error("Lỗi gửi tin nhắn: " + err.message);
+		// Remove empty AI message if error occurs early
+		if (currentSession.value.messages[aiMsgIndex].content === "") {
+			currentSession.value.messages.splice(aiMsgIndex, 1);
+		}
+	} finally {
+		isAiTyping.value = false;
+		nextTick(() => scrollChatToBottom());
+	}
+};
+
+const startFinishCountdown = () => {
+	finishCountdown.value = 5;
+	finishTimerInterval = setInterval(() => {
+		if (finishCountdown.value > 0) {
+			finishCountdown.value--;
+		} else {
+			clearInterval(finishTimerInterval);
+			finishTimerInterval = null;
+			finishCountdown.value = null;
+			finishRolePlay();
+		}
+	}, 1000);
+};
+
+const finishRolePlay = async () => {
+	if (currentSession.value.messages.length < 3) return;
+	try {
+		await rolePlayAPI.finishSession(currentSession.value.id);
+		showRolePlayResult.value = true;
+		// Refresh session to get scoring status
+		currentSession.value.status = "Processing";
+		pollSessionStatus();
+		fetchRolePlayHistory();
+	} catch {
+		toast.error("Có lỗi xảy ra khi kết thúc phiên.");
+	}
+};
+
+const pollSessionStatus = async () => {
+	// Tránh tạo nhiều interval trùng lặp
+	if (window.rolePlayPollInterval) clearInterval(window.rolePlayPollInterval);
+
+	window.rolePlayPollInterval = setInterval(async () => {
+		try {
+			if (!lesson.value || lesson.value.type !== "RolePlay") {
+				clearInterval(window.rolePlayPollInterval);
+				return;
+			}
+			const res = await rolePlayAPI.getSession(lesson.value.id);
+			const status = res.data.status?.toLowerCase();
+			if (status === "completed") {
+				currentSession.value = res.data;
+				clearInterval(window.rolePlayPollInterval);
+				toast.success("AI đã hoàn thành chấm điểm!");
+				refreshProgress();
+				fetchRolePlayHistory();
+			} else if (status === "failed" || status === "scoringfailed") {
+				currentSession.value = res.data;
+				clearInterval(window.rolePlayPollInterval);
+				toast.error("Chấm điểm thất bại, vui lòng thử lại.");
+			}
+		} catch {
+			clearInterval(window.rolePlayPollInterval);
+		}
+	}, 3000);
+};
+
+const scrollChatToBottom = () => {
+	if (chatBox.value) {
+		chatBox.value.scrollTop = chatBox.value.scrollHeight;
+	}
+};
+
+const formatTimeAgo = (dateStr) => {
+	if (!dateStr) return "";
+	const date = new Date(dateStr);
+	return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+};
+
 const renderMarkdown = (text) => {
 	if (!text) return "";
 	return DOMPurify.sanitize(marked.parse(text));
@@ -1382,6 +1900,9 @@ const isCurrentLessonQuizPassed = computed(() => {
 });
 
 const canCompleteManual = computed(() => {
+	// Role Play lessons can ONLY be completed by AI scoring, not manually
+	if (lesson.value?.type === "RolePlay") return false;
+
 	if (lesson.value?.type === "Video") {
 		if (!isVideoWatchedEnough.value && !isCompleted.value) return false;
 	} else if (lesson.value?.type === "Text") {
@@ -1394,6 +1915,12 @@ const canCompleteManual = computed(() => {
 
 const completeBtnMessage = computed(() => {
 	if (savingProgress.value) return "Đang lưu tiến độ...";
+
+	if (lesson.value?.type === "RolePlay") {
+		return isCompleted.value
+			? "Bài học đã hoàn thành"
+			: "🔒 Hoàn thành Role Play với điểm số ≥ 50 để vượt qua";
+	}
 
 	if (
 		lesson.value?.type === "Video" &&
@@ -1604,6 +2131,28 @@ async function loadData() {
 
 		lesson.value = targetLesson;
 
+		if (lesson.value.type === "RolePlay") {
+			isLoadingSession.value = true;
+			isShowingHistory.value = false;
+			try {
+				const rpRes = await rolePlayAPI.getSession(lesson.value.id);
+				currentSession.value = rpRes.data;
+				if (
+					currentSession.value &&
+					currentSession.value.status === "Processing"
+				) {
+					pollSessionStatus();
+				}
+				fetchRolePlayHistory();
+			} catch {
+				currentSession.value = null;
+			} finally {
+				isLoadingSession.value = false;
+			}
+		} else {
+			currentSession.value = null;
+		}
+
 		const activeMod = course.value.modules.find((m) =>
 			m.lessons.some((l) => l.id === lesson.value.id),
 		);
@@ -1718,7 +2267,21 @@ async function ensureSignalRConnection() {
 		}
 	});
 
-	signalrConnection.on("AiProcessingCompleted", () => {});
+	signalrConnection.on("AiProcessingCompleted", (lessonId, _sessionId) => {
+		if (lesson.value && lesson.value.id === lessonId) {
+			// Nếu đang ở bài học này, refresh lại session
+			rolePlayAPI.getSession(lessonId).then((res) => {
+				currentSession.value = res.data;
+				if (res.data.status === "Completed") {
+					toast.success("AI đã hoàn thành chấm điểm!");
+					refreshProgress();
+					fetchRolePlayHistory();
+					if (window.rolePlayPollInterval)
+						clearInterval(window.rolePlayPollInterval);
+				}
+			});
+		}
+	});
 
 	try {
 		await signalrConnection.start();
@@ -2597,6 +3160,248 @@ watch(() => route.params.lessonId, loadData);
 	border-bottom: 1px solid var(--border-color);
 	transition: all 0.2s ease;
 	cursor: pointer;
+}
+
+.markdown-body {
+	font-family: inherit;
+}
+.markdown-body p {
+	margin-bottom: 1rem;
+}
+.markdown-body p:last-child {
+	margin-bottom: 0;
+}
+
+/* Role Play Theater */
+.role-play-theater {
+	margin-bottom: 2rem;
+}
+.role-play-card {
+	border-radius: 1.5rem;
+	overflow: hidden;
+	background: rgba(255, 255, 255, 0.7);
+	backdrop-filter: blur(10px);
+	border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.chat-container {
+	height: 600px;
+	display: flex;
+	flex-direction: column;
+	position: relative;
+}
+.chat-messages {
+	flex: 1;
+	padding: 0.75rem 1.5rem 1.5rem;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+	background: rgba(248, 250, 252, 0.5);
+}
+.message-item {
+	max-width: 85%;
+	display: flex;
+	flex-direction: column;
+}
+.message-item.AI,
+.message-item.Ai {
+	align-self: flex-start;
+}
+.message-item.User {
+	align-self: flex-end;
+}
+.message-meta {
+	font-size: 0.7rem;
+	margin-bottom: 0.35rem;
+	display: flex;
+	gap: 0.5rem;
+	color: var(--text-tertiary);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+.message-item.User .message-meta {
+	flex-direction: row-reverse;
+}
+.role-name {
+	font-weight: 800;
+	color: var(--primary-500);
+}
+.message-bubble {
+	padding: 0.85rem 1.15rem;
+	border-radius: 1.25rem;
+	font-size: 0.95rem;
+	line-height: 1.6;
+}
+:deep(.message-bubble p) {
+	margin-bottom: 0.5rem;
+}
+:deep(.message-bubble p:last-child) {
+	margin-bottom: 0;
+}
+:deep(.message-bubble ul, .message-bubble ol) {
+	padding-left: 1.5rem;
+	margin-bottom: 0.5rem;
+}
+:deep(.message-bubble strong) {
+	font-weight: 700;
+}
+.AI .message-bubble,
+.Ai .message-bubble {
+	background: white;
+	color: var(--text-primary);
+	border-bottom-left-radius: 0.25rem;
+	border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.User .message-bubble {
+	background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+	color: white;
+	border-bottom-right-radius: 0.25rem;
+	box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+.chat-input-area {
+	padding: 1.5rem;
+	background: white;
+	border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+.input-wrap {
+	display: flex;
+	background: #f8fafc;
+	border-radius: 2rem;
+	padding: 0.5rem 0.5rem 0.5rem 1.25rem;
+	align-items: center;
+	border: 1px solid #e2e8f0;
+	transition: all 0.2s;
+}
+.input-wrap:focus-within {
+	border-color: var(--primary-400);
+	background: white;
+	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+.chat-textarea {
+	flex: 1;
+	border: none;
+	resize: none;
+	outline: none;
+	padding: 0.5rem 0;
+	max-height: 100px;
+	background: transparent;
+	font-size: 0.95rem;
+}
+.btn-send {
+	background: var(--primary-500);
+	color: white;
+	border: none;
+	width: 42px;
+	height: 42px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s;
+	margin-left: 0.5rem;
+}
+.btn-send:hover:not(:disabled) {
+	background: var(--primary-600);
+	transform: scale(1.05) rotate(-10deg);
+}
+.btn-send:disabled {
+	background: #cbd5e1;
+}
+.typing-indicator {
+	display: flex;
+	gap: 5px;
+	padding: 0.75rem 1.25rem;
+	background: white;
+	border-radius: 1rem;
+	width: fit-content;
+	border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.typing-indicator span {
+	width: 8px;
+	height: 8px;
+	background: var(--primary-300);
+	border-radius: 50%;
+	animation: typing 1.4s infinite ease-in-out;
+}
+.typing-indicator span:nth-child(2) {
+	animation-delay: 0.2s;
+}
+.typing-indicator span:nth-child(3) {
+	animation-delay: 0.4s;
+}
+
+@keyframes typing {
+	0%,
+	100% {
+		transform: translateY(0);
+		opacity: 0.4;
+	}
+	50% {
+		transform: translateY(-6px);
+		opacity: 1;
+	}
+}
+
+.session-result-overlay {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	background: rgba(248, 250, 252, 0.96);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	padding: 2rem;
+	z-index: 100;
+	overflow-y: auto;
+}
+.score-display {
+	background: white;
+	padding: 1.5rem 2.5rem;
+	border-radius: 2rem;
+	display: inline-block;
+	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+	border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.score-label {
+	display: block;
+	font-size: 0.85rem;
+	font-weight: 700;
+	color: var(--text-tertiary);
+	margin-bottom: 0.5rem;
+}
+.score-value {
+	font-size: 3rem;
+	font-weight: 900;
+	color: #10b981;
+	line-height: 1;
+}
+.feedback-container {
+	max-width: 600px;
+	width: 100%;
+}
+.feedback-content {
+	max-height: 300px;
+	background: white;
+	line-height: 1.7;
+	font-size: 0.95rem;
+}
+.bg-info-light {
+	background-color: #f0f9ff;
+}
+.custom-scrollbar::-webkit-scrollbar {
+	width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+	background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+	background: #cbd5e1;
+	border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+	background: #94a3b8;
 }
 
 .module-meta {

@@ -24,7 +24,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
 	(response) => response,
 	(error) => {
-		if (error.response?.status === 401) {
+		if (
+			error.response?.status === 401 &&
+			!error.config.url.includes("/auth/login")
+		) {
 			eraseCookie("lms_token");
 			eraseCookie("lms_user");
 			sessionStorage.removeItem("lms_token");
@@ -136,7 +139,8 @@ export const quizAPI = {
 	update: (quizId, data) => api.put(`/quizzes/${quizId}`, data),
 	updateQuestion: (questionId, data) =>
 		api.put(`/quizzes/questions/${questionId}`, data),
-	deleteQuestion: (questionId) => api.delete(`/quizzes/questions/${questionId}`),
+	deleteQuestion: (questionId) =>
+		api.delete(`/quizzes/questions/${questionId}`),
 };
 
 export const certificateAPI = {
@@ -284,6 +288,28 @@ export const aiAPI = {
 	generateQuiz: (data) => api.post("/ai/generate-quiz", data),
 	generateLessonQuiz: (data) => api.post("/ai/generate-lesson-quiz", data),
 	generateCourseQuiz: (data) => api.post("/ai/generate-course-quiz", data),
+	generateScenario: (lessonIds) =>
+		api.post("/roleplay/generate-scenario", lessonIds),
+};
+
+export const rolePlayAPI = {
+	getSession: (lessonId) => api.get(`/RolePlay/sessions/${lessonId}`),
+	getHistory: (lessonId) => api.get(`/RolePlay/sessions/${lessonId}/history`),
+	getSessionDetail: (sessionId) =>
+		api.get(`/RolePlay/sessions/details/${sessionId}`),
+	startSession: (lessonId) => api.post(`/RolePlay/sessions/${lessonId}/start`),
+	sendMessage: (sessionId, data) =>
+		api.post(`/RolePlay/sessions/${sessionId}/messages`, data),
+	finishSession: (sessionId) =>
+		api.post(`/RolePlay/sessions/${sessionId}/finish`),
+};
+
+export const adminRolePlayAPI = {
+	getAllSessions: () => api.get("/admin/AdminRolePlay/sessions"),
+	getSession: (sessionId) =>
+		api.get(`/admin/AdminRolePlay/sessions/${sessionId}`),
+	updateStatus: (sessionId, data) =>
+		api.put(`/admin/AdminRolePlay/sessions/${sessionId}/status`, data),
 };
 
 export const notificationAPI = {

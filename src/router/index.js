@@ -163,6 +163,16 @@ const routes = [
 				},
 			},
 			{
+				path: "admin/role-play-sessions",
+				name: "RolePlaySessions",
+				component: () => import("@/pages/admin/RolePlaySessions.vue"),
+				meta: {
+					roles: ["Admin", "Instructor"],
+					permissions: ["report.view"],
+					title: `Quản lý Role Play – ${APP_NAME}`,
+				},
+			},
+			{
 				path: "admin/quiz-analysis",
 				name: "QuizAnalysis",
 				component: () => import("@/pages/admin/QuizAnalysisPage.vue"),
