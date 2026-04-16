@@ -173,6 +173,16 @@ const routes = [
 				},
 			},
 			{
+				path: "admin/essay-sessions",
+				name: "AdminEssaySessions",
+				component: () => import("@/pages/admin/AdminEssaySessions.vue"),
+				meta: {
+					roles: ["Admin", "Instructor"],
+					permissions: ["report.view"],
+					title: `Quản lý Tự luận AI – ${APP_NAME}`,
+				},
+			},
+			{
 				path: "admin/quiz-analysis",
 				name: "QuizAnalysis",
 				component: () => import("@/pages/admin/QuizAnalysisPage.vue"),

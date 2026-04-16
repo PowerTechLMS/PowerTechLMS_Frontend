@@ -261,6 +261,27 @@
 									<span class="nav-text">Quản lý Role Play</span>
 								</RouterLink>
 							</li>
+							<li
+								v-if="
+									authStore.isAdmin ||
+									authStore.isInstructor ||
+									authStore.hasPermission('report.view')
+								"
+							>
+								<RouterLink
+									to="/admin/essay-sessions"
+									class="admin-nav-item"
+									:class="{
+										active: $route.path === '/admin/essay-sessions',
+									}"
+									@click="mobileMenuOpen = false"
+								>
+									<span class="admin-item-icon icon-training">
+										<FileSignature :size="15" />
+									</span>
+									<span class="nav-text">Quản lý Tự luận</span>
+								</RouterLink>
+							</li>
 
 							<li
 								v-if="
@@ -574,6 +595,7 @@ import {
 	Layout,
 	PieChart,
 	KeyRound,
+	FileSignature,
 } from "lucide-vue-next";
 
 const authStore = useAuthStore();

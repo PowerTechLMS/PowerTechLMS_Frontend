@@ -549,6 +549,20 @@
 															><i class="fas fa-robot me-1"></i>Role Play</label
 														>
 													</div>
+													<div class="form-check form-check-inline">
+														<input
+															class="form-check-input"
+															type="radio"
+															value="Essay"
+															v-model="lesson.type"
+															:id="'essay_' + lesson.id"
+														/>
+														<label
+															class="form-check-label text-warning fw-bold"
+															:for="'essay_' + lesson.id"
+															><i class="fas fa-edit me-1"></i>Tự luận AI</label
+														>
+													</div>
 												</div>
 
 												<div
@@ -789,6 +803,196 @@
 													</div>
 												</div>
 
+												<div
+													v-else-if="lesson.type === 'Essay'"
+													class="bg-warning-light p-3 rounded border border-warning"
+												>
+													<div class="essay-config">
+														<div class="row g-3 mb-4 border-bottom pb-3">
+															<div class="col-md-3">
+																<label
+																	class="form-label fw-bold small text-warning text-uppercase"
+																	>Thời gian (Phút)</label
+																>
+																<input
+																	v-model.number="
+																		lesson.essayConfig.TimeLimitMinutes
+																	"
+																	type="number"
+																	class="form-control form-control-sm"
+																	placeholder="Bỏ trống = Không giới hạn"
+																/>
+															</div>
+															<div class="col-md-3">
+																<label
+																	class="form-label fw-bold small text-warning text-uppercase"
+																	>Số lượt làm</label
+																>
+																<input
+																	v-model.number="
+																		lesson.essayConfig.MaxAttemptsPerWindow
+																	"
+																	type="number"
+																	class="form-control form-control-sm"
+																	placeholder="Số lần..."
+																/>
+															</div>
+															<div class="col-md-3">
+																<label
+																	class="form-label fw-bold small text-warning text-uppercase"
+																	>Khung giờ (Giờ)</label
+																>
+																<input
+																	v-model.number="
+																		lesson.essayConfig.AttemptWindowHours
+																	"
+																	type="number"
+																	class="form-control form-control-sm"
+																	placeholder="VD: 24 (mỗi ngày)..."
+																/>
+															</div>
+															<div class="col-md-3">
+																<label
+																	class="form-label fw-bold small text-warning text-uppercase"
+																	>Điểm đạt (≥)</label
+																>
+																<input
+																	v-model.number="lesson.essayConfig.PassScore"
+																	type="number"
+																	class="form-control form-control-sm"
+																	min="0"
+																	max="100"
+																/>
+															</div>
+														</div>
+
+														<div
+															class="d-flex justify-content-between align-items-center mb-3"
+														>
+															<h6 class="text-warning fw-bold mb-0">
+																<i class="fas fa-list-ol me-2"></i>Danh sách câu
+																hỏi tự luận
+															</h6>
+															<div class="d-flex align-items-center gap-3">
+																<div
+																	class="badge"
+																	:class="
+																		getTotalEssayWeight(mIdx, lIdx) === 100
+																			? 'bg-success'
+																			: 'bg-danger'
+																	"
+																>
+																	Tổng: {{ getTotalEssayWeight(mIdx, lIdx) }}%
+																</div>
+																<button
+																	v-if="
+																		getEligibleSupportLessons(mIdx, lIdx)
+																			.length > 0
+																	"
+																	type="button"
+																	class="btn btn-xs btn-warning fw-bold text-white px-3"
+																	:disabled="
+																		isGeneratingEssayQuestions[lesson.id]
+																	"
+																	@click="generateEssayQuestionsAI(mIdx, lIdx)"
+																>
+																	<i
+																		class="fas"
+																		:class="
+																			isGeneratingEssayQuestions[lesson.id]
+																				? 'fa-spinner fa-spin'
+																				: 'fa-magic'
+																		"
+																	></i>
+																	{{
+																		isGeneratingEssayQuestions[lesson.id]
+																			? "Đang tạo..."
+																			: "Gợi ý câu hỏi bằng AI"
+																	}}
+																</button>
+															</div>
+														</div>
+
+														<div
+															v-for="(q, qIdx) in lesson.essayConfig.Questions"
+															:key="qIdx"
+															class="card mb-3 border shadow-none"
+														>
+															<div
+																class="card-header py-1 px-3 d-flex justify-content-between align-items-center bg-light"
+															>
+																<span class="fw-bold small text-dark"
+																	>Câu hỏi {{ qIdx + 1 }}</span
+																>
+																<button
+																	type="button"
+																	class="btn btn-link text-danger p-0 ms-2"
+																	@click="
+																		lesson.essayConfig.Questions.splice(qIdx, 1)
+																	"
+																>
+																	<i class="fas fa-times-circle"></i>
+																</button>
+															</div>
+															<div class="card-body p-2">
+																<textarea
+																	v-model="q.Content"
+																	class="form-control form-control-sm mb-2"
+																	rows="2"
+																	placeholder="Nhập nội dung câu hỏi tự luận..."
+																></textarea>
+																<textarea
+																	v-model="q.ScoringCriteria"
+																	class="form-control form-control-sm mb-2"
+																	rows="2"
+																	placeholder="Tiêu chí chấm điểm (Hướng dẫn cho AI)..."
+																></textarea>
+																<div class="row g-2">
+																	<div class="col-md-6">
+																		<div class="input-group input-group-sm">
+																			<span class="input-group-text"
+																				>Thứ tự</span
+																			>
+																			<input
+																				v-model.number="q.SortOrder"
+																				type="number"
+																				class="form-control"
+																			/>
+																		</div>
+																	</div>
+																	<div class="col-md-6">
+																		<div class="input-group input-group-sm">
+																			<span class="input-group-text"
+																				>Tỉ trọng (%)</span
+																			>
+																			<input
+																				v-model.number="q.Weight"
+																				type="number"
+																				class="form-control"
+																			/>
+																		</div>
+																	</div>
+																</div>
+															</div>
+														</div>
+														<button
+															type="button"
+															class="btn btn-outline-warning btn-sm w-100 mt-2 border-dashed fw-bold"
+															@click="
+																lesson.essayConfig.Questions.push({
+																	Content: '',
+																	ScoringCriteria: '',
+																	SortOrder:
+																		lesson.essayConfig.Questions.length + 1,
+																	Weight: 0,
+																})
+															"
+														>
+															<i class="fas fa-plus me-1"></i>Thêm câu hỏi mới
+														</button>
+													</div>
+												</div>
+
 												<div v-else class="bg-light p-3 rounded">
 													<div
 														class="d-flex justify-content-between align-items-center mb-2"
@@ -882,7 +1086,12 @@
 												</div>
 											</div>
 
-											<div class="mt-4 pt-3 border-top border-warning">
+											<div
+												v-if="
+													lesson.type !== 'Essay' && lesson.type !== 'RolePlay'
+												"
+												class="mt-4 pt-3 border-top border-warning"
+											>
 												<div
 													class="d-flex justify-content-between align-items-center mb-3"
 												>
@@ -1389,6 +1598,7 @@ const isSaving = ref(false);
 const isLoadingData = ref(true);
 const isSuggestingContent = ref<Record<number, boolean>>({});
 const isGeneratingScenario = ref<Record<number, boolean>>({});
+const isGeneratingEssayQuestions = ref<Record<number, boolean>>({});
 const isGeneratingQuiz = ref<Record<string, boolean>>({});
 
 const renderMarkdown = (text: string) => {
@@ -1780,6 +1990,19 @@ onMounted(async () => {
 							Scenario: l.rolePlayConfig?.scenario || "",
 							PassScore: l.rolePlayConfig?.passScore || 50,
 						},
+						essayConfig: {
+							SupportLessonIds: l.essayConfig?.supportLessonIds || [],
+							TimeLimitMinutes: l.essayConfig?.timeLimitMinutes || null,
+							MaxAttemptsPerWindow: l.essayConfig?.maxAttemptsPerWindow || null,
+							AttemptWindowHours: l.essayConfig?.attemptWindowHours || null,
+							PassScore: l.essayConfig?.passScore || 50,
+							Questions: (l.essayConfig?.questions || []).map((q: any) => ({
+								id: q.id,
+								Content: q.content,
+								SortOrder: q.sortOrder,
+								Weight: q.weight,
+							})),
+						},
 					});
 				}
 				loadedModules.push({
@@ -1862,6 +2085,14 @@ const addLesson = (mIdx: number) => {
 			AdditionalRequirements: "",
 			Scenario: "",
 			PassScore: 50,
+		},
+		essayConfig: {
+			SupportLessonIds: [],
+			TimeLimitMinutes: null,
+			MaxAttemptsPerWindow: null,
+			AttemptWindowHours: null,
+			PassScore: 50,
+			Questions: [],
 		},
 	});
 };
@@ -2021,6 +2252,15 @@ const suggestAIContent = async (mIdx: number, lIdx: number) => {
 	}
 };
 
+const getTotalEssayWeight = (mIdx: number, lIdx: number) => {
+	const lesson = curriculum.value[mIdx]?.lessons[lIdx];
+	if (!lesson || !lesson.essayConfig || !lesson.essayConfig.Questions) return 0;
+	return lesson.essayConfig.Questions.reduce(
+		(sum: number, q: any) => sum + (parseInt(q.Weight) || 0),
+		0,
+	);
+};
+
 const getEligibleSupportLessons = (mIdx: number, lIdx: number) => {
 	const eligible: { id: number; title: string; moduleTitle: string }[] = [];
 	curriculum.value.forEach((m, mi) => {
@@ -2038,6 +2278,75 @@ const getEligibleSupportLessons = (mIdx: number, lIdx: number) => {
 		});
 	});
 	return eligible;
+};
+
+const generateEssayQuestionsAI = async (mIdx: number, lIdx: number) => {
+	const lesson = curriculum.value[mIdx].lessons[lIdx];
+	const eligibleLessons = getEligibleSupportLessons(mIdx, lIdx);
+
+	if (eligibleLessons.length === 0) {
+		toast.warning(
+			"Cần ít nhất một bài học (Video/Text) phía trước để tham khảo.",
+		);
+		return;
+	}
+
+	// Show selection modal
+	const { value: selectedIds } = await Swal.fire({
+		title: "Chọn bài giảng bổ trợ cho Tự luận",
+		html: `
+      <div class="text-start" style="max-height: 300px; overflow-y: auto;">
+        ${eligibleLessons
+					.map(
+						(l) => `
+          <div class="form-check mb-2">
+            <input class="form-check-input swal-essay-lesson-checkbox" type="checkbox" value="${
+							l.id
+						}" id="swal_e_l_${l.id}" checked>
+            <label class="form-check-label small" for="swal_e_l_${l.id}">
+              <strong>[${l.moduleTitle}]</strong> ${l.title}
+            </label>
+          </div>
+        `,
+					)
+					.join("")}
+      </div>
+    `,
+		showCancelButton: true,
+		confirmButtonText: "Tiếp tục tạo bằng AI",
+		cancelButtonText: "Hủy",
+		confirmButtonColor: "#f59e0b",
+		preConfirm: () => {
+			const checkboxes = document.querySelectorAll(
+				".swal-essay-lesson-checkbox:checked",
+			) as NodeListOf<HTMLInputElement>;
+			return Array.from(checkboxes).map((cb) => parseInt(cb.value));
+		},
+	});
+
+	if (!selectedIds || selectedIds.length === 0) {
+		if (selectedIds) toast.warning("Vui lòng chọn ít nhất một bài giảng.");
+		return;
+	}
+
+	isGeneratingEssayQuestions.value[lesson.id] = true;
+	try {
+		// Only send IDs, not objects
+		const res = await aiAPI.generateEssayQuestions(selectedIds);
+		if (res.data && Array.isArray(res.data)) {
+			lesson.essayConfig.Questions = res.data.map((q: any) => ({
+				Content: q.content,
+				ScoringCriteria: q.scoringCriteria || "",
+				SortOrder: q.sortOrder,
+				Weight: q.weight || 0,
+			}));
+			toast.success("Đã tạo câu hỏi gợi ý từ AI!");
+		}
+	} catch {
+		toast.error("Lỗi khi tải thông tin bài học.");
+	} finally {
+		isGeneratingEssayQuestions.value[lesson.id] = false;
+	}
 };
 
 const generateAiScenario = async (mIdx: number, lIdx: number) => {
@@ -2105,7 +2414,7 @@ const generateAiScenario = async (mIdx: number, lIdx: number) => {
 		lesson.rolePlayConfig.AdditionalRequirements = data.additionalRequirements;
 
 		toast.success("Đã tạo cấu hình thành công!");
-	} catch (error) {
+	} catch {
 		toast.error("Không thể tạo tình huống tự động.");
 	} finally {
 		isGeneratingScenario.value[lesson.id] = false;
@@ -2150,6 +2459,24 @@ const submitCourse = async () => {
 		);
 		activeTab.value = "quiz";
 		return;
+	}
+
+	// Validate Essay weights
+	for (let mIdx = 0; mIdx < curriculum.value.length; mIdx++) {
+		const mod = curriculum.value[mIdx];
+		for (let lIdx = 0; lIdx < mod.lessons.length; lIdx++) {
+			const les = mod.lessons[lIdx];
+			if (les.type === "Essay") {
+				const totalWeight = getTotalEssayWeight(mIdx, lIdx);
+				if (totalWeight !== 100) {
+					toast.error(
+						`Bài luận "${les.title}" (Chương ${mIdx + 1}) có tổng tỉ trọng là ${totalWeight}%. Vui lòng điều chỉnh để tổng bằng 100%.`,
+					);
+					activeTab.value = "curriculum";
+					return;
+				}
+			}
+		}
 	}
 
 	isSaving.value = true;
@@ -2245,6 +2572,24 @@ const submitCourse = async () => {
 									supportLessonIds: les.rolePlayConfig.SupportLessonIds.map(
 										(id) => lessonIdMap.get(id),
 									).filter((id) => id !== undefined && id > 0),
+								}
+							: null,
+					essayConfig:
+						les.type === "Essay"
+							? {
+									supportLessonIds: les.essayConfig.SupportLessonIds.map((id) =>
+										lessonIdMap.get(id),
+									).filter((id) => id !== undefined && id > 0),
+									timeLimitMinutes: les.essayConfig.TimeLimitMinutes,
+									maxAttemptsPerWindow: les.essayConfig.MaxAttemptsPerWindow,
+									attemptWindowHours: les.essayConfig.AttemptWindowHours,
+									passScore: les.essayConfig.PassScore,
+									questions: les.essayConfig.Questions.map((q: any) => ({
+										id: q.id > 0 ? q.id : null,
+										content: q.Content,
+										sortOrder: q.SortOrder,
+										weight: q.Weight,
+									})),
 								}
 							: null,
 				};

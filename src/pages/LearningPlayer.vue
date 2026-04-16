@@ -198,9 +198,18 @@
 											<div class="l-meta">
 												<div class="l-type-tag">
 													<Video v-if="l.type === 'Video'" :size="12" />
+													<i
+														v-else-if="l.type === 'Essay'"
+														class="fas fa-edit me-1"
+														style="font-size: 10px"
+													></i>
 													<FileText v-else :size="12" />
 													<span>{{
-														l.type === "Video" ? "Video" : "Bài đọc"
+														l.type === "Video"
+															? "Video"
+															: l.type === "Essay"
+																? "Tự luận"
+																: "Bài đọc"
 													}}</span>
 												</div>
 												<span
@@ -735,6 +744,20 @@
 										</div>
 									</template>
 								</div>
+							</div>
+						</div>
+
+						<div v-else-if="lesson?.type === 'Essay'" class="essay-theater">
+							<div class="content-type-badge essay">
+								<i class="fas fa-edit me-1"></i> BÀI TẬP TỰ LUẬN (AI)
+							</div>
+							<div class="essay-card-wrapper h-100">
+								<EssayLesson
+									:lessonId="lesson.id"
+									:config="lesson.essayConfig"
+									:theme="isDarkMode ? 'dark' : 'light'"
+									@completed="markLessonRead"
+								/>
 							</div>
 						</div>
 
@@ -1549,6 +1572,7 @@ import {
 	Send,
 } from "lucide-vue-next";
 import LessonChat from "@/components/LessonChat.vue";
+import EssayLesson from "@/components/EssayLesson.vue";
 import { toast } from "vue3-toastify";
 import { useAuthStore } from "@/stores/auth";
 import Hls from "hls.js";
@@ -1557,6 +1581,12 @@ import { marked } from "marked";
 import DOMPurify from "dompurify";
 
 const authStore = useAuthStore();
+const isDarkMode = ref(false);
+const markLessonRead = () => {
+	if (lesson.value?.id) {
+		completeLesson(true);
+	}
+};
 const route = useRoute();
 const router = useRouter();
 
@@ -1682,7 +1712,7 @@ const fetchRolePlayHistory = async () => {
 	try {
 		const res = await rolePlayAPI.getHistory(lesson.value.id);
 		historySessions.value = res.data;
-	} catch (_err) {
+	} catch {
 		// Silent error or handle appropriately
 	}
 };
@@ -1780,7 +1810,7 @@ const sendUserMessage = async () => {
 							currentSession.value.messages[aiMsgIndex].content += data.content;
 							scrollChatToBottom();
 						}
-					} catch (_e) {
+					} catch {
 						// Fail gracefully if not JSON
 					}
 				}
@@ -1900,8 +1930,9 @@ const isCurrentLessonQuizPassed = computed(() => {
 });
 
 const canCompleteManual = computed(() => {
-	// Role Play lessons can ONLY be completed by AI scoring, not manually
-	if (lesson.value?.type === "RolePlay") return false;
+	// Role Play and Essay lessons can ONLY be completed by AI scoring, not manually
+	if (lesson.value?.type === "RolePlay" || lesson.value?.type === "Essay")
+		return false;
 
 	if (lesson.value?.type === "Video") {
 		if (!isVideoWatchedEnough.value && !isCompleted.value) return false;
@@ -1919,7 +1950,13 @@ const completeBtnMessage = computed(() => {
 	if (lesson.value?.type === "RolePlay") {
 		return isCompleted.value
 			? "Bài học đã hoàn thành"
-			: "🔒 Hoàn thành Role Play với điểm số ≥ 50 để vượt qua";
+			: `🔒 Hoàn thành Role Play với điểm số ≥ ${lesson.value?.rolePlayConfig?.passScore || 50} để vượt qua`;
+	}
+
+	if (lesson.value?.type === "Essay") {
+		return isCompleted.value
+			? "Bài học đã hoàn thành"
+			: `🔒 Hoàn thành bài tự luận với điểm số ≥ ${lesson.value?.essayConfig?.passScore || 50} để vượt qua`;
 	}
 
 	if (

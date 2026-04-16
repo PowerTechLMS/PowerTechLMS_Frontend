@@ -290,6 +290,8 @@ export const aiAPI = {
 	generateCourseQuiz: (data) => api.post("/ai/generate-course-quiz", data),
 	generateScenario: (lessonIds) =>
 		api.post("/roleplay/generate-scenario", lessonIds),
+	generateEssayQuestions: (lessonIds) =>
+		api.post("/essay/generate-questions", lessonIds),
 };
 
 export const rolePlayAPI = {
@@ -310,6 +312,23 @@ export const adminRolePlayAPI = {
 		api.get(`/admin/AdminRolePlay/sessions/${sessionId}`),
 	updateStatus: (sessionId, data) =>
 		api.put(`/admin/AdminRolePlay/sessions/${sessionId}/status`, data),
+};
+
+export const essayAPI = {
+	startAttempt: (lessonId) => api.post(`/essay/lessons/${lessonId}/start`),
+	submitAttempt: (attemptId, data) =>
+		api.post(`/essay/attempts/${attemptId}/submit`, data),
+	getHistory: (lessonId) => api.get(`/essay/lessons/${lessonId}/history`),
+	getAttemptDetail: (attemptId) => api.get(`/essay/attempts/${attemptId}`),
+	getActiveAttempt: (lessonId) => api.get(`/essay/lessons/${lessonId}/active`),
+	saveDraft: (attemptId, data) =>
+		api.post(`/essay/attempts/${attemptId}/save-draft`, data),
+};
+
+export const essayAdminAPI = {
+	getAllAttempts: (params) => api.get("/admin/AdminEssay/attempts", { params }),
+	getAttemptDetail: (id) => api.get(`/admin/AdminEssay/attempts/${id}`),
+	updateScore: (id, data) => api.put(`/admin/AdminEssay/attempts/${id}`, data),
 };
 
 export const notificationAPI = {
