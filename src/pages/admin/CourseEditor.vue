@@ -1016,22 +1016,21 @@
 															Gợi ý bằng AI
 														</button>
 													</div>
-													<textarea
-														v-model="lesson.content"
-														class="form-control mb-2"
-														rows="6"
-														placeholder="Nhập nội dung bài đọc bằng định dạng Markdown..."
-													></textarea>
-													<div v-if="lesson.content" class="mt-3">
-														<label class="fs-12 fw-bold text-muted mb-2"
-															><i class="fas fa-eye me-1"></i> Xem trước nội
-															dung</label
-														>
-														<div
-															class="markdown-preview p-3 border rounded bg-white markdown-body"
-															v-html="renderMarkdown(lesson.content)"
-														></div>
-													</div>
+													<QuillEditor
+														:key="lesson.id + '_' + (lesson.editorVersion || 0)"
+														v-model:content="lesson.content"
+														content-type="html"
+														theme="snow"
+														:toolbar="[
+															['bold', 'italic', 'underline', 'strike'],
+															[{ header: [1, 2, 3, false] }],
+															[{ list: 'ordered' }, { list: 'bullet' }],
+															['blockquote', 'code-block'],
+															['clean'],
+														]"
+														placeholder="Nhập nội dung bài đọc..."
+														style="height: 350px; background: white"
+													/>
 												</div>
 											</div>
 
@@ -1584,9 +1583,14 @@ import {
 	aiAPI,
 } from "@/services/api";
 import ImportQuizModal from "@/components/ImportQuizModal.vue";
+import {
+	htmlToMarkdown,
+	markdownToHtml,
+	renderMarkdown,
+} from "@/utils/markdown";
+import { QuillEditor } from "@vueup/vue-quill";
+import "@vueup/vue-quill/dist/vue-quill.snow.css";
 import { toast } from "vue3-toastify";
-import { marked } from "marked";
-import DOMPurify from "dompurify";
 import Swal from "sweetalert2";
 
 const router = useRouter();
@@ -1600,11 +1604,6 @@ const isSuggestingContent = ref<Record<number, boolean>>({});
 const isGeneratingScenario = ref<Record<number, boolean>>({});
 const isGeneratingEssayQuestions = ref<Record<number, boolean>>({});
 const isGeneratingQuiz = ref<Record<string, boolean>>({});
-
-const renderMarkdown = (text: string) => {
-	if (!text) return "";
-	return DOMPurify.sanitize(marked.parse(text) as string);
-};
 
 const getObjectURL = (file: File | null) => {
 	return file ? URL.createObjectURL(file) : "";
@@ -1963,7 +1962,7 @@ onMounted(async () => {
 						id: l.id,
 						title: l.title,
 						type: l.type || "Video",
-						content: l.content || "",
+						content: markdownToHtml(l.content || ""),
 						videoType: (l.videoUrl && l.videoUrl.startsWith("http")
 							? "url"
 							: "upload") as "url" | "upload",
@@ -2230,16 +2229,29 @@ const suggestAIContent = async (mIdx: number, lIdx: number) => {
 				: "",
 		});
 
-		if (lesson.content) {
+		const aiContent =
+			res.data.choices?.[0]?.message?.content ||
+			res.data.content ||
+			res.data.data?.choices?.[0]?.message?.content ||
+			res.data.data?.content ||
+			"";
+		if (!aiContent) {
+			toast.warning("AI không trả về nội dung hợp lệ.");
+			return;
+		}
+
+		if (lesson.content && lesson.content !== "<p><br></p>") {
 			if (
 				confirm(
 					"Nội dung hiện tại sẽ bị ghi đè bởi gợi ý từ AI. Bạn có chắc chắn?",
 				)
 			) {
-				lesson.content = res.data.content;
+				lesson.content = markdownToHtml(aiContent);
+				lesson.editorVersion = (lesson.editorVersion || 0) + 1;
 			}
 		} else {
-			lesson.content = res.data.content;
+			lesson.content = markdownToHtml(aiContent);
+			lesson.editorVersion = (lesson.editorVersion || 0) + 1;
 		}
 		toast.success("Đã tạo nội dung gợi ý!");
 	} catch (error: any) {
@@ -2552,7 +2564,7 @@ const submitCourse = async () => {
 				const lessonPayload = {
 					title: les.title,
 					type: les.type,
-					content: les.content,
+					content: htmlToMarkdown(les.content),
 					videoUrl: les.videoType === "url" ? les.videoUrl : null,
 					isFreePreview: les.isFreePreview,
 					sortOrder: lIdx,

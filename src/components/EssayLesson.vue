@@ -377,8 +377,11 @@ import { QuillEditor } from "@vueup/vue-quill";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
 import { essayAPI } from "@/services/api";
 import { toast } from "vue3-toastify";
-import { marked } from "marked";
-import DOMPurify from "dompurify";
+import {
+	htmlToMarkdown,
+	markdownToHtml,
+	renderMarkdown,
+} from "@/utils/markdown";
 import dayjs from "dayjs";
 
 const props = defineProps<{
@@ -426,39 +429,6 @@ const formatTime = (seconds: number) => {
 };
 
 const formatDate = (date: string) => dayjs(date).format("HH:mm DD/MM/YYYY");
-
-const renderMarkdown = (text: string) => {
-	if (!text) return "";
-	return DOMPurify.sanitize(marked.parse(text) as string);
-};
-
-const htmlToMarkdown = (html: string) => {
-	if (!html) return "";
-	return html
-		.replace(/<b>(.*?)<\/b>/g, "**$1**")
-		.replace(/<strong>(.*?)<\/strong>/g, "**$1**")
-		.replace(/<i>(.*?)<\/i>/g, "*$1*")
-		.replace(/<em>(.*?)<\/em>/g, "*$1*")
-		.replace(/<u>(.*?)<\/u>/g, "$1")
-		.replace(/<p>(.*?)<\/p>/g, "$1\n\n")
-		.replace(/<br\s*\/?>/g, "\n")
-		.replace(/<h1>(.*?)<\/h1>/g, "# $1\n\n")
-		.replace(/<h2>(.*?)<\/h2>/g, "## $1\n\n")
-		.replace(/<h3>(.*?)<\/h3>/g, "### $1\n\n")
-		.replace(/<ul>(.*?)<\/ul>/g, "$1\n")
-		.replace(/<li>(.*?)<\/li>/g, "- $1\n")
-		.replace(/<ol>(.*?)<\/ol>/g, "$1\n")
-		.replace(/<blockquote>(.*?)<\/blockquote>/g, "> $1\n")
-		.replace(/<pre><code>(.*?)<\/code><\/pre>/g, "```\n$1\n```\n")
-		.replace(/<code>(.*?)<\/code>/g, "`$1`")
-		.replace(/<.*?>/g, "")
-		.trim();
-};
-
-const markdownToHtml = (markdown: string) => {
-	if (!markdown) return "";
-	return marked.parse(markdown) as string;
-};
 
 const formatTimeAgo = (date: Date) => dayjs(date).format("HH:mm:ss");
 
