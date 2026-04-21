@@ -1,10 +1,7 @@
 <template>
 	<div ref="containerRef" class="notification-container">
-		<button
-			class="btn-icon btn-ghost position-relative"
-			@click="toggleDropdown"
-		>
-			<Bell :size="20" />
+		<button class="notification-btn" @click="toggleDropdown" title="Thông báo">
+			<Bell class="bell-icon" :size="22" />
 			<span v-if="unreadCount > 0" class="notification-badge">{{
 				unreadCount
 			}}</span>
@@ -245,18 +242,48 @@ onUnmounted(() => {
 	align-items: center;
 }
 
+.notification-btn {
+	position: relative;
+	width: 40px;
+	height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: transparent;
+	border: none;
+	border-radius: 50%;
+	color: var(--text-secondary);
+	transition: all 0.2s;
+	cursor: pointer;
+}
+
+.notification-btn:hover {
+	background: rgba(var(--primary-rgb), 0.1);
+	color: var(--primary);
+}
+
+.bell-icon {
+	flex-shrink: 0;
+}
+
 .notification-badge {
 	position: absolute;
-	top: 4px;
-	right: 4px;
-	background: var(--danger-500);
+	top: 2px;
+	right: 2px;
+	background: #ef4444;
 	color: white;
 	font-size: 10px;
-	padding: 2px 5px;
-	border-radius: 10px;
-	min-width: 16px;
-	text-align: center;
-	border: 2px solid var(--bg-primary);
+	font-weight: 700;
+	padding: 0;
+	border-radius: 50%;
+	width: 18px;
+	height: 18px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 2px solid var(--bg-card);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	z-index: 1;
 }
 
 .notification-dropdown {

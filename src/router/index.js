@@ -135,6 +135,15 @@ const routes = [
 				},
 			},
 			{
+				path: "admin/ai-tasks/:jobId",
+				name: "AiTaskDetail",
+				component: () => import("@/pages/admin/AiTaskDetail.vue"),
+				meta: {
+					roles: ["Admin", "Instructor"],
+					title: `Tiến độ xử lý AI – ${APP_NAME}`,
+				},
+			},
+			{
 				path: "admin/certificates",
 				name: "AdminCertificates",
 				component: () => import("@/pages/admin/CertificatesList.vue"),

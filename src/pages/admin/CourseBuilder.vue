@@ -14,7 +14,13 @@
 				</div>
 			</div>
 
-			<div class="header-actions">
+			<div class="header-actions d-flex gap-2">
+				<button
+					@click="showAiGenerator = true"
+					class="btn btn-premium-ai pulse-premium"
+				>
+					<Sparkles :size="18" class="me-2" /> Tạo bằng AI
+				</button>
 				<button @click="router.push('/admin/courses')" class="btn btn-outline">
 					<i class="fas fa-arrow-left me-2"></i>Quay lại
 				</button>
@@ -612,42 +618,75 @@
 																>phút</span
 															>
 														</div>
-														<div class="col-auto d-flex align-items-center">
-															<input
-																type="number"
-																class="form-control form-control-sm border-primary text-center"
-																style="width: 60px"
-																placeholder="Giây"
-																max="59"
-																:value="lesson.durationSeconds % 60"
-																@input="
-																	(e: Event) => {
-																		const target = e.target as HTMLInputElement;
-																		let s = parseInt(target.value) || 0;
-																		if (s > 59) s = 59;
-																		const m = Math.floor(
-																			lesson.durationSeconds / 60,
-																		);
-																		lesson.durationSeconds = m * 60 + s;
-																	}
-																"
-															/>
-															<span class="mx-1 fs-12 fw-bold text-muted"
-																>giây</span
-															>
+														<div class="col-8">
+															<div class="row g-2 align-items-center mb-2">
+																<div class="col-auto">
+																	<label class="mb-0 fs-13 text-dark fw-bold"
+																		>Thời lượng video (giây):</label
+																	>
+																</div>
+																<div class="col-auto">
+																	<input
+																		v-model.number="lesson.durationSeconds"
+																		type="number"
+																		class="form-control form-control-sm text-center"
+																		style="width: 80px"
+																		placeholder="Giây"
+																	/>
+																</div>
+																<div class="col-auto">
+																	<button
+																		type="button"
+																		class="btn btn-premium-ai btn-xs fw-bold ms-2 pulse-premium"
+																		v-if="
+																			!lesson.videoUrl &&
+																			!lesson.videoFile &&
+																			lesson.type === 'Video' &&
+																			lesson.title
+																		"
+																		:disabled="
+																			isSuggestingVideoFrame[lesson.id]
+																		"
+																		@click="suggestVideoFrame(mIdx, lIdx)"
+																	>
+																		<i
+																			class="fas"
+																			:class="
+																				isSuggestingVideoFrame[lesson.id]
+																					? 'fa-spinner fa-spin'
+																					: 'fa-magic'
+																			"
+																		></i>
+																		{{
+																			lesson.videoDraftScript
+																				? "Cập nhật kịch bản"
+																				: "Gợi ý khung video"
+																		}}
+																	</button>
+
+																	<button
+																		type="button"
+																		class="btn btn-outline-info btn-xs fw-bold ms-2"
+																		v-if="
+																			lesson.videoDraftScript &&
+																			!isSuggestingVideoFrame[lesson.id]
+																		"
+																		@click="
+																			isAiDraftVisible[lesson.id] =
+																				!isAiDraftVisible[lesson.id]
+																		"
+																	>
+																		<i class="fas fa-scroll me-1"></i>
+																		{{
+																			isAiDraftVisible[lesson.id]
+																				? "Ẩn kịch bản"
+																				: "Xem kịch bản"
+																		}}
+																	</button>
+																</div>
+															</div>
 														</div>
-														<div class="col-auto">
-															<button
-																type="button"
-																class="btn btn-warning btn-xs fw-bold ms-2"
-																@click="syncAllDurations"
-																title="Quét lại toàn bộ video để sửa lỗi số phút"
-															>
-																<i class="fas fa-sync-alt me-1"></i>Sửa lỗi số
-																phút
-															</button>
-														</div>
-														<div class="col ps-2">
+														<div class="col-12 mt-1 ps-2">
 															<small
 																class="text-muted fs-11"
 																v-if="lesson.videoType === 'upload'"
@@ -658,6 +697,44 @@
 																>* Vui lòng nhập thời lượng cho video từ
 																Link.</small
 															>
+														</div>
+
+														<!-- Inline AI Script Draft Area -->
+														<div
+															v-if="
+																lesson.videoDraftScript &&
+																isAiDraftVisible[lesson.id]
+															"
+															class="ai-draft-box mt-3 border rounded shadow-sm bg-premium-light"
+														>
+															<div
+																class="ai-draft-header d-flex justify-content-between align-items-center p-2 border-bottom"
+															>
+																<div class="d-flex align-items-center">
+																	<div class="premium-icon-bg me-2">
+																		<i
+																			class="fas fa-robot text-white fs-12"
+																		></i>
+																	</div>
+																	<span class="fw-bold fs-13 text-premium-dark"
+																		>Kịch bản gợi ý từ AI</span
+																	>
+																</div>
+																<div class="d-flex gap-1">
+																	<button
+																		type="button"
+																		class="btn btn-xs btn-light border"
+																		@click="isAiDraftVisible[lesson.id] = false"
+																	>
+																		<i class="fas fa-times"></i>
+																	</button>
+																</div>
+															</div>
+															<div
+																class="ai-draft-body p-3 fs-12 text-dark overflow-auto"
+																style="max-height: 300px"
+																v-html="renderMarkdown(lesson.videoDraftScript)"
+															></div>
 														</div>
 													</div>
 												</div>
@@ -1274,6 +1351,11 @@
 			@close="showImportModal = false"
 			@imported="handleImportQuestions"
 		/>
+		<AiCourseGenerator
+			:show="showAiGenerator"
+			@close="showAiGenerator = false"
+			@generated="handleAiGenerated"
+		/>
 	</div>
 </template>
 
@@ -1293,20 +1375,22 @@ import {
 	Clock,
 	Globe,
 	Users,
+	Sparkles,
 } from "lucide-vue-next";
 
 import {
+	aiAPI,
 	courseAPI,
 	moduleAPI,
 	lessonAPI,
 	quizAPI,
 	userGroupAPI,
-	aiAPI,
 } from "@/services/api";
 import ImportQuizModal from "@/components/ImportQuizModal.vue";
+import AiCourseGenerator from "@/components/AiCourseGenerator.vue";
 import {
-	htmlToMarkdown,
 	markdownToHtml,
+	htmlToMarkdown,
 	renderMarkdown,
 } from "@/utils/markdown";
 import { QuillEditor } from "@vueup/vue-quill";
@@ -1317,9 +1401,51 @@ import Swal from "sweetalert2";
 const router = useRouter();
 
 const activeTab = ref("basic");
+const showAiGenerator = ref(false);
 const isSaving = ref(false);
 const isSuggestingContent = ref<Record<number, boolean>>({});
 const isGeneratingScenario = ref<Record<number, boolean>>({});
+const isSuggestingVideoFrame = ref<Record<number, boolean>>({});
+const isAiDraftVisible = ref<Record<number, boolean>>({});
+
+const handleAiGenerated = (data: any) => {
+	course.value.Title = data.outline?.title || data.topic || "";
+	course.value.Description = data.outline?.description || "";
+
+	if (data.outline?.modules && data.outline.modules.length > 0) {
+		curriculum.value = data.outline.modules.map((m: any, mIdx: number) => ({
+			id: -(Date.now() + mIdx),
+			title: m.title,
+			lessons: m.lessons.map((l: any, lIdx: number) => ({
+				id: -(Date.now() + mIdx * 100 + lIdx),
+				title: l.title,
+				type: l.type || "Video",
+				content: l.content || "",
+				videoType: "url",
+				videoUrl: "",
+				durationSeconds: 0,
+				isFreePreview: false,
+				attachments: [],
+				rolePlayConfig:
+					l.type === "RolePlay"
+						? {
+								Scenario: "",
+								PassScore: 80,
+								ScoringCriteria: "",
+								AdditionalRequirements: "",
+							}
+						: null,
+				essayConfig:
+					l.type === "Essay"
+						? { Question: "", MinWords: 100, MaxWords: 1000 }
+						: null,
+			})),
+		}));
+	}
+
+	showAiGenerator.value = false;
+	activeTab.value = "curriculum";
+};
 
 const suggestAIContent = async (mIdx: number, lIdx: number) => {
 	const lesson = curriculum.value[mIdx].lessons[lIdx];
@@ -1350,6 +1476,41 @@ const suggestAIContent = async (mIdx: number, lIdx: number) => {
 		toast.error("Không thể lấy gợi ý từ AI.");
 	} finally {
 		isSuggestingContent.value[lesson.id] = false;
+	}
+};
+
+const suggestVideoFrame = async (mIdx: number, lIdx: number) => {
+	const lesson = curriculum.value[mIdx].lessons[lIdx];
+	if (!lesson.title) {
+		toast.warning(
+			"Vui lòng nhập tiêu đề bài học trước khi sử dụng tính năng này.",
+		);
+		return;
+	}
+
+	isSuggestingVideoFrame.value[lesson.id] = true;
+	try {
+		const res = await aiAPI.suggestVideoFrame({
+			lessonId: null,
+			title: lesson.title,
+			content: lesson.content,
+		});
+		const suggestedFrame = res.data.suggestedFrame;
+		if (!suggestedFrame) {
+			toast.warning("AI không trả về kết quả gợi ý.");
+			return;
+		}
+
+		lesson.videoDraftScript = suggestedFrame;
+		isAiDraftVisible.value[lesson.id] = true;
+		toast.success("Đã có kịch bản gợi ý mới từ AI!");
+	} catch (error: any) {
+		toast.error(
+			"Lỗi khi lấy gợi ý khung video: " +
+				(error.response?.data?.message || "Lỗi hệ thống"),
+		);
+	} finally {
+		isSuggestingVideoFrame.value[lesson.id] = false;
 	}
 };
 
@@ -1436,7 +1597,7 @@ const generateAiScenario = async (mIdx: number, lIdx: number) => {
 		lesson.rolePlayConfig.AdditionalRequirements = data.additionalRequirements;
 
 		toast.success("Đã tạo cấu hình thành công!");
-	} catch (error) {
+	} catch {
 		toast.error("Không thể tạo tình huống tự động.");
 	} finally {
 		isGeneratingScenario.value[lesson.id] = false;
@@ -1514,7 +1675,7 @@ interface RolePlayConfig {
 interface Lesson {
 	id: number;
 	title: string;
-	type: "Video" | "Text" | "RolePlay";
+	type: "Video" | "Text" | "RolePlay" | "Essay";
 	content: string;
 	videoType: "url" | "upload";
 	videoUrl: string;
@@ -1525,7 +1686,10 @@ interface Lesson {
 	hasQuiz: boolean;
 	quiz: QuizModel;
 	rolePlayConfig: RolePlayConfig;
+	essayConfig?: any;
 	videoStatus?: string;
+	videoDraftScript?: string;
+	editorVersion?: number;
 }
 interface Module {
 	id: number;
@@ -1650,18 +1814,6 @@ function handleImportQuestions(questions: any[]) {
 	}
 }
 
-const syncAllDurations = async () => {
-	try {
-		const res = await lessonAPI.syncAllDurations();
-		toast.success(res.data.message || "Đã bắt đầu xử lý đồng bộ thời lượng.");
-	} catch (error: any) {
-		toast.error(
-			"Không thể yêu cầu đồng bộ: " +
-				(error.response?.data?.message || "Lỗi hệ thống"),
-		);
-	}
-};
-
 const handleImageUpload = (e: Event) => {
 	const files = (e.target as HTMLInputElement).files;
 	if (files && files.length > 0) course.value.CoverImage = files[0];
@@ -1758,6 +1910,7 @@ const submitCourse = async () => {
 					readingDurationSeconds:
 						les.type === "Text" ? Number(les.durationSeconds) || 0 : 0,
 					videoStatus: "Ready",
+					videoDraftScript: les.videoDraftScript,
 					rolePlayConfig:
 						les.type === "RolePlay"
 							? {
@@ -1947,6 +2100,7 @@ onMounted(async () => {
 	font-weight: 800;
 	letter-spacing: -0.02em;
 	background: linear-gradient(90deg, var(--primary-600), var(--primary-400));
+	background-clip: text;
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 	margin-bottom: 8px;
@@ -2553,5 +2707,93 @@ onMounted(async () => {
 }
 [data-theme="dark"] .psc-range {
 	background: var(--border-color);
+}
+
+/* Premium AI Button Styling */
+.btn-premium-ai {
+	background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%) !important;
+	color: white !important;
+	border: none !important;
+	padding: 6px 14px;
+	border-radius: 10px;
+	font-size: 11px;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+	position: relative;
+	overflow: hidden;
+	z-index: 1;
+}
+
+.btn-premium-ai:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 20px rgba(168, 85, 247, 0.4);
+	filter: brightness(1.1);
+}
+
+.btn-premium-ai:disabled {
+	opacity: 0.7;
+	cursor: not-allowed;
+	transform: none;
+}
+
+.pulse-premium {
+	animation: premium-pulse 2s infinite;
+}
+
+@keyframes premium-pulse {
+	0% {
+		box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+	}
+	70% {
+		box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+	}
+	100% {
+		box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+	}
+}
+
+.bg-premium-light {
+	background-color: #f8f9ff;
+}
+
+.text-premium-dark {
+	color: #4f46e5;
+}
+
+.premium-icon-bg {
+	background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+	width: 24px;
+	height: 24px;
+	border-radius: 6px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.ai-draft-body {
+	line-height: 1.6;
+}
+
+.ai-draft-body table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-bottom: 1rem;
+	background: white;
+	font-size: 11px;
+}
+
+.ai-draft-body th,
+.ai-draft-body td {
+	border: 1px solid #e2e8f0;
+	padding: 8px;
+	text-align: left;
+}
+
+.ai-draft-body th {
+	background-color: #f1f5f9;
+	font-weight: bold;
 }
 </style>

@@ -292,6 +292,11 @@ export const aiAPI = {
 		api.post("/roleplay/generate-scenario", lessonIds),
 	generateEssayQuestions: (lessonIds) =>
 		api.post("/essay/generate-questions", lessonIds),
+	generateCourse: (data) => api.post("/ai/course/generate", data),
+	getActiveTasks: () => api.get("/ai/active-tasks"),
+	getCourseProgress: (jobId) => api.get(`/ai/course/progress/${jobId}`),
+	suggestVideoFrame: (payload) =>
+		api.post("/ai/lesson/suggest-video-frame", payload),
 };
 
 export const rolePlayAPI = {

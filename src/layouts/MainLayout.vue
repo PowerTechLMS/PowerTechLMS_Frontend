@@ -559,6 +559,7 @@
 				<router-view />
 			</div>
 		</main>
+		<AiTaskManager />
 	</div>
 </template>
 
@@ -567,6 +568,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import NotificationDropdown from "@/components/NotificationDropdown.vue";
+import AiTaskManager from "@/components/AiTaskManager.vue";
 import {
 	LayoutDashboard,
 	BookOpen,
@@ -1126,7 +1128,7 @@ ul.doc-metismenu > li > a.router-link-active .nav-icon {
 	padding: 0 var(--space-xl);
 	position: sticky;
 	top: 0;
-	z-index: 1100;
+	z-index: 99;
 	border-bottom: 1px solid var(--border-color);
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
