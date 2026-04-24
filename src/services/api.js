@@ -336,6 +336,20 @@ export const essayAdminAPI = {
 	updateScore: (id, data) => api.put(`/admin/AdminEssay/attempts/${id}`, data),
 };
 
+export const adminAiAPI = {
+	getSessions: () => api.get("/admin-ai/sessions"),
+	getMessages: (id) => api.get(`/admin-ai/sessions/${id}/messages`),
+	createSession: (data) => api.post("/admin-ai/sessions", data),
+	sendMessage: (sessionId, data) =>
+		api.post(`/admin-ai/sessions/${sessionId}/chat`, data),
+	approvePlan: (sessionId, planId) =>
+		api.post(`/admin-ai/sessions/${sessionId}/approve/${planId}`),
+	getTasks: (sessionId) => api.get(`/admin-ai/sessions/${sessionId}/tasks`),
+	deleteTask: (taskId) => api.delete(`/admin-ai/tasks/${taskId}`),
+	updateSession: (id, data) => api.put(`/admin-ai/sessions/${id}`, data),
+	deleteSession: (id) => api.delete(`/admin-ai/sessions/${id}`),
+};
+
 export const notificationAPI = {
 	getAll: (params) => api.get("/notifications", { params }),
 	markAsRead: (id) => api.post(`/notifications/${id}/read`),

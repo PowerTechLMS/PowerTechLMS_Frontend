@@ -128,6 +128,22 @@
 						<template v-if="authStore.canManage">
 							<li class="nav-label nav-label-admin">QUẢN LÝ</li>
 
+							<li>
+								<RouterLink
+									to="/admin/ai-chatbot"
+									class="admin-nav-item ai-assistant-link"
+									:class="{ active: $route.path === '/admin/ai-chatbot' }"
+									@click="mobileMenuOpen = false"
+								>
+									<span class="admin-item-icon icon-ai">
+										<Bot :size="15" />
+									</span>
+									<span class="nav-text font-weight-bold ai-text"
+										>Trợ lý AI Admin</span
+									>
+								</RouterLink>
+							</li>
+
 							<li
 								v-if="
 									!sidebarCollapsed &&
@@ -598,6 +614,7 @@ import {
 	PieChart,
 	KeyRound,
 	FileSignature,
+	Bot,
 } from "lucide-vue-next";
 
 const authStore = useAuthStore();
@@ -1455,6 +1472,30 @@ ul.doc-metismenu > li > a.router-link-active .nav-icon {
 .icon-system {
 	background: rgba(148, 163, 184, 0.08);
 	color: #94a3b8;
+}
+
+.icon-ai {
+	background: rgba(168, 85, 247, 0.15);
+	color: #a855f7;
+}
+
+.sidebar .admin-nav-item.ai-assistant-link .ai-text {
+	color: #4f46e5 !important; /* Indigo đậm hơn - Cực kỳ rõ trên nền sáng */
+	font-weight: 800 !important;
+	text-shadow: none !important;
+}
+
+.ai-assistant-link {
+	background: rgba(79, 70, 229, 0.1) !important;
+	margin: 5px 12px !important;
+	border: 1px solid rgba(79, 70, 229, 0.25) !important;
+	border-radius: 12px !important;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.ai-assistant-link:hover {
+	background: rgba(79, 70, 229, 0.15) !important;
+	transform: translateY(-1px);
 }
 
 .admin-nav-item.active .icon-training,

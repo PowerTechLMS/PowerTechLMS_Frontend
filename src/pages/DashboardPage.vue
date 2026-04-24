@@ -15,6 +15,9 @@ import {
 	Trophy,
 	Star,
 	FileText,
+	Sparkles,
+	X,
+	Send,
 } from "lucide-vue-next";
 
 const authStore = useAuthStore();
@@ -151,455 +154,459 @@ onMounted(async () => {
 
 <template>
 	<div class="theme-provider">
-	<template v-if="!loading">
-		<div class="dash">
-			<section class="top-bar">
-				<div class="greet-box">
-					<div
-						v-if="avatarUrl"
-						class="avatar"
-						:style="`background-image:url('${avatarUrl}')`"
-					/>
-					<div v-else class="avatar avatar-init">
-						{{ authStore.user?.fullName?.charAt(0) || "U" }}
+		<template v-if="!loading">
+			<div class="dash">
+				<section class="top-bar">
+					<div class="greet-box">
+						<div
+							v-if="avatarUrl"
+							class="avatar"
+							:style="`background-image:url('${avatarUrl}')`"
+						/>
+						<div v-else class="avatar avatar-init">
+							{{ authStore.user?.fullName?.charAt(0) || "U" }}
+						</div>
+						<div class="greet-text">
+							<h1>
+								{{ greeting }},
+								<span class="text-primary">{{
+									authStore.user?.fullName || "Admin"
+								}}</span>
+							</h1>
+							<p>Cùng hệ thống nâng cao năng lực mỗi ngày nhé!</p>
+						</div>
 					</div>
-					<div class="greet-text">
-						<h1>
-							{{ greeting }},
-							<span class="text-primary">{{
-								authStore.user?.fullName || "Admin"
-							}}</span>
-						</h1>
-						<p>Cùng hệ thống nâng cao năng lực mỗi ngày nhé!</p>
+					<div class="top-actions">
+						<div class="pill pill-glow">
+							<span class="dot" />
+							{{ weekMission.weekLabel || "Tuần hiện tại" }}
+						</div>
 					</div>
-				</div>
-				<div class="top-actions">
-					<div class="pill pill-glow">
-						<span class="dot" />
-						{{ weekMission.weekLabel || "Tuần hiện tại" }}
-					</div>
-				</div>
-			</section>
+				</section>
 
-			<section class="goal-banner">
-				<div class="banner-content">
-					<div class="banner-title">
-						<Zap :size="18" class="icon-zap" /> Mục tiêu hôm nay
+				<section class="goal-banner">
+					<div class="banner-content">
+						<div class="banner-title">
+							<Zap :size="18" class="icon-zap" /> Mục tiêu hôm nay
+						</div>
+						<p v-if="todayTasks.length === 0">
+							Hôm nay bạn không có nhiệm vụ cụ thể nào. Hãy tiếp tục học khóa
+							đang dở nhé!
+						</p>
+						<p v-else>
+							Hôm nay bạn đang có {{ todayTasks.length }} nhiệm vụ chưa hoàn
+							thành. Cùng nỗ lực nhé!
+						</p>
 					</div>
-					<p v-if="todayTasks.length === 0">
-						Hôm nay bạn không có nhiệm vụ cụ thể nào. Hãy tiếp tục học khóa đang
-						dở nhé!
-					</p>
-					<p v-else>
-						Hôm nay bạn đang có {{ todayTasks.length }} nhiệm vụ chưa hoàn
-						thành. Cùng nỗ lực nhé!
-					</p>
-				</div>
-				<div class="banner-right">
-					<div class="bot-bubble">
-						Bắt tay vào làm nhiệm vụ đầu tiên thôi,
-						<strong>{{
-							authStore.user?.fullName?.split(" ").pop() || "Admin"
-						}}</strong>
-						ơi!
+					<div class="banner-right">
+						<div class="bot-bubble">
+							Bắt tay vào làm nhiệm vụ đầu tiên thôi,
+							<strong>{{
+								authStore.user?.fullName?.split(" ").pop() || "Admin"
+							}}</strong>
+							ơi!
+						</div>
+						<span class="bot-emoji">🤖</span>
 					</div>
-					<span class="bot-emoji">🤖</span>
-				</div>
-			</section>
+				</section>
 
-			<div class="main-layout">
-				<div class="center-col">
-					<section class="card weekly-card">
-						<h2 class="card-title">Nhiệm vụ học tập tuần này</h2>
-						<div class="mission-layout">
-							<div class="mission-circle-box">
-								<div class="circle-wrap">
-									<svg viewBox="0 0 84 84">
-										<circle class="circle-bg" cx="42" cy="42" r="33" />
-										<circle
-											class="circle-fill"
-											cx="42"
-											cy="42"
-											r="33"
-											:style="`stroke-dashoffset: ${207.3 - (207.3 * missionPct) / 100}; stroke-dasharray: 207.3;`"
-										/>
-									</svg>
-									<div class="circle-content">
-										<span class="pct">{{ missionPct }}%</span>
-										<span class="lbl">tuần này</span>
+				<div class="main-layout">
+					<div class="center-col">
+						<section class="card weekly-card">
+							<h2 class="card-title">Nhiệm vụ học tập tuần này</h2>
+							<div class="mission-layout">
+								<div class="mission-circle-box">
+									<div class="circle-wrap">
+										<svg viewBox="0 0 84 84">
+											<circle class="circle-bg" cx="42" cy="42" r="33" />
+											<circle
+												class="circle-fill"
+												cx="42"
+												cy="42"
+												r="33"
+												:style="`stroke-dashoffset: ${207.3 - (207.3 * missionPct) / 100}; stroke-dasharray: 207.3;`"
+											/>
+										</svg>
+										<div class="circle-content">
+											<span class="pct">{{ missionPct }}%</span>
+											<span class="lbl">tuần này</span>
+										</div>
 									</div>
-								</div>
-								<div class="date-lbl">
-									<Clock :size="12" /> {{ weekMission.weekLabel }}
-								</div>
-							</div>
-
-							<div class="mission-details">
-								<div class="detail-group">
-									<h3>Tiến độ nhiệm vụ</h3>
-									<div class="stat-line">
-										<span><Trophy :size="14" /> XP tích lũy tuần này</span>
-										<strong
-											>{{ weekMission.xpEarned }} /
-											{{ weekMission.xpTarget }} XP</strong
-										>
-									</div>
-									<div class="stat-line">
-										<span><Target :size="14" /> Đào tạo bắt buộc</span>
-										<strong
-											>{{ weekMission.mandatoryDone }}/{{
-												weekMission.mandatoryTotal
-											}}</strong
-										>
-									</div>
-									<p class="stat-sub">
-										• Hoàn thành: {{ weekMission.mandatoryDone }}/{{
-											weekMission.mandatoryTotal
-										}}
-										nhiệm vụ
-									</p>
-									<div class="stat-line">
-										<span><BookOpen :size="14" /> Học tập tự chọn</span>
-										<strong
-											>{{ weekMission.optionalDone }}/{{
-												weekMission.optionalTotal
-											}}</strong
-										>
+									<div class="date-lbl">
+										<Clock :size="12" /> {{ weekMission.weekLabel }}
 									</div>
 								</div>
 
-								<div class="skills-grid">
-									<div
-										v-for="skill in weekMission.skills"
-										:key="skill.name"
-										class="skill-bar-wrap"
-									>
-										<div class="skill-info">
-											<span>{{ skill.name }}</span>
-											<span :style="`color:${skill.color}`"
-												>{{ skill.pct }}%</span
+								<div class="mission-details">
+									<div class="detail-group">
+										<h3>Tiến độ nhiệm vụ</h3>
+										<div class="stat-line">
+											<span><Trophy :size="14" /> XP tích lũy tuần này</span>
+											<strong
+												>{{ weekMission.xpEarned }} /
+												{{ weekMission.xpTarget }} XP</strong
 											>
 										</div>
-										<div class="bar-track">
-											<div
-												class="bar-fill"
-												:style="`width:${skill.pct}%; background:${skill.color}`"
-											/>
+										<div class="stat-line">
+											<span><Target :size="14" /> Đào tạo bắt buộc</span>
+											<strong
+												>{{ weekMission.mandatoryDone }}/{{
+													weekMission.mandatoryTotal
+												}}</strong
+											>
+										</div>
+										<p class="stat-sub">
+											• Hoàn thành: {{ weekMission.mandatoryDone }}/{{
+												weekMission.mandatoryTotal
+											}}
+											nhiệm vụ
+										</p>
+										<div class="stat-line">
+											<span><BookOpen :size="14" /> Học tập tự chọn</span>
+											<strong
+												>{{ weekMission.optionalDone }}/{{
+													weekMission.optionalTotal
+												}}</strong
+											>
 										</div>
 									</div>
-								</div>
 
-								<div class="mission-footer">
-									<p>{{ weekMission.status }} 💪</p>
-									<button
-										class="btn-primary"
-										@click="
-											$router.push(
-												activeCourse
-													? `/courses/${activeCourse.id}`
-													: '/my-courses',
-											)
-										"
-									>
-										Tiếp tục học →
-									</button>
+									<div class="skills-grid">
+										<div
+											v-for="skill in weekMission.skills"
+											:key="skill.name"
+											class="skill-bar-wrap"
+										>
+											<div class="skill-info">
+												<span>{{ skill.name }}</span>
+												<span :style="`color:${skill.color}`"
+													>{{ skill.pct }}%</span
+												>
+											</div>
+											<div class="bar-track">
+												<div
+													class="bar-fill"
+													:style="`width:${skill.pct}%; background:${skill.color}`"
+												/>
+											</div>
+										</div>
+									</div>
+
+									<div class="mission-footer">
+										<p>{{ weekMission.status }} 💪</p>
+										<button
+											class="btn-primary"
+											@click="
+												$router.push(
+													activeCourse
+														? `/courses/${activeCourse.id}`
+														: '/my-courses',
+												)
+											"
+										>
+											Tiếp tục học →
+										</button>
+									</div>
 								</div>
 							</div>
-						</div>
-					</section>
+						</section>
 
-					<section class="section-group">
-						<div class="section-head">
-							<h2 class="card-title">Khóa học ưu tiên</h2>
-							<button class="link-btn" @click="$router.push('/my-courses')">
-								Xem tất cả
-							</button>
-						</div>
-						<div class="course-grid">
-							<div
-								v-for="c in myCourses.slice(0, 2)"
-								:key="c.id"
-								class="course-card"
-								@click="$router.push(`/courses/${c.id}`)"
-							>
+						<section class="section-group">
+							<div class="section-head">
+								<h2 class="card-title">Khóa học ưu tiên</h2>
+								<button class="link-btn" @click="$router.push('/my-courses')">
+									Xem tất cả
+								</button>
+							</div>
+							<div class="course-grid">
 								<div
-									class="course-thumb"
-									:style="`background: linear-gradient(135deg, ${c.thumbColor}, ${c.thumbColor2})`"
+									v-for="c in myCourses.slice(0, 2)"
+									:key="c.id"
+									class="course-card"
+									@click="$router.push(`/courses/${c.id}`)"
 								>
-									<span
-										v-if="c.level !== 3"
-										class="course-badge"
-										:class="c.tag === 'Bắt buộc' ? 'bg-purple' : 'bg-blue'"
-										>{{ c.tag }}</span
-									>
-									<span v-else class="course-badge bg-blue">Tự chọn</span>
-									<GraduationCap :size="32" color="white" />
-								</div>
-								<div class="course-info">
-									<h3>{{ c.title }}</h3>
-									<div class="course-prog">
-										<div class="mini-bar">
-											<div
-												class="mini-fill"
-												:style="`width:${c.progressPercent}%`"
-											/>
-										</div>
-										<span>{{ c.progressPercent }}%</span>
-									</div>
-									<div class="course-meta">
-										<span><BookOpen :size="12" /> {{ c.units }} Bài</span>
-										<span><Trophy :size="12" /> {{ c.cups }}</span>
-									</div>
-								</div>
-							</div>
-						</div>
-					</section>
-
-					<section class="section-group">
-						<h2 class="card-title">Kiểm tra & Đánh giá</h2>
-						<div class="quiz-list">
-							<div
-								v-for="t in testPractice"
-								:key="t.id"
-								class="quiz-item"
-								@click="$router.push('/my-courses')"
-							>
-								<div class="quiz-card-top">
 									<div
-										class="quiz-icon"
-										:style="`background:${t.cover}15; color:${t.cover}`"
+										class="course-thumb"
+										:style="`background: linear-gradient(135deg, ${c.thumbColor}, ${c.thumbColor2})`"
 									>
-										<FileText :size="20" />
+										<span
+											v-if="c.level !== 3"
+											class="course-badge"
+											:class="c.tag === 'Bắt buộc' ? 'bg-purple' : 'bg-blue'"
+											>{{ c.tag }}</span
+										>
+										<span v-else class="course-badge bg-blue">Tự chọn</span>
+										<GraduationCap :size="32" color="white" />
 									</div>
-									<span class="badge" :class="t.status">{{ t.badge }}</span>
-								</div>
-								<div class="quiz-content">
-									<h3>{{ t.title }}</h3>
-									<p>{{ t.subtitle }}</p>
-								</div>
-								<div class="quiz-card-bot">
-									<span class="action-text">Thực hiện →</span>
+									<div class="course-info">
+										<h3>{{ c.title }}</h3>
+										<div class="course-prog">
+											<div class="mini-bar">
+												<div
+													class="mini-fill"
+													:style="`width:${c.progressPercent}%`"
+												/>
+											</div>
+											<span>{{ c.progressPercent }}%</span>
+										</div>
+										<div class="course-meta">
+											<span><BookOpen :size="12" /> {{ c.units }} Bài</span>
+											<span><Trophy :size="12" /> {{ c.cups }}</span>
+										</div>
+									</div>
 								</div>
 							</div>
-						</div>
-					</section>
-				</div>
+						</section>
 
-				<aside class="side-col">
-					<section class="card side-panel">
-						<h3 class="side-title">Hồ sơ năng lực</h3>
-						<p class="dept-text uppercase">
-							PHÒNG BAN: {{ learningProfile.dept || "CHƯA PHÂN BỔ" }}
-						</p>
-						<div class="cap-stats">
-							<div class="cap-item">
-								<div class="cap-icon purple">
-									<User :size="18" />
+						<section class="section-group">
+							<h2 class="card-title">Kiểm tra & Đánh giá</h2>
+							<div class="quiz-list">
+								<div
+									v-for="t in testPractice"
+									:key="t.id"
+									class="quiz-item"
+									@click="$router.push('/my-courses')"
+								>
+									<div class="quiz-card-top">
+										<div
+											class="quiz-icon"
+											:style="`background:${t.cover}15; color:${t.cover}`"
+										>
+											<FileText :size="20" />
+										</div>
+										<span class="badge" :class="t.status">{{ t.badge }}</span>
+									</div>
+									<div class="quiz-content">
+										<h3>{{ t.title }}</h3>
+										<p>{{ t.subtitle }}</p>
+									</div>
+									<div class="quiz-card-bot">
+										<span class="action-text">Thực hiện →</span>
+									</div>
 								</div>
-								<span class="cap-lbl">Nhân viên</span>
-								<strong class="cap-val">3.0</strong>
 							</div>
-							<div class="cap-item">
-								<div class="cap-icon blue">
-									<TrendingUp :size="18" />
-								</div>
-								<span class="cap-lbl">Dự kiến</span>
-								<strong class="cap-val">{{
-									learningProfile.predictedScore
-								}}</strong>
-							</div>
-							<div class="cap-item">
-								<div class="cap-icon green">
-									<Target :size="18" />
-								</div>
-								<span class="cap-lbl">Mục tiêu</span>
-								<strong class="cap-val">5.0</strong>
-							</div>
-						</div>
-					</section>
+						</section>
+					</div>
 
-					<section class="card side-panel">
-						<h3 class="side-title">TÓM TẮT QUÁ TRÌNH HỌC</h3>
-						<div class="summary-list">
-							<div
-								v-for="s in learningProfile.summary"
-								:key="s.label"
-								class="summary-item"
-							>
-								<span class="s-lbl">{{ s.label }}</span>
-								<span class="s-val" :style="`color:${s.color}`">{{
-									s.val
-								}}</span>
-							</div>
-						</div>
-					</section>
-
-					<section class="card side-panel">
-						<div class="panel-head">
-							<h3 class="side-title">Nhắc nhở hệ thống</h3>
-							<span class="notif-count">{{
-								unreadMessages || hrMessages.length
-							}}</span>
-						</div>
-						<p v-if="hrMessages.length === 0" class="panel-muted">
-							Bạn không có thông báo mới.
-						</p>
-						<div v-else class="msg-list">
-							<div
-								v-for="m in hrMessages.slice(0, 3)"
-								:key="m.id"
-								class="msg-card"
-								:class="{ unread: m.unread }"
-							>
-								<AlertCircle :size="14" class="msg-icon" />
-								<div class="msg-body">
-									<p>{{ m.msg }}</p>
-									<span>{{ m.time }}</span>
+					<aside class="side-col">
+						<section class="card side-panel">
+							<h3 class="side-title">Hồ sơ năng lực</h3>
+							<p class="dept-text uppercase">
+								PHÒNG BAN: {{ learningProfile.dept || "CHƯA PHÂN BỔ" }}
+							</p>
+							<div class="cap-stats">
+								<div class="cap-item">
+									<div class="cap-icon purple">
+										<User :size="18" />
+									</div>
+									<span class="cap-lbl">Nhân viên</span>
+									<strong class="cap-val">3.0</strong>
+								</div>
+								<div class="cap-item">
+									<div class="cap-icon blue">
+										<TrendingUp :size="18" />
+									</div>
+									<span class="cap-lbl">Dự kiến</span>
+									<strong class="cap-val">{{
+										learningProfile.predictedScore
+									}}</strong>
+								</div>
+								<div class="cap-item">
+									<div class="cap-icon green">
+										<Target :size="18" />
+									</div>
+									<span class="cap-lbl">Mục tiêu</span>
+									<strong class="cap-val">5.0</strong>
 								</div>
 							</div>
-						</div>
-						<button class="btn-soft" @click="$router.push('/my-courses')">
-							Đi tới khóa học
-						</button>
-					</section>
+						</section>
 
-					<section v-if="badges.length" class="card side-panel">
-						<h3 class="side-title">Huy hiệu đạt được</h3>
-						<div class="badge-row">
-							<div
-								v-for="b in badges.slice(0, 3)"
-								:key="b.badgeId"
-								class="badge-box"
-							>
-								<div class="b-icon">
-									<Star :size="18" />
-								</div>
-								<span>{{ b.badgeName }}</span>
-							</div>
-						</div>
-					</section>
-
-					<section v-if="certificates.length" class="card side-panel">
-						<div class="panel-head">
-							<h3 class="side-title">Chứng chỉ mới nhất</h3>
-							<button
-								class="link-btn-sm"
-								@click="$router.push('/certificates')"
-							>
-								Tất cả
-							</button>
-						</div>
-						<div class="cert-list">
-							<div
-								v-for="c in certificates.slice(0, 3)"
-								:key="c.id"
-								class="cert-item-mini"
-							>
-								<Award :size="14" class="c-icon" />
-								<div class="c-info">
-									<p>{{ c.courseTitle }}</p>
-									<span>{{
-										new Date(c.issuedAt).toLocaleDateString("vi-VN")
+						<section class="card side-panel">
+							<h3 class="side-title">TÓM TẮT QUÁ TRÌNH HỌC</h3>
+							<div class="summary-list">
+								<div
+									v-for="s in learningProfile.summary"
+									:key="s.label"
+									class="summary-item"
+								>
+									<span class="s-lbl">{{ s.label }}</span>
+									<span class="s-val" :style="`color:${s.color}`">{{
+										s.val
 									}}</span>
 								</div>
 							</div>
-						</div>
-					</section>
-				</aside>
-			</div>
-		</div>
+						</section>
 
-		<!-- AI Suggestion Dialog -->
-		<div v-if="chatOpen" class="ai-chat-overlay" @click.self="chatOpen = false">
-			<div class="ai-chat-panel">
-				<div class="chat-header">
-					<div class="header-info">
-						<Sparkles :size="20" class="text-accent" />
-						<div>
-							<h3>Trợ lý Tìm kiếm Khóa học</h3>
-							<span>AI sẽ tìm khóa học phù hợp cho bạn</span>
-						</div>
-					</div>
-					<button class="close-btn" @click="chatOpen = false">
-						<X :size="20" />
-					</button>
+						<section class="card side-panel">
+							<div class="panel-head">
+								<h3 class="side-title">Nhắc nhở hệ thống</h3>
+								<span class="notif-count">{{
+									unreadMessages || hrMessages.length
+								}}</span>
+							</div>
+							<p v-if="hrMessages.length === 0" class="panel-muted">
+								Bạn không có thông báo mới.
+							</p>
+							<div v-else class="msg-list">
+								<div
+									v-for="m in hrMessages.slice(0, 3)"
+									:key="m.id"
+									class="msg-card"
+									:class="{ unread: m.unread }"
+								>
+									<AlertCircle :size="14" class="msg-icon" />
+									<div class="msg-body">
+										<p>{{ m.msg }}</p>
+										<span>{{ m.time }}</span>
+									</div>
+								</div>
+							</div>
+							<button class="btn-soft" @click="$router.push('/my-courses')">
+								Đi tới khóa học
+							</button>
+						</section>
+
+						<section v-if="badges.length" class="card side-panel">
+							<h3 class="side-title">Huy hiệu đạt được</h3>
+							<div class="badge-row">
+								<div
+									v-for="b in badges.slice(0, 3)"
+									:key="b.badgeId"
+									class="badge-box"
+								>
+									<div class="b-icon">
+										<Star :size="18" />
+									</div>
+									<span>{{ b.badgeName }}</span>
+								</div>
+							</div>
+						</section>
+
+						<section v-if="certificates.length" class="card side-panel">
+							<div class="panel-head">
+								<h3 class="side-title">Chứng chỉ mới nhất</h3>
+								<button
+									class="link-btn-sm"
+									@click="$router.push('/certificates')"
+								>
+									Tất cả
+								</button>
+							</div>
+							<div class="cert-list">
+								<div
+									v-for="c in certificates.slice(0, 3)"
+									:key="c.id"
+									class="cert-item-mini"
+								>
+									<Award :size="14" class="c-icon" />
+									<div class="c-info">
+										<p>{{ c.courseTitle }}</p>
+										<span>{{
+											new Date(c.issuedAt).toLocaleDateString("vi-VN")
+										}}</span>
+									</div>
+								</div>
+							</div>
+						</section>
+					</aside>
 				</div>
-
-				<div ref="chatScrollRef" class="chat-body">
-					<div v-if="chatMessages.length === 0" class="welcome-chat">
-						<div class="bot-icon"><Sparkles :size="32" /></div>
-						<h2>Xin chào! Bạn đang muốn nâng cao kỹ năng gì?</h2>
-						<p>
-							Hãy nhập yêu cầu của bạn, ví dụ: "Tôi muốn học về lập trình Web"
-							hoặc "Tìm khóa học kỹ năng giao tiếp".
-						</p>
-						<div class="quick-prompts">
-							<button
-								@click="
-									chatInput = 'Tìm khóa học về lập trình';
-									sendChat();
-								"
-							>
-								💻 Lập trình
-							</button>
-							<button
-								@click="
-									chatInput = 'Tôi muốn học kỹ năng mềm';
-									sendChat();
-								"
-							>
-								🤝 Kỹ năng mềm
-							</button>
-							<button
-								@click="
-									chatInput = 'Gợi ý khóa học quản lý dự án';
-									sendChat();
-								"
-							>
-								📊 Quản lý dự án
-							</button>
-						</div>
-					</div>
-
-					<div
-						v-for="(msg, idx) in chatMessages.filter(
-							(m) => m.role !== 'system',
-						)"
-						:key="idx"
-						class="chat-msg"
-						:class="msg.role"
-					>
-						<div class="msg-bubble">
-							<div class="msg-text">{{ msg.content }}</div>
-						</div>
-					</div>
-
-					<div v-if="chatLoading" class="chat-msg assistant">
-						<div class="msg-bubble typing">
-							<span class="dot"></span><span class="dot"></span
-							><span class="dot"></span>
-						</div>
-					</div>
-				</div>
-
-				<form class="chat-footer" @submit.prevent="sendChat">
-					<input
-						v-model="chatInput"
-						placeholder="Nhập yêu cầu của bạn..."
-						:disabled="chatLoading"
-					/>
-					<button type="submit" :disabled="!chatInput.trim() || chatLoading">
-						<Send :size="18" />
-					</button>
-				</form>
 			</div>
-		</div>
-	</template>
 
-	<div v-else class="dash-loading-screen">
-		<div class="spinner" />
-		<p>Đang tải dữ liệu học tập...</p>
-	</div>
+			<!-- AI Suggestion Dialog -->
+			<div
+				v-if="chatOpen"
+				class="ai-chat-overlay"
+				@click.self="chatOpen = false"
+			>
+				<div class="ai-chat-panel">
+					<div class="chat-header">
+						<div class="header-info">
+							<Sparkles :size="20" class="text-accent" />
+							<div>
+								<h3>Trợ lý Tìm kiếm Khóa học</h3>
+								<span>AI sẽ tìm khóa học phù hợp cho bạn</span>
+							</div>
+						</div>
+						<button class="close-btn" @click="chatOpen = false">
+							<X :size="20" />
+						</button>
+					</div>
+
+					<div ref="chatScrollRef" class="chat-body">
+						<div v-if="chatMessages.length === 0" class="welcome-chat">
+							<div class="bot-icon"><Sparkles :size="32" /></div>
+							<h2>Xin chào! Bạn đang muốn nâng cao kỹ năng gì?</h2>
+							<p>
+								Hãy nhập yêu cầu của bạn, ví dụ: "Tôi muốn học về lập trình Web"
+								hoặc "Tìm khóa học kỹ năng giao tiếp".
+							</p>
+							<div class="quick-prompts">
+								<button
+									@click="
+										chatInput = 'Tìm khóa học về lập trình';
+										sendChat();
+									"
+								>
+									💻 Lập trình
+								</button>
+								<button
+									@click="
+										chatInput = 'Tôi muốn học kỹ năng mềm';
+										sendChat();
+									"
+								>
+									🤝 Kỹ năng mềm
+								</button>
+								<button
+									@click="
+										chatInput = 'Gợi ý khóa học quản lý dự án';
+										sendChat();
+									"
+								>
+									📊 Quản lý dự án
+								</button>
+							</div>
+						</div>
+
+						<div
+							v-for="(msg, idx) in chatMessages.filter(
+								(m) => m.role !== 'system',
+							)"
+							:key="idx"
+							class="chat-msg"
+							:class="msg.role"
+						>
+							<div class="msg-bubble">
+								<div class="msg-text">{{ msg.content }}</div>
+							</div>
+						</div>
+
+						<div v-if="chatLoading" class="chat-msg assistant">
+							<div class="msg-bubble typing">
+								<span class="dot"></span><span class="dot"></span
+								><span class="dot"></span>
+							</div>
+						</div>
+					</div>
+
+					<form class="chat-footer" @submit.prevent="sendChat">
+						<input
+							v-model="chatInput"
+							placeholder="Nhập yêu cầu của bạn..."
+							:disabled="chatLoading"
+						/>
+						<button type="submit" :disabled="!chatInput.trim() || chatLoading">
+							<Send :size="18" />
+						</button>
+					</form>
+				</div>
+			</div>
+		</template>
+
+		<div v-else class="dash-loading-screen">
+			<div class="spinner" />
+			<p>Đang tải dữ liệu học tập...</p>
+		</div>
 	</div>
 </template>
 
@@ -1349,7 +1356,8 @@ onMounted(async () => {
 }
 .quiz-item:hover {
 	transform: translateY(-4px);
-	box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+	box-shadow:
+		0 10px 25px -5px rgba(0, 0, 0, 0.1),
 		0 8px 10px -6px rgba(0, 0, 0, 0.1);
 	border-color: var(--primary-200);
 }

@@ -95,6 +95,7 @@ const routes = [
 				component: () => import("@/pages/admin/AdminCoursesPage.vue"),
 				meta: {
 					roles: ["Admin", "Instructor"],
+					permissions: ["course.view"],
 					title: `Quản lý Khóa học – ${APP_NAME}`,
 				},
 			},
@@ -104,6 +105,7 @@ const routes = [
 				component: () => import("@/pages/admin/CourseBuilder.vue"),
 				meta: {
 					roles: ["Admin", "Instructor"],
+					permissions: ["course.create"],
 					title: `Tạo Khóa học – ${APP_NAME}`,
 				},
 			},
@@ -113,6 +115,7 @@ const routes = [
 				component: () => import("@/pages/admin/CourseEditor.vue"),
 				meta: {
 					roles: ["Admin", "Instructor"],
+					permissions: ["course.edit"],
 					title: `Chỉnh sửa Khóa học – ${APP_NAME}`,
 				},
 			},
@@ -122,6 +125,7 @@ const routes = [
 				component: () => import("@/pages/admin/CourseAbout.vue"),
 				meta: {
 					roles: ["Admin", "Instructor"],
+					permissions: ["course.view"],
 					title: `Xem trước – ${APP_NAME}`,
 				},
 			},
@@ -141,6 +145,16 @@ const routes = [
 				meta: {
 					roles: ["Admin", "Instructor"],
 					title: `Tiến độ xử lý AI – ${APP_NAME}`,
+				},
+			},
+			{
+				path: "admin/ai-chatbot",
+				name: "AdminAiChatbot",
+				component: () => import("@/pages/admin/AdminAiChatbot.vue"),
+				meta: {
+					roles: ["Admin", "Instructor"],
+					permissions: ["course.view"],
+					title: `Chatbot Quản trị AI – ${APP_NAME}`,
 				},
 			},
 			{

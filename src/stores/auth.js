@@ -63,7 +63,12 @@ export const useAuthStore = defineStore("auth", () => {
 
 	function hasPermission(permCode) {
 		if (!user.value) return false;
-		const perms = user.value.permissions || user.value.Permissions || [];
+		const perms =
+			user.value.permissions ||
+			user.value.Permissions ||
+			user.value.permission ||
+			user.value.Permission ||
+			[];
 		return perms.includes(permCode);
 	}
 
@@ -191,7 +196,8 @@ export const useAuthStore = defineStore("auth", () => {
 		if (!user.value) return;
 		if (profileData.fullName) user.value.fullName = profileData.fullName;
 		if (profileData.email) user.value.email = profileData.email;
-		if (profileData.avatar !== undefined) user.value.avatar = profileData.avatar;
+		if (profileData.avatar !== undefined)
+			user.value.avatar = profileData.avatar;
 
 		const userStr = encodeURIComponent(JSON.stringify(user.value));
 		if (getCookie("lms_user")) {
