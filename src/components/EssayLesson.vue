@@ -365,6 +365,8 @@
 				</div>
 			</div>
 		</div>
+
+		<WebcamMonitor v-if="currentAttempt" :active="!!currentAttempt" />
 	</div>
 </template>
 
@@ -373,6 +375,7 @@ import { ref, onMounted, onUnmounted, computed, watch } from "vue";
 import { QuillEditor } from "@vueup/vue-quill";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
 import { essayAPI } from "@/services/api";
+import WebcamMonitor from "@/components/WebcamMonitor.vue";
 import { toast } from "vue3-toastify";
 import {
 	htmlToMarkdown,

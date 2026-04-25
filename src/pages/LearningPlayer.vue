@@ -1514,6 +1514,11 @@
 				</div>
 			</div>
 		</teleport>
+
+		<WebcamMonitor
+			v-if="lesson?.type === 'RolePlay'"
+			:active="lesson?.type === 'RolePlay'"
+		/>
 	</div>
 </template>
 
@@ -1572,6 +1577,7 @@ import {
 } from "lucide-vue-next";
 import LessonChat from "@/components/LessonChat.vue";
 import EssayLesson from "@/components/EssayLesson.vue";
+import WebcamMonitor from "@/components/WebcamMonitor.vue";
 import { toast } from "vue3-toastify";
 import { useAuthStore } from "@/stores/auth";
 import Hls from "hls.js";
