@@ -343,10 +343,8 @@ const avatarUrl = computed(() => {
 	const url = user.value.avatar;
 	const apiBase = import.meta.env.VITE_API_URL || "";
 
-	// If starting with http, use as is
 	if (url.startsWith("http")) return `${url}?t=${authStore.avatarUpdateTime}`;
 
-	// Normalize basePath: ensure it doesn't end with slash if url starts with one
 	let base = apiBase;
 	if (base.endsWith("/") && url.startsWith("/")) {
 		base = base.slice(0, -1);
@@ -407,7 +405,6 @@ async function handleAvatarChange(e) {
 	const file = e.target.files[0];
 	if (!file) return;
 
-	// Reset messages
 	profileMsg.value = "Đang tải ảnh đại diện lên...";
 	profileError.value = false;
 	uploadingAvatar.value = true;
@@ -417,7 +414,6 @@ async function handleAvatarChange(e) {
 
 	try {
 		const { data } = await profileAPI.uploadAvatar(formData);
-		// Update store with full user data spread to prevent data loss
 		authStore.updateProfileData({
 			...user.value,
 			avatar: data.avatar,
@@ -549,7 +545,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* 1. Layout & Core Structure */
 .profile-page-modern {
 	background-color: var(--bg-primary);
 	min-height: 100vh;
@@ -575,8 +570,6 @@ onMounted(async () => {
 	top: 2rem;
 	z-index: 10;
 }
-
-/* 2. Identity Card Styling */
 
 .avatar-box-wrap {
 	position: relative;
@@ -664,7 +657,6 @@ onMounted(async () => {
 	font-weight: 600;
 }
 
-/* 3. Metrics/Achievements */
 .metric-block-v2 {
 	padding: 15px;
 	border-radius: 16px;
@@ -708,7 +700,6 @@ onMounted(async () => {
 	color: var(--warning-500);
 }
 
-/* 4. Settings Form Styling */
 .icon-header-wrap {
 	width: 36px;
 	height: 36px;
@@ -778,7 +769,6 @@ onMounted(async () => {
 	border-style: dashed;
 }
 
-/* 5. Alerts & Feedbacks */
 .alert-soft-v2 {
 	display: flex;
 	align-items: center;
@@ -813,7 +803,6 @@ onMounted(async () => {
 	color: var(--danger-500);
 }
 
-/* 6. Buttons */
 .btn-solid-primary {
 	padding: 12px 24px;
 	background: var(--gradient-primary);
@@ -856,7 +845,6 @@ onMounted(async () => {
 	cursor: not-allowed;
 }
 
-/* 7. Utilities */
 .animate-fade-in {
 	animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -884,7 +872,6 @@ onMounted(async () => {
 	}
 }
 
-/* Mobile Adjustments */
 @media (max-width: 991px) {
 	.sticky-sidebar {
 		position: static;

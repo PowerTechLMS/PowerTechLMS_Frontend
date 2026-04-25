@@ -399,7 +399,6 @@
   --bs-form-invalid-border-color: #f58484;
 }
 
-/* Global Placeholder for Dark Mode */
 [data-bs-theme="dark"] input::placeholder,
 [data-bs-theme="dark"] textarea::placeholder,
 [data-theme="dark"] input::placeholder,

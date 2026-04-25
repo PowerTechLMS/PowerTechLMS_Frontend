@@ -783,7 +783,6 @@ onMounted(() => {
 	}
 }
 
-/* Dark Mode Overrides */
 [data-theme="dark"] .stat-glass-card:not(.primary):not(.success):not(.warning) {
 	background: var(--bg-secondary) !important;
 	border-color: var(--border-color) !important;

@@ -659,13 +659,6 @@ const totalDuration = computed(() => {
 	}, 0);
 });
 
-/*
- * const isAllCompleted = computed(() => {
- * 	const all = course.value?.modules?.flatMap((m) => m.lessons) ?? [];
- * 	return all.length > 0 && all.every((l) => isLessonCompleted(l.id));
- * });
- */
-
 const enrollStatus = computed(() => {
 	const c = course.value;
 	if (!c) return "open";

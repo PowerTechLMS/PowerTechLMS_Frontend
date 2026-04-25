@@ -7,7 +7,9 @@
 				</div>
 				<div class="header-info">
 					<div class="d-flex align-items-center gap-2 mb-1">
-						<span class="badge-glass primary text-primary">THÀNH TÍCH CÁ NHÂN</span>
+						<span class="badge-glass primary text-primary"
+							>THÀNH TÍCH CÁ NHÂN</span
+						>
 					</div>
 					<h1 class="title-gradient">Chứng Chỉ Của Tôi</h1>
 					<p class="desc-text">
@@ -17,7 +19,11 @@
 				</div>
 			</div>
 			<div class="header-actions">
-				<button class="btn-glass-refresh" :disabled="loading" @click="fetchCertificates">
+				<button
+					class="btn-glass-refresh"
+					:disabled="loading"
+					@click="fetchCertificates"
+				>
 					<RotateCcw :size="16" :class="{ spin: loading }" />
 					<span>{{ loading ? "Đang đồng bộ..." : "Làm mới dữ liệu" }}</span>
 				</button>
@@ -27,7 +33,11 @@
 		<div class="controls-bar mb-4 animate-slide-up">
 			<div class="search-box glass">
 				<Search :size="18" class="search-icon text-muted" />
-				<input v-model="searchQuery" type="text" placeholder="Tìm kiếm chứng chỉ theo tên khóa học..." />
+				<input
+					v-model="searchQuery"
+					type="text"
+					placeholder="Tìm kiếm chứng chỉ theo tên khóa học..."
+				/>
 			</div>
 			<div class="sort-box">
 				<select v-model="sortOrder" class="glass-select">
@@ -42,8 +52,16 @@
 			<p class="text-secondary fw-bold">Đang kiểm tra chứng chỉ mới...</p>
 		</div>
 
-		<div v-else-if="filteredCerts.length > 0" class="certs-grid animate-slide-up" style="animation-delay: 0.1s">
-			<div v-for="cert in filteredCerts" :key="cert.id" class="cert-card glass-hover">
+		<div
+			v-else-if="filteredCerts.length > 0"
+			class="certs-grid animate-slide-up"
+			style="animation-delay: 0.1s"
+		>
+			<div
+				v-for="cert in filteredCerts"
+				:key="cert.id"
+				class="cert-card glass-hover"
+			>
 				<div class="cert-card-header bg-gradient-emerald">
 					<div v-if="isRecentlyIssued(cert.issuedAt)" class="new-cert-badge">
 						NEW
@@ -63,20 +81,26 @@
 					<div class="cert-meta">
 						<div class="meta-item">
 							<Calendar :size="14" class="text-primary" />
-							<span>Cấp ngày:
-								<strong>{{ formatDate(cert.issuedAt) }}</strong></span>
+							<span
+								>Cấp ngày:
+								<strong>{{ formatDate(cert.issuedAt) }}</strong></span
+							>
 						</div>
 						<div class="cert-code-chip">ID: {{ cert.certificateCode }}</div>
 					</div>
 				</div>
 
 				<div class="cert-card-footer">
-					<button class="btn btn-outline-primary btn-sm flex-fill fw-bold"
-						@click="copyCertLink(cert.certificateCode)">
+					<button
+						class="btn btn-outline-primary btn-sm flex-fill fw-bold"
+						@click="copyCertLink(cert.certificateCode)"
+					>
 						<Copy :size="14" class="me-1" /> Link
 					</button>
-					<button class="btn btn-primary btn-sm flex-fill fw-bold shadow-sm"
-						@click="viewCertificate(cert.certificateCode)">
+					<button
+						class="btn btn-primary btn-sm flex-fill fw-bold shadow-sm"
+						@click="viewCertificate(cert.certificateCode)"
+					>
 						<ExternalLink :size="14" class="me-1" /> Xem Online
 					</button>
 				</div>
@@ -91,7 +115,11 @@
 			<p class="text-secondary mb-0">
 				Hoàn thành khóa học để nhận chứng chỉ và chứng minh năng lực của bạn!
 			</p>
-			<button v-if="!loading" class="btn btn-primary mt-4 px-4 fw-bold" @click="fetchCertificates">
+			<button
+				v-if="!loading"
+				class="btn btn-primary mt-4 px-4 fw-bold"
+				@click="fetchCertificates"
+			>
 				<RotateCcw :size="16" class="me-2" /> Thử kiểm tra lại
 			</button>
 		</div>
@@ -415,9 +443,11 @@ function viewCertificate(code) {
 	content: "";
 	position: absolute;
 	inset: 0;
-	background: radial-gradient(circle at top right,
-			rgba(255, 255, 255, 0.2),
-			transparent 50%);
+	background: radial-gradient(
+		circle at top right,
+		rgba(255, 255, 255, 0.2),
+		transparent 50%
+	);
 }
 
 .cert-card-body {
@@ -497,9 +527,11 @@ function viewCertificate(code) {
 	width: 90px;
 	height: 90px;
 	border-radius: 50%;
-	background: linear-gradient(135deg,
-			rgba(79, 70, 229, 0.05),
-			rgba(79, 70, 229, 0.02));
+	background: linear-gradient(
+		135deg,
+		rgba(79, 70, 229, 0.05),
+		rgba(79, 70, 229, 0.02)
+	);
 	border: 1px solid rgba(79, 70, 229, 0.1);
 	display: flex;
 	align-items: center;
@@ -593,7 +625,6 @@ function viewCertificate(code) {
 	}
 }
 
-/* Dark Mode Overrides */
 [data-theme="dark"] .btn-glass-refresh,
 [data-theme="dark"] .search-box.glass,
 [data-theme="dark"] .sort-box .glass-select {

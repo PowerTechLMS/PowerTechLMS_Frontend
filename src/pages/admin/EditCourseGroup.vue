@@ -182,7 +182,8 @@ const removeCourse = async (courseId: number, title: string) => {
 											:size="18"
 											class="spinner-icon me-2"
 										/>
-										<Save v-else :size="18" class="me-2" /> Lưu thay đổi thông tin
+										<Save v-else :size="18" class="me-2" /> Lưu thay đổi thông
+										tin
 									</button>
 								</div>
 							</form>
@@ -191,7 +192,11 @@ const removeCourse = async (courseId: number, title: string) => {
 						<div class="col-lg-5">
 							<div class="path-stat-dashboard">
 								<div class="stat-header mb-3">
-									<h4 class="fs-14 fw-bold text-muted text-uppercase letter-spacing-1">Tóm tắt lộ trình</h4>
+									<h4
+										class="fs-14 fw-bold text-muted text-uppercase letter-spacing-1"
+									>
+										Tóm tắt lộ trình
+									</h4>
 								</div>
 								<div class="stat-grid">
 									<div class="stat-item">
@@ -219,7 +224,13 @@ const removeCourse = async (courseId: number, title: string) => {
 											<Layers :size="20" />
 										</div>
 										<div class="stat-content">
-											<div class="stat-value">{{ selectedLevel === 'all' ? 'Tất cả' : 'Cấp ' + selectedLevel }}</div>
+											<div class="stat-value">
+												{{
+													selectedLevel === "all"
+														? "Tất cả"
+														: "Cấp " + selectedLevel
+												}}
+											</div>
 											<div class="stat-label">Cấp độ đang lọc</div>
 										</div>
 									</div>
@@ -240,22 +251,32 @@ const removeCourse = async (courseId: number, title: string) => {
 				<div class="glass-card-body p-4">
 					<div class="glass-add-box mb-4">
 						<div class="flex-grow-1 d-flex gap-3 flex-wrap">
-							<div style="flex: 1; min-width: 200px;">
-								<label class="premium-label text-primary mb-2">Lọc theo cấp độ</label>
+							<div style="flex: 1; min-width: 200px">
+								<label class="premium-label text-primary mb-2"
+									>Lọc theo cấp độ</label
+								>
 								<select class="glass-input w-100" v-model="selectedLevel">
-									<option v-for="opt in levelOptions" :key="opt.value" :value="opt.value">
+									<option
+										v-for="opt in levelOptions"
+										:key="opt.value"
+										:value="opt.value"
+									>
 										{{ opt.label }}
 									</option>
 								</select>
 							</div>
 
-							<div style="flex: 2; min-width: 300px;">
+							<div style="flex: 2; min-width: 300px">
 								<label class="premium-label text-primary mb-2"
 									>Thêm khóa học từ cấp độ đã chọn</label
 								>
 								<select class="glass-input w-100" v-model="selectedCourseToAdd">
 									<option value="">-- Chọn khóa học từ kho lưu trữ --</option>
-									<option v-for="c in availableCourses" :key="c.id" :value="c.id">
+									<option
+										v-for="c in availableCourses"
+										:key="c.id"
+										:value="c.id"
+									>
 										{{ c.title }}
 									</option>
 								</select>
@@ -269,7 +290,6 @@ const removeCourse = async (courseId: number, title: string) => {
 							<Plus :size="18" class="me-2" /> Thêm khóa học
 						</button>
 					</div>
-
 
 					<div class="table-container custom-scrollbar mt-4">
 						<table class="glass-table custom-table mb-0 w-100">
@@ -491,7 +511,6 @@ const removeCourse = async (courseId: number, title: string) => {
 	overflow: hidden;
 }
 
-
 .premium-label {
 	font-weight: 700;
 	font-size: 12px;
@@ -518,7 +537,6 @@ const removeCourse = async (courseId: number, title: string) => {
 	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 }
 
-/* Path Stats Dashboard */
 .path-stat-dashboard {
 	height: 100%;
 	background: var(--bg-secondary);
@@ -555,9 +573,18 @@ const removeCourse = async (courseId: number, title: string) => {
 	align-items: center;
 	justify-content: center;
 }
-.stat-icon-bg.primary { background: rgba(99, 102, 241, 0.1); color: var(--primary-600); }
-.stat-icon-bg.success { background: rgba(16, 185, 129, 0.1); color: var(--success-600); }
-.stat-icon-bg.warning { background: rgba(245, 158, 11, 0.1); color: var(--warning-600); }
+.stat-icon-bg.primary {
+	background: rgba(99, 102, 241, 0.1);
+	color: var(--primary-600);
+}
+.stat-icon-bg.success {
+	background: rgba(16, 185, 129, 0.1);
+	color: var(--success-600);
+}
+.stat-icon-bg.warning {
+	background: rgba(245, 158, 11, 0.1);
+	color: var(--warning-600);
+}
 
 .stat-content {
 	flex: 1;
@@ -575,7 +602,6 @@ const removeCourse = async (courseId: number, title: string) => {
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 }
-
 
 .glass-add-box {
 	background: rgba(99, 102, 241, 0.03);
@@ -618,7 +644,6 @@ const removeCourse = async (courseId: number, title: string) => {
 	border-bottom: 1px solid var(--border-color);
 	vertical-align: middle;
 }
-
 
 .btn-ghost-icon {
 	display: inline-flex;

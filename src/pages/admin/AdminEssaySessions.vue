@@ -161,7 +161,6 @@
 			</div>
 		</div>
 
-		<!-- Detail Modal -->
 		<div
 			v-if="selectedSession"
 			class="modal-backdrop fade show"
@@ -219,7 +218,6 @@
 										v-html="renderMarkdown(ans.userAnswer || ans.content)"
 									></div>
 
-									<!-- Chế độ Chỉnh sửa -->
 									<div v-if="isEditing" class="p-3 bg-white rounded-3 border">
 										<div class="mb-3" v-if="ans.scoringCriteria">
 											<label class="form-label small fw-bold text-muted"
@@ -256,7 +254,6 @@
 										</div>
 									</div>
 
-									<!-- Chế độ Xem -->
 									<div
 										v-else-if="ans.aiFeedback"
 										class="ai-feedback-item small p-2 mt-2 bg-info-light rounded border border-info-subtle"
@@ -433,7 +430,6 @@ const closeModal = () => {
 };
 
 const editScore = async (session: any) => {
-	// Trigger viewDetail first to get full data, then start editing
 	await viewDetail(session);
 	if (selectedSession.value) {
 		isEditing.value = true;

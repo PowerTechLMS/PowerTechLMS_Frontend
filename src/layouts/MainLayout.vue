@@ -638,12 +638,6 @@ const openGroups = ref({
 	adminSystem: false,
 });
 
-/*
- * function toggleGroup(group) {
- *   openGroups.value[group] = !openGroups.value[group]
- * }
- */
-
 const syncSidebarGroups = () => {
 	const path = router.currentRoute.value.path;
 	if (path === "/courses" || path.startsWith("/my-courses"))
@@ -1480,7 +1474,7 @@ ul.doc-metismenu > li > a.router-link-active .nav-icon {
 }
 
 .sidebar .admin-nav-item.ai-assistant-link .ai-text {
-	color: #4f46e5 !important; /* Indigo đậm hơn - Cực kỳ rõ trên nền sáng */
+	color: #4f46e5 !important;
 	font-weight: 800 !important;
 	text-shadow: none !important;
 }

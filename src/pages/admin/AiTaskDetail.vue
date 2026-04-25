@@ -163,11 +163,9 @@ onUnmounted(() => {
 						</div>
 					</div>
 
-					<!-- Tree View chi tiết -->
 					<div class="execution-tree">
 						<h3 class="tree-title">Nhật ký thực thi chi tiết</h3>
 						<div class="tree-nodes">
-							<!-- Root node -->
 							<div
 								class="tree-node root"
 								:class="
@@ -193,7 +191,6 @@ onUnmounted(() => {
 								</div>
 							</div>
 
-							<!-- Danh sách các bước nhỏ (Sub Tasks) -->
 							<div
 								v-for="st in task.subTasks"
 								:key="st.id"

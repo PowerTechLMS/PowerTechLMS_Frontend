@@ -155,7 +155,6 @@ watch(() => props.lessonId, loadHistory);
 					class="message-wrapper"
 					:class="msg.aiResponse ? 'ai-wrapper' : 'user-wrapper'"
 				>
-					<!-- User Message -->
 					<div
 						class="message user-message glass"
 						:class="{ 'is-pending': msg.isPending }"
@@ -169,7 +168,6 @@ watch(() => props.lessonId, loadHistory);
 						<p class="message-body">{{ msg.userMessage }}</p>
 					</div>
 
-					<!-- AI Response -->
 					<div v-if="msg.aiResponse" class="message ai-message glass highlight">
 						<div class="message-header">
 							<div class="ai-badge">

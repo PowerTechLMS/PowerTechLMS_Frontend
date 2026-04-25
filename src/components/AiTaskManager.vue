@@ -50,7 +50,6 @@ const setupSignalR = () => {
 			task.isFailed = data.isFailed;
 
 			if (data.isCompleted || data.isFailed) {
-				// Keep it for a few seconds then remove or move to history
 				setTimeout(() => {
 					activeTasks.value = activeTasks.value.filter(
 						(t) => t.jobId !== data.jobId,
@@ -58,7 +57,6 @@ const setupSignalR = () => {
 				}, 10000);
 			}
 		} else if (!data.isCompleted && !data.isFailed) {
-			// New task detected globally
 			activeTasks.value.push({
 				jobId: data.jobId,
 				topic: data.topic || "Đang xử lý...",
@@ -82,7 +80,6 @@ const setupSignalR = () => {
 
 onMounted(() => {
 	fetchActiveTasks();
-	// Check every minute just in case SignalR missed something or new tasks started elsewhere
 	const interval = setInterval(fetchActiveTasks, 60000);
 	onUnmounted(() => clearInterval(interval));
 });

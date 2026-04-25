@@ -41,18 +41,14 @@ const fetchSessions = async () => {
 	try {
 		const res = await adminAiAPI.getSessions();
 		sessions.value = res.data;
-	} catch {
-		// Suppressed
-	}
+	} catch {}
 };
 
 const fetchSessionTasks = async (sessionId) => {
 	try {
 		const res = await adminAiAPI.getTasks(sessionId);
 		sessionTasks.value = res.data;
-	} catch {
-		// Suppressed
-	}
+	} catch {}
 };
 
 const fetchMessages = async (sessionId, showLoading = false) => {
@@ -62,14 +58,12 @@ const fetchMessages = async (sessionId, showLoading = false) => {
 		messages.value = res.data;
 		scrollToBottom();
 	} catch {
-		// Suppressed
 	} finally {
 		if (showLoading) isLoading.value = false;
 	}
 };
 
 const selectSession = async (session) => {
-	// Nếu cùng session thì chỉ refresh ngầm
 	if (currentSession.value?.id === session.id) {
 		await fetchMessages(session.id, false);
 		fetchSessionTasks(session.id);
@@ -80,7 +74,6 @@ const selectSession = async (session) => {
 	try {
 		await fetchMessages(session.id, true);
 
-		// Khôi phục trạng thái tác vụ nếu có (để F5 không mất)
 		if (session.lastProgressJson) {
 			try {
 				activeTask.value = JSON.parse(session.lastProgressJson);
@@ -95,7 +88,6 @@ const selectSession = async (session) => {
 		fetchSessionTasks(session.id);
 		scrollToBottom();
 	} catch {
-		// Suppressed
 	} finally {
 		isLoading.value = false;
 	}
@@ -108,9 +100,7 @@ const createNewSession = async () => {
 		});
 		sessions.value.unshift(res.data);
 		selectSession(res.data);
-	} catch {
-		// Suppressed
-	}
+	} catch {}
 };
 
 const sendMessage = async () => {
@@ -156,7 +146,6 @@ const handleAiProgress = (progress) => {
 			fetchSessionTasks(currentSession.value.id);
 		}, 1000);
 	} else if (progress.status === "running" || progress.status === "planned") {
-		// Thêm delay nhẹ để sync dữ liệu vừa lưu vào DB
 		setTimeout(() => fetchSessionTasks(currentSession.value.id), 500);
 	}
 };
@@ -204,9 +193,7 @@ const renameSession = async (session) => {
 			title: newTitle,
 		});
 		session.title = res.data.title;
-	} catch {
-		// Suppressed
-	}
+	} catch {}
 };
 
 const deleteSession = async (session) => {
@@ -226,15 +213,12 @@ const deleteSession = async (session) => {
 				messages.value = [];
 			}
 		}
-	} catch {
-		// Suppressed
-	}
+	} catch {}
 };
 </script>
 
 <template>
 	<div class="admin-ai-container">
-		<!-- Sidebar: Lịch sử Chat -->
 		<aside class="chat-sidebar">
 			<div class="sidebar-header">
 				<h3 class="sidebar-header-title">Admin AI Sessions</h3>
@@ -265,7 +249,6 @@ const deleteSession = async (session) => {
 			</div>
 		</aside>
 
-		<!-- Main Chat Area -->
 		<main class="chat-main">
 			<header class="chat-header" v-if="currentSession">
 				<div class="header-main-info">
@@ -276,7 +259,6 @@ const deleteSession = async (session) => {
 						</span>
 					</div>
 
-					<!-- Danh sách các Task trong Dropdown -->
 					<div
 						class="task-dropdown-wrapper"
 						v-if="
@@ -393,7 +375,6 @@ const deleteSession = async (session) => {
 				</div>
 			</header>
 
-			<!-- Màn hình chào mừng khi chưa chọn session -->
 			<div v-if="!currentSession" class="welcome-screen">
 				<div class="welcome-content">
 					<div class="welcome-icon">
@@ -439,7 +420,6 @@ const deleteSession = async (session) => {
 						</div>
 					</div>
 
-					<!-- Typing Indicator -->
 					<div v-if="isAiThinking" class="message-wrapper assistant">
 						<div class="message-bubble assistant typing">
 							<div class="typing-indicator">
@@ -456,7 +436,6 @@ const deleteSession = async (session) => {
 			</div>
 
 			<div class="chat-input-area" v-if="currentSession">
-				<!-- Progress Stepper (Glassmorphism overlay) -->
 				<transition name="fade">
 					<div
 						v-if="activeTask && activeTask.status === 'running'"

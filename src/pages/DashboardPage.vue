@@ -512,7 +512,6 @@ onMounted(async () => {
 				</div>
 			</div>
 
-			<!-- AI Suggestion Dialog -->
 			<div
 				v-if="chatOpen"
 				class="ai-chat-overlay"
@@ -674,7 +673,6 @@ onMounted(async () => {
 	border: 1px dashed var(--border);
 }
 
-/* AI Chat Overlay */
 .ai-chat-overlay {
 	position: fixed;
 	inset: 0;

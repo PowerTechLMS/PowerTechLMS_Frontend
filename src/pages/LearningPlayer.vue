@@ -33,7 +33,6 @@
 		</div>
 
 		<template v-else-if="lesson">
-			<!-- Player Specific Sub-Header (Matches Screenshot) -->
 			<header class="player-header-card glass mb-4">
 				<div class="header-left">
 					<button
@@ -1712,9 +1711,7 @@ const fetchRolePlayHistory = async () => {
 	try {
 		const res = await rolePlayAPI.getHistory(lesson.value.id);
 		historySessions.value = res.data;
-	} catch {
-		// Silent error or handle appropriately
-	}
+	} catch {}
 };
 
 const viewSessionHistory = async (sessionId) => {
@@ -1737,7 +1734,6 @@ const sendUserMessage = async () => {
 	const content = userMessage.value;
 	userMessage.value = "";
 
-	// 1. Add User Message locally
 	currentSession.value.messages.push({
 		id: Date.now(),
 		role: "User",
@@ -1748,7 +1744,6 @@ const sendUserMessage = async () => {
 
 	isAiTyping.value = true;
 
-	// 2. Create placeholder for AI Message
 	const aiMsgId = Date.now() + 1;
 	const aiMsg = {
 		id: aiMsgId,
@@ -1789,7 +1784,7 @@ const sendUserMessage = async () => {
 
 			buffer += decoder.decode(value, { stream: true });
 			const lines = buffer.split("\n");
-			buffer = lines.pop() || ""; // Keep the last partial line in buffer
+			buffer = lines.pop() || "";
 
 			for (const line of lines) {
 				const trimmedLine = line.trim();
@@ -1800,7 +1795,6 @@ const sendUserMessage = async () => {
 					try {
 						const data = JSON.parse(text);
 						if (data.content === "[DONE]") {
-							// AI signal to finish session
 							startFinishCountdown();
 						} else {
 							if (isFirstChunk) {
@@ -1810,15 +1804,12 @@ const sendUserMessage = async () => {
 							currentSession.value.messages[aiMsgIndex].content += data.content;
 							scrollChatToBottom();
 						}
-					} catch {
-						// Fail gracefully if not JSON
-					}
+					} catch {}
 				}
 			}
 		}
 	} catch (err) {
 		toast.error("Lỗi gửi tin nhắn: " + err.message);
-		// Remove empty AI message if error occurs early
 		if (currentSession.value.messages[aiMsgIndex].content === "") {
 			currentSession.value.messages.splice(aiMsgIndex, 1);
 		}
@@ -1847,7 +1838,6 @@ const finishRolePlay = async () => {
 	try {
 		await rolePlayAPI.finishSession(currentSession.value.id);
 		showRolePlayResult.value = true;
-		// Refresh session to get scoring status
 		currentSession.value.status = "Processing";
 		pollSessionStatus();
 		fetchRolePlayHistory();
@@ -1857,7 +1847,6 @@ const finishRolePlay = async () => {
 };
 
 const pollSessionStatus = async () => {
-	// Tránh tạo nhiều interval trùng lặp
 	if (window.rolePlayPollInterval) clearInterval(window.rolePlayPollInterval);
 
 	window.rolePlayPollInterval = setInterval(async () => {
@@ -1930,7 +1919,6 @@ const isCurrentLessonQuizPassed = computed(() => {
 });
 
 const canCompleteManual = computed(() => {
-	// Role Play and Essay lessons can ONLY be completed by AI scoring, not manually
 	if (lesson.value?.type === "RolePlay" || lesson.value?.type === "Essay")
 		return false;
 
@@ -2306,7 +2294,6 @@ async function ensureSignalRConnection() {
 
 	signalrConnection.on("AiProcessingCompleted", (lessonId, _sessionId) => {
 		if (lesson.value && lesson.value.id === lessonId) {
-			// Nếu đang ở bài học này, refresh lại session
 			rolePlayAPI.getSession(lessonId).then((res) => {
 				currentSession.value = res.data;
 				if (res.data.status === "Completed") {
@@ -2409,12 +2396,10 @@ function onVideoLoaded(e) {
 function onSeeking(e) {
 	const video = e.target;
 
-	// Cho phép người đã hoàn thành được tua tự do
 	if (isCompleted.value) {
 		return;
 	}
 
-	// Nếu đang tua vượt quá phần đã xem (maxWatchedTime)
 	if (video.currentTime > maxWatchedTime.value + 0.5) {
 		video.currentTime = maxWatchedTime.value;
 		const now = Date.now();
@@ -2453,20 +2438,16 @@ function onTimeUpdate(e) {
 		videoDurationRef.value = video.duration;
 
 	if (!isSeeking.value) {
-		// Chỉ cập nhật maxWatchedTime khi xem bình thường (không tua nhanh qua)
 		if (current > maxWatchedTime.value) {
-			// Chỉ cho phép tiến về phía trước tối đa 0.5 giây trong 1 lần update (vận tốc phát bình thường)
 			if (current - maxWatchedTime.value < 1.5) {
 				maxWatchedTime.value = current;
 			} else if (!isCompleted.value) {
-				// Nếu đột nhiên nhảy vọt (có thể do can thiệp logic), ép quay lại
 				video.currentTime = maxWatchedTime.value;
 			}
 		}
 		lastCurrentTime.value = current;
 	}
 
-	// Đạt 95% thời lượng mới coi là hoàn thành
 	if (
 		!isCompleted.value &&
 		videoDurationRef.value > 0 &&
@@ -2494,7 +2475,6 @@ function syncVideoProgress(currentSeconds, duration) {
 
 function seekVideo(seconds) {
 	if (videoRef.value && seconds !== null) {
-		// Ngăn chặn tua nhanh qua ghi chú nếu chưa học tới
 		if (seconds > maxWatchedTime.value + 1 && !isCompleted.value) {
 			toast.warning(
 				"Bạn chưa học đến đoạn này, không thể tua nhanh qua ghi chú.",
@@ -2827,7 +2807,6 @@ watch(() => route.params.lessonId, loadData);
 </script>
 
 <style scoped>
-/* Styling Refinements for "Neat" Layout */
 .learning-player {
 	--primary-400: #6366f1;
 	--primary-500: #4f46e5;
@@ -3209,7 +3188,6 @@ watch(() => route.params.lessonId, loadData);
 	margin-bottom: 0;
 }
 
-/* Role Play Theater */
 .role-play-theater {
 	margin-bottom: 2rem;
 }
@@ -3945,18 +3923,12 @@ watch(() => route.params.lessonId, loadData);
 	}
 }
 
-/* ==========================================================================
-   Comprehensive Responsive System
-   ========================================================================== */
-
-/* Large Tablets & Small Desktops (max-width: 1200px) */
 @media (max-width: 1200px) {
 	.player-sidebar {
 		width: 300px;
 	}
 }
 
-/* Tablets (max-width: 1024px) */
 @media (max-width: 1024px) {
 	.learning-player {
 		padding: 12px;
@@ -4004,7 +3976,7 @@ watch(() => route.params.lessonId, loadData);
 		z-index: 900;
 		padding: 12px 16px;
 		position: sticky;
-		top: 0; /* Align with system header height if needed, otherwise 0 suffices if inside layout scroll */
+		top: 0;
 	}
 
 	.player-content {
@@ -4019,7 +3991,6 @@ watch(() => route.params.lessonId, loadData);
 	}
 }
 
-/* Mobile Devices (max-width: 768px) */
 @media (max-width: 768px) {
 	.player-header-card {
 		flex-direction: column;
@@ -4062,7 +4033,6 @@ watch(() => route.params.lessonId, loadData);
 	}
 }
 
-/* Small Phones (max-width: 480px) */
 @media (max-width: 480px) {
 	.learning-player {
 		padding: 8px;
@@ -4108,7 +4078,6 @@ watch(() => route.params.lessonId, loadData);
 	display: none;
 }
 
-/* Custom Sub-header Styles */
 .player-header-card .course-name {
 	font-size: 17px;
 	font-weight: 700;

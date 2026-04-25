@@ -164,7 +164,10 @@ const tableData = computed(() => {
 							<div class="rank-crown silver"><Medal :size="20" /></div>
 							<div
 								class="avatar-glass lg mx-auto shadow-sm mb-3 mt-3 overflow-hidden"
-								:class="{ 'bg-gradient-silver': !top3.top2.avatar || avatarErrors[top3.top2.userName] }"
+								:class="{
+									'bg-gradient-silver':
+										!top3.top2.avatar || avatarErrors[top3.top2.userName],
+								}"
 							>
 								<img
 									v-if="top3.top2.avatar && !avatarErrors[top3.top2.userName]"
@@ -187,10 +190,7 @@ const tableData = computed(() => {
 									<span class="d-block fs-11 text-secondary fw-700"
 										>HOÀN THÀNH</span
 									>
-									<span class="fw-800">{{
-										top3.top2.completedCourses
-									}}</span>
-
+									<span class="fw-800">{{ top3.top2.completedCourses }}</span>
 								</div>
 								<div class="stat-mini">
 									<span class="d-block fs-11 text-secondary fw-700"
@@ -212,7 +212,10 @@ const tableData = computed(() => {
 							<div class="rank-crown gold"><Crown :size="28" /></div>
 							<div
 								class="avatar-glass xl mx-auto shadow-md mb-3 mt-4 overflow-hidden"
-								:class="{ 'bg-gradient-gold': !top3.top1.avatar || avatarErrors[top3.top1.userName] }"
+								:class="{
+									'bg-gradient-gold':
+										!top3.top1.avatar || avatarErrors[top3.top1.userName],
+								}"
 							>
 								<img
 									v-if="top3.top1.avatar && !avatarErrors[top3.top1.userName]"
@@ -222,10 +225,7 @@ const tableData = computed(() => {
 								/>
 								<span v-else>{{ getInitials(top3.top1.userName) }}</span>
 							</div>
-							<h4
-								class="fw-900 mb-1 text-truncate"
-								:title="top3.top1.userName"
-							>
+							<h4 class="fw-900 mb-1 text-truncate" :title="top3.top1.userName">
 								{{ top3.top1.userName }}
 							</h4>
 							<div class="badge-glass gold mb-4 fs-14 px-4 py-2">QUÁN QUÂN</div>
@@ -238,7 +238,6 @@ const tableData = computed(() => {
 									<span class="fw-900 fs-18">{{
 										top3.top1.completedCourses
 									}}</span>
-
 								</div>
 								<div class="divider-v"></div>
 								<div class="stat-mini">
@@ -282,7 +281,10 @@ const tableData = computed(() => {
 							<div class="rank-crown bronze"><Medal :size="20" /></div>
 							<div
 								class="avatar-glass lg mx-auto shadow-sm mb-3 mt-3 overflow-hidden"
-								:class="{ 'bg-gradient-bronze': !top3.top3.avatar || avatarErrors[top3.top3.userName] }"
+								:class="{
+									'bg-gradient-bronze':
+										!top3.top3.avatar || avatarErrors[top3.top3.userName],
+								}"
 							>
 								<img
 									v-if="top3.top3.avatar && !avatarErrors[top3.top3.userName]"
@@ -305,10 +307,7 @@ const tableData = computed(() => {
 									<span class="d-block fs-11 text-secondary fw-700"
 										>HOÀN THÀNH</span
 									>
-									<span class="fw-800">{{
-										top3.top3.completedCourses
-									}}</span>
-
+									<span class="fw-800">{{ top3.top3.completedCourses }}</span>
 								</div>
 								<div class="stat-mini">
 									<span class="d-block fs-11 text-secondary fw-700"
@@ -378,7 +377,7 @@ const tableData = computed(() => {
 	animation: fadeIn 0.5s ease-out;
 	background: var(--bg-primary, #f8fafc);
 	color: var(--text-primary, #1e293b);
-	font-family: 'Inter', sans-serif;
+	font-family: "Inter", sans-serif;
 }
 
 @keyframes fadeIn {
@@ -530,9 +529,15 @@ const tableData = computed(() => {
 	border: 2px solid #fed7aa;
 }
 
-:deep(.text-gold) { color: #d97706; }
-:deep(.text-silver) { color: #64748b; }
-:deep(.text-bronze) { color: #c2410c; }
+:deep(.text-gold) {
+	color: #d97706;
+}
+:deep(.text-silver) {
+	color: #64748b;
+}
+:deep(.text-bronze) {
+	color: #c2410c;
+}
 
 :deep(.avatar-glass) {
 	display: flex;
@@ -567,10 +572,18 @@ const tableData = computed(() => {
 	border: 2px solid var(--border-color);
 }
 
-:deep(.bg-gradient-gold) { background: linear-gradient(135deg, #fcd34d, #f59e0b) !important; }
-:deep(.bg-gradient-silver) { background: linear-gradient(135deg, #cbd5e1, #94a3b8) !important; }
-:deep(.bg-gradient-bronze) { background: linear-gradient(135deg, #fdba74, #ea580c) !important; }
-:deep(.bg-gradient-primary) { background: linear-gradient(135deg, #818cf8, #4f46e5) !important; }
+:deep(.bg-gradient-gold) {
+	background: linear-gradient(135deg, #fcd34d, #f59e0b) !important;
+}
+:deep(.bg-gradient-silver) {
+	background: linear-gradient(135deg, #cbd5e1, #94a3b8) !important;
+}
+:deep(.bg-gradient-bronze) {
+	background: linear-gradient(135deg, #fdba74, #ea580c) !important;
+}
+:deep(.bg-gradient-primary) {
+	background: linear-gradient(135deg, #818cf8, #4f46e5) !important;
+}
 
 :deep(.badge-glass.gold) {
 	background: rgba(245, 158, 11, 0.15);
@@ -614,10 +627,14 @@ const tableData = computed(() => {
 	border-radius: 50%;
 	animation: spin 1s linear infinite;
 }
-@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes spin {
+	100% {
+		transform: rotate(360deg);
+	}
+}
 
 :deep(.dt-container) {
-	font-family: 'Inter', system-ui, sans-serif;
+	font-family: "Inter", system-ui, sans-serif;
 	padding: 0;
 	color: var(--text-primary);
 }
@@ -691,7 +708,6 @@ const tableData = computed(() => {
 	box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
 }
 
-/* Theme Adaptation */
 :is([data-bs-theme="dark"], [data-theme="dark"]) .leaderboard-page {
 	background: var(--bg-primary);
 }

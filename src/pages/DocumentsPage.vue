@@ -613,7 +613,6 @@ const renderMarkdown = (text: string) => {
 			</div>
 		</div>
 
-		<!-- Document AI Chat Overlay -->
 		<div
 			v-if="showChat"
 			class="chat-overlay animate-fade-in"
@@ -890,7 +889,6 @@ const renderMarkdown = (text: string) => {
 	margin-right: 6px;
 }
 
-/* Redesigned File Type Tabs (Horizontal) */
 .file-type-tabs {
 	display: flex;
 	padding: 6px;
@@ -962,7 +960,6 @@ const renderMarkdown = (text: string) => {
 	padding: 4px 8px;
 }
 
-/* Sidebar Category Card */
 .sidebar-category-card {
 	padding: 0;
 	overflow: hidden;
@@ -1631,7 +1628,6 @@ const renderMarkdown = (text: string) => {
 	}
 }
 
-/* Markdown Styles */
 .markdown-body :deep(p) {
 	margin-bottom: 0.5rem;
 }

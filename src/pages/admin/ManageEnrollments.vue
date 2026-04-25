@@ -187,7 +187,6 @@ const getStatusBadge = (status: string) => {
 
 <template>
 	<div class="enrollments-management-page">
-		<!-- Header Section -->
 		<div class="page-header mb-5">
 			<div class="header-content-box">
 				<div class="header-icon-glass pulse-glow">
@@ -221,7 +220,6 @@ const getStatusBadge = (status: string) => {
 			</div>
 		</div>
 
-		<!-- Stats Cards -->
 		<div class="stats-glass-grid mb-5">
 			<div class="glass-stat-card">
 				<div class="stat-icon-box blue">
@@ -271,7 +269,6 @@ const getStatusBadge = (status: string) => {
 			</div>
 		</div>
 
-		<!-- Main Content Card -->
 		<div class="glass-content-card">
 			<div class="glass-controls-bar">
 				<div class="filters-left">
@@ -335,7 +332,6 @@ const getStatusBadge = (status: string) => {
 				</div>
 
 				<template v-else-if="filteredEnrollments.length">
-					<!-- Table View -->
 					<div v-if="viewMode === 'table'" class="table-container-fixed">
 						<table class="glass-table-premium">
 							<thead>
@@ -1071,7 +1067,6 @@ const getStatusBadge = (status: string) => {
 	box-shadow: 0 15px 30px -10px rgba(99, 102, 241, 0.6);
 }
 
-/* Modal Styles */
 .modal-glass-overlay {
 	position: fixed;
 	inset: 0;

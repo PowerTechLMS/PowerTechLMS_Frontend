@@ -120,7 +120,6 @@
 			</div>
 
 			<div class="questions-container custom-scrollbar flex-grow-1 pe-2">
-				<!-- Overall Score Header (Inline) -->
 				<div
 					v-if="resultData && resultData.status !== 'Processing'"
 					class="overall-result-card card glass mb-4 border-0 shadow-sm animate-zoom-in"
@@ -181,7 +180,6 @@
 					</div>
 				</div>
 
-				<!-- AI Processing Status (Inline) -->
 				<div
 					v-if="isSubmitting && resultData?.status === 'Processing'"
 					class="processing-card card glass mb-4 border-0 shadow-sm p-4 text-center"
@@ -251,7 +249,6 @@
 							</div>
 						</div>
 
-						<!-- Per-question AI Feedback (Inline) -->
 						<div
 							v-if="
 								resultData &&
@@ -457,7 +454,6 @@ const startNewAttempt = async () => {
 			startTimer();
 		}
 
-		// Bật auto-save
 		if (autoSaveInterval) clearInterval(autoSaveInterval);
 		autoSaveInterval = setInterval(saveDraft, 30000);
 
@@ -493,7 +489,6 @@ const submitAttempt = async () => {
 	if (autoSaveInterval) clearInterval(autoSaveInterval);
 
 	try {
-		// Chuyển đổi sang Markdown trước khi nộp
 		const markdownAnswers = answers.value.map((a) => ({
 			questionId: a.questionId,
 			content: htmlToMarkdown(a.content),
@@ -505,7 +500,6 @@ const submitAttempt = async () => {
 		resultData.value = res.data;
 		showResult.value = true;
 
-		// Poll for result if processing
 		if (resultData.value.status === "Processing") {
 			pollResult(currentAttempt.value.id);
 		}
@@ -531,7 +525,6 @@ const saveDraft = async () => {
 		});
 		lastSavedAt.value = new Date();
 	} catch {
-		// Silence error
 	} finally {
 		isSavingDraft.value = false;
 	}
@@ -569,14 +562,12 @@ const viewAttemptDetail = async (id: number) => {
 		const res = await essayAPI.getAttemptDetail(id);
 		resultData.value = res.data;
 
-		// Giả lập currentAttempt để hiển thị danh sách câu hỏi
 		currentAttempt.value = {
 			id: res.data.id,
 			status: res.data.status,
 			startedAt: res.data.startedAt,
 		};
 
-		// Đổ câu trả lời vào answers để hiển thị trong editor
 		answers.value = props.config.questions.map((q: any) => {
 			const existing = res.data.answers?.find(
 				(a: any) => a.questionId === q.id,
@@ -849,7 +840,6 @@ watch(
 	background: rgba(15, 23, 42, 0.9);
 }
 
-/* Inline Results Styling */
 .overall-result-card {
 	background: linear-gradient(
 		135deg,

@@ -84,7 +84,6 @@
 												</div>
 											</div>
 											<div class="col-lg-4">
-												<!-- Cấp 2, 3: Hiện Phòng Ban -->
 												<div
 													v-if="course.Level === 2 || course.Level === 3"
 													class="pass-score-card selection-card"
@@ -745,7 +744,6 @@
 														</div>
 													</div>
 
-													<!-- Inline AI Script Draft Area -->
 													<div
 														v-if="
 															lesson.videoDraftScript &&
@@ -2424,7 +2422,6 @@ const getEligibleSupportLessons = (mIdx: number, lIdx: number) => {
 		if (mi > mIdx) return;
 		m.lessons.forEach((l, li) => {
 			if (mi === mIdx && li >= lIdx) return;
-			// For editor, we must ensure the lesson has a real ID (> 0) to be used by AI RAG
 			if (l.type !== "RolePlay" && l.title && l.id > 0) {
 				eligible.push({
 					id: l.id,
@@ -2448,7 +2445,6 @@ const generateEssayQuestionsAI = async (mIdx: number, lIdx: number) => {
 		return;
 	}
 
-	// Show selection modal
 	const { value: selectedIds } = await Swal.fire({
 		title: "Chọn bài giảng bổ trợ cho Tự luận",
 		html: `
@@ -2488,7 +2484,6 @@ const generateEssayQuestionsAI = async (mIdx: number, lIdx: number) => {
 
 	isGeneratingEssayQuestions.value[lesson.id] = true;
 	try {
-		// Only send IDs, not objects
 		const res = await aiAPI.generateEssayQuestions(selectedIds);
 		if (res.data && Array.isArray(res.data)) {
 			lesson.essayConfig.Questions = res.data.map((q: any) => ({
@@ -2516,7 +2511,6 @@ const generateAiScenario = async (mIdx: number, lIdx: number) => {
 		return;
 	}
 
-	// Show selection modal
 	const { value: selectedIds } = await Swal.fire({
 		title: "Chọn bài giảng bổ trợ",
 		html: `
@@ -2558,7 +2552,6 @@ const generateAiScenario = async (mIdx: number, lIdx: number) => {
 		return;
 	}
 
-	// Update the support IDs
 	lesson.rolePlayConfig.SupportLessonIds = selectedIds;
 
 	isGeneratingScenario.value[lesson.id] = true;
@@ -2566,7 +2559,7 @@ const generateAiScenario = async (mIdx: number, lIdx: number) => {
 		const res = await aiAPI.generateScenario(
 			lesson.rolePlayConfig.SupportLessonIds,
 		);
-		const data = res.data.scenario; // res.data.scenario ở đây là object RolePlaySuggestionResponse từ backend
+		const data = res.data.scenario;
 		lesson.rolePlayConfig.Scenario = data.scenario;
 		lesson.rolePlayConfig.ScoringCriteria = data.scoringCriteria;
 		lesson.rolePlayConfig.AdditionalRequirements = data.additionalRequirements;
@@ -2619,7 +2612,6 @@ const submitCourse = async () => {
 		return;
 	}
 
-	// Validate Essay weights
 	for (let mIdx = 0; mIdx < curriculum.value.length; mIdx++) {
 		const mod = curriculum.value[mIdx];
 		for (let lIdx = 0; lIdx < mod.lessons.length; lIdx++) {
@@ -3235,7 +3227,6 @@ onMounted(async () => {
 	border-bottom: 2px solid #0d6efd !important;
 }
 
-/* Responsive Structural Fixes */
 @media (max-width: 768px) {
 	.page-titles {
 		flex-direction: column;
@@ -3275,7 +3266,6 @@ onMounted(async () => {
 	}
 }
 
-/* Premium Card Styling */
 .card {
 	border-radius: 20px;
 	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03) !important;
@@ -3283,7 +3273,6 @@ onMounted(async () => {
 	transition: 0.3s;
 }
 
-/* Dark Mode Overrides - Updated for System Sync */
 :is([data-bs-theme="dark"], [data-theme="dark"]) .bg-light {
 	background-color: var(--bg-tertiary) !important;
 }
@@ -3408,7 +3397,6 @@ onMounted(async () => {
 	color: var(--text-secondary) !important;
 }
 
-/* ── Pass Score Widget ── */
 .pass-score-card {
 	border: 1.5px solid var(--border-color, rgba(0, 0, 0, 0.08));
 	border-radius: 16px;
@@ -3554,7 +3542,6 @@ onMounted(async () => {
 	background: var(--border-color);
 }
 
-/* Premium AI Button Styling */
 .btn-premium-ai {
 	background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%) !important;
 	color: white !important;
