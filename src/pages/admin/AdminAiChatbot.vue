@@ -906,40 +906,6 @@ const deleteSession = async (session) => {
 	text-align: right;
 }
 
-.plan-card {
-	background: #f8fafc;
-	padding: 15px;
-	border-radius: 12px;
-	border: 1px solid #e2e8f0;
-	margin-bottom: 10px;
-	color: #1e293b;
-}
-
-.plan-steps {
-	list-style: none;
-	padding: 0;
-	margin: 10px 0;
-}
-
-.plan-steps li {
-	padding: 8px 0;
-	border-bottom: 1px solid #f1f5f9;
-	font-size: 14px;
-	color: #334155;
-}
-
-.btn-approve {
-	background: #10b981;
-	color: white;
-	border: none;
-	padding: 8px 16px;
-	border-radius: 6px;
-	font-weight: 600;
-	cursor: pointer;
-	width: 100%;
-	margin-top: 10px;
-}
-
 .chat-input-area {
 	padding: 20px;
 	border-top: 1px solid rgba(0, 0, 0, 0.05);
@@ -1012,35 +978,10 @@ textarea:disabled {
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.pulse-dot {
-	width: 10px;
-	height: 10px;
-	background: #3b82f6;
-	border-radius: 50%;
-	margin-right: 12px;
-	box-shadow: 0 0 0 rgba(59, 130, 246, 0.4);
-	animation: pulse 1.5s infinite;
-}
-
 .progress-msg {
 	color: #1e40af;
 	font-weight: 600;
 	font-size: 14px;
-}
-
-@keyframes pulse {
-	0% {
-		transform: scale(0.95);
-		box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
-	}
-	70% {
-		transform: scale(1);
-		box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
-	}
-	100% {
-		transform: scale(0.95);
-		box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
-	}
 }
 
 .empty-state {
@@ -1339,5 +1280,19 @@ textarea:disabled {
 .btn-icon.delete:hover {
 	background: #fee2e2;
 	color: #ef4444;
+}
+
+.message-content :deep(img) {
+	max-width: 100%;
+	height: auto;
+	border-radius: 16px;
+	margin-top: 15px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+	cursor: zoom-in;
+	transition: transform 0.3s;
+}
+
+.message-content :deep(img:hover) {
+	transform: scale(1.02);
 }
 </style>

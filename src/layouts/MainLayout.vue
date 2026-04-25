@@ -144,6 +144,22 @@
 								</RouterLink>
 							</li>
 
+							<li v-if="authStore.hasPermission('course.view')">
+								<RouterLink
+									to="/admin/infographic"
+									class="admin-nav-item ai-assistant-link"
+									:class="{ active: $route.path === '/admin/infographic' }"
+									@click="mobileMenuOpen = false"
+								>
+									<span class="admin-item-icon icon-ai">
+										<Sparkles :size="15" />
+									</span>
+									<span class="nav-text font-weight-bold ai-text"
+										>Tạo Infographic AI</span
+									>
+								</RouterLink>
+							</li>
+
 							<li
 								v-if="
 									!sidebarCollapsed &&
@@ -615,6 +631,7 @@ import {
 	KeyRound,
 	FileSignature,
 	Bot,
+	Sparkles,
 } from "lucide-vue-next";
 
 const authStore = useAuthStore();

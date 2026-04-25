@@ -348,6 +348,9 @@ export const adminAiAPI = {
 	deleteTask: (taskId) => api.delete(`/admin-ai/tasks/${taskId}`),
 	updateSession: (id, data) => api.put(`/admin-ai/sessions/${id}`, data),
 	deleteSession: (id) => api.delete(`/admin-ai/sessions/${id}`),
+	executeTool: (data) => api.post("/admin-ai/execute-tool", data),
+	getInfographics: (params) => api.get("/admin-ai/infographics", { params }),
+	deleteInfographic: (id) => api.delete(`/admin-ai/infographics/${id}`),
 };
 
 export const notificationAPI = {

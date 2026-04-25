@@ -148,6 +148,16 @@ const routes = [
 				},
 			},
 			{
+				path: "admin/infographic",
+				name: "AdminInfographic",
+				component: () => import("@/pages/admin/AdminInfographic.vue"),
+				meta: {
+					roles: ["Admin", "Instructor"],
+					permissions: ["course.view"],
+					title: `Tạo Infographic AI – ${APP_NAME}`,
+				},
+			},
+			{
 				path: "admin/ai-chatbot",
 				name: "AdminAiChatbot",
 				component: () => import("@/pages/admin/AdminAiChatbot.vue"),
