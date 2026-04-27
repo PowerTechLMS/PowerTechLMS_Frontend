@@ -27,6 +27,11 @@ declare module "@/services/api" {
 	const documentChatAPI: any;
 	const aiSuggestionAPI: any;
 	const aiAPI: any;
+	const rolePlayAPI: any;
+	const adminRolePlayAPI: any;
+	const essayAPI: any;
+	const essayAdminAPI: any;
+	const api: any;
 	export {
 		authAPI,
 		userAPI,
@@ -51,7 +56,12 @@ declare module "@/services/api" {
 		documentChatAPI,
 		aiSuggestionAPI,
 		aiAPI,
+		rolePlayAPI,
+		adminRolePlayAPI,
+		essayAPI,
+		essayAdminAPI,
 	};
+	export default api;
 }
 
 declare module "@/components/ImportQuizModal.vue" {

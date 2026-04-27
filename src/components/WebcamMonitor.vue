@@ -8,23 +8,36 @@
 			class="webcam-video-hidden"
 		></video>
 
-		<div v-if="isViolation" class="monitoring-overlay">
+		<div v-if="isViolation || cameraError" class="monitoring-overlay">
 			<div class="overlay-content">
 				<div class="warning-icon">
-					<i class="fas fa-users-slash"></i>
+					<i v-if="cameraError" class="fas fa-camera-slash"></i>
+					<i v-else class="fas fa-users-slash"></i>
 				</div>
-				<h2>PHÁT HIỆN NHIỀU NGƯỜI</h2>
-				<p>
+				<h2 v-if="cameraError">YÊU CẦU TRUY CẬP CAMERA</h2>
+				<h2 v-else>PHÁT HIỆN NHIỀU NGƯỜI</h2>
+
+				<p v-if="cameraError">
+					{{ cameraError }}. Bạn cần có Webcam và cấp quyền truy cập để có thể
+					bắt đầu/tiếp tục bài làm này nhằm đảm bảo tính minh bạch.
+				</p>
+				<p v-else>
 					Quy định yêu cầu chỉ có 1 người duy nhất thực hiện bài thi/bài tập
 					này. Vui lòng đảm bảo chỉ có mình bạn trước camera để tiếp tục.
 				</p>
-				<div class="status-badge">{{ faceCount }} người đang xuất hiện</div>
-			</div>
-		</div>
 
-		<div v-if="cameraError" class="camera-error-notice">
-			<i class="fas fa-camera-retro"></i>
-			{{ cameraError }}
+				<div v-if="cameraError" class="mt-3">
+					<button
+						@click="startCamera"
+						class="btn btn-warning rounded-pill px-4 fw-bold"
+					>
+						<i class="fas fa-sync-alt me-2"></i>Thử lại ngay
+					</button>
+				</div>
+				<div v-else class="status-badge">
+					{{ faceCount }} người đang xuất hiện
+				</div>
+			</div>
 		</div>
 	</div>
 </template>
@@ -32,9 +45,12 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import * as faceapi from "face-api.js";
+import api from "@/services/api";
 
 const props = defineProps<{
 	active: boolean;
+	sessionId?: number;
+	sessionType?: "roleplay" | "essay";
 }>();
 
 const emit = defineEmits(["violation-start", "violation-end"]);
@@ -61,6 +77,7 @@ const loadModels = async () => {
 };
 
 const startCamera = async () => {
+	cameraError.value = null;
 	try {
 		stream = await navigator.mediaDevices.getUserMedia({
 			video: { width: 640, height: 480, frameRate: { max: 15 } },
@@ -113,6 +130,14 @@ const startDetection = () => {
 			if (!isViolation.value) {
 				isViolation.value = true;
 				emit("violation-start");
+
+				if (props.sessionId && props.sessionType) {
+					const endpoint =
+						props.sessionType === "roleplay"
+							? `/RolePlay/sessions/${props.sessionId}/increment-violation`
+							: `/Essay/attempts/${props.sessionId}/increment-violation`;
+					api.post(endpoint).catch(() => {});
+				}
 			}
 		} else {
 			if (isViolation.value) {

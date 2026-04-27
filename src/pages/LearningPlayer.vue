@@ -103,6 +103,7 @@
 				<aside
 					class="player-sidebar glass"
 					:class="{ collapsed: isSidebarCollapsed }"
+					:key="sidebarKey"
 					aria-label="Danh sách bài học"
 				>
 					<div class="sidebar-header">
@@ -1516,8 +1517,12 @@
 		</teleport>
 
 		<WebcamMonitor
-			v-if="lesson?.type === 'RolePlay'"
-			:active="lesson?.type === 'RolePlay'"
+			v-if="lesson?.type === 'RolePlay' && currentSession"
+			:active="
+				lesson?.type === 'RolePlay' && currentSession?.status === 'InProgress'
+			"
+			:session-id="currentSession?.id"
+			session-type="roleplay"
 		/>
 	</div>
 </template>
@@ -1587,9 +1592,50 @@ import DOMPurify from "dompurify";
 
 const authStore = useAuthStore();
 const isDarkMode = ref(false);
+const sidebarKey = ref(0);
 const markLessonRead = () => {
 	if (lesson.value?.id) {
-		completeLesson(true);
+		const targetId = Number(lesson.value.id);
+
+		// Kiểm tra trạng thái hoàn thành TRƯỚC KHI cập nhật lessonProgresses
+		const isAlreadyDone = isLessonDone(targetId);
+
+		const idx = lessonProgresses.value.findIndex(
+			(p) => Number(p.lessonId) === targetId,
+		);
+
+		if (idx !== -1) {
+			const updated = [...lessonProgresses.value];
+			updated[idx] = { ...updated[idx], isCompleted: true };
+			lessonProgresses.value = updated;
+		} else {
+			lessonProgresses.value = [
+				...lessonProgresses.value,
+				{
+					lessonId: targetId,
+					isCompleted: true,
+					watchedPercent: 100,
+				},
+			];
+		}
+
+		// Cập nhật courseProgress nếu chưa hoàn thành
+		if (courseProgress.value && !isAlreadyDone) {
+			courseProgress.value.completedLessons++;
+			const total =
+				(courseProgress.value.totalLessons || 0) +
+				(courseProgress.value.totalQuizzes || 0);
+			const done =
+				(courseProgress.value.completedLessons || 0) +
+				(courseProgress.value.passedQuizzes || 0);
+			courseProgress.value.progressPercent =
+				total > 0 ? Math.round((done / total) * 100 * 10) / 10 : 0;
+		}
+
+		sidebarKey.value++;
+		setTimeout(() => {
+			refreshProgress(true);
+		}, 1500);
 	}
 };
 const route = useRoute();
@@ -1913,7 +1959,7 @@ const availableTabs = computed(() => {
 
 const isCompleted = computed(() =>
 	lessonProgresses.value.some(
-		(lp) => lp.lessonId === lesson.value?.id && lp.isCompleted,
+		(lp) => Number(lp.lessonId) === Number(lesson.value?.id) && lp.isCompleted,
 	),
 );
 
@@ -2354,13 +2400,13 @@ function canAccess(l) {
 
 function isLessonDone(id) {
 	return lessonProgresses.value.some(
-		(lp) => lp.lessonId === id && lp.isCompleted,
+		(lp) => Number(lp.lessonId) === Number(id) && lp.isCompleted,
 	);
 }
 
 function isLessonQuizPassed(id) {
 	return lessonProgresses.value.some(
-		(lp) => lp.lessonId === id && lp.isQuizPassed,
+		(lp) => Number(lp.lessonId) === Number(id) && lp.isQuizPassed,
 	);
 }
 
@@ -2640,8 +2686,9 @@ async function completeLesson(isQuizPassedArg = false) {
 
 async function refreshProgress(fetchLessonProgress = true) {
 	try {
+		const cacheBuster = Date.now();
 		const { data: cp } = await progressAPI.getCourseProgress(
-			route.params.courseId,
+			route.params.courseId + "?t=" + cacheBuster,
 		);
 		courseProgress.value = cp;
 		if (cp.isCompleted) {
@@ -2655,9 +2702,11 @@ async function refreshProgress(fetchLessonProgress = true) {
 			const { data: lp } = await progressAPI.getLessonProgresses(
 				route.params.courseId,
 			);
-			lessonProgresses.value = lp;
+			lessonProgresses.value = Array.isArray(lp) ? [...lp] : [];
 		}
-	} catch {}
+	} catch {
+		// handle silently
+	}
 }
 
 async function triggerCourseCompletion() {

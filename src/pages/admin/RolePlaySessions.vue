@@ -59,8 +59,9 @@
 							<th class="ps-4" style="width: 30%">Học viên</th>
 							<th class="text-center" style="width: 15%">Trạng thái</th>
 							<th class="text-center" style="width: 15%">Điểm số</th>
-							<th class="text-center" style="width: 20%">Ngày thực hiện</th>
-							<th class="text-end pe-4" style="width: 20%">Thao tác</th>
+							<th class="text-center" style="width: 15%">Ngày thực hiện</th>
+							<th class="text-center" style="width: 10%">Vi phạm</th>
+							<th class="text-end pe-4" style="width: 15%">Thao tác</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -140,6 +141,15 @@
 								<span v-else class="text-muted small italic">Chưa có</span>
 							</td>
 							<td class="text-center">{{ formatDate(s.createdAt) }}</td>
+							<td class="text-center">
+								<span
+									v-if="s.violationCount > 0"
+									class="badge bg-danger rounded-pill"
+								>
+									{{ s.violationCount }}
+								</span>
+								<span v-else class="text-muted small">0</span>
+							</td>
 							<td class="text-end pe-4">
 								<button
 									@click="viewDetail(s)"

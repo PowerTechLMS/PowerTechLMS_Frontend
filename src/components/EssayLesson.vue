@@ -197,7 +197,7 @@
 				>
 					<div class="card-header bg-warning-light py-2 px-3 border-0">
 						<span class="fw-bold text-warning-dark"
-							>CÂU HỎI {{ index + 1 }}</span
+							>CÂU HỎI {{ Number(index) + 1 }}</span
 						>
 						<span class="float-end badge bg-white text-dark"
 							>{{ q.weight }}% tỉ trọng</span
@@ -366,7 +366,16 @@
 			</div>
 		</div>
 
-		<WebcamMonitor v-if="currentAttempt" :active="!!currentAttempt" />
+		<WebcamMonitor
+			v-if="currentAttempt"
+			:active="
+				(currentAttempt?.status === 'InProgress' ||
+					(currentAttempt && !showResult)) &&
+				!isSubmitting
+			"
+			:session-id="currentAttempt?.id"
+			session-type="essay"
+		/>
 	</div>
 </template>
 
@@ -401,6 +410,7 @@ const resultData = ref<any>(null);
 const isSubmitting = ref(false);
 const timeLeft = ref<number | null>(null);
 const answers = ref<any[]>([]);
+const isAnyPassed = ref(false);
 
 let timerInterval: any = null;
 
@@ -436,8 +446,14 @@ const loadHistory = async () => {
 	try {
 		const res = await essayAPI.getHistory(props.lessonId);
 		history.value = res.data;
+		// Tích xanh ngay nếu đã có lần làm bài đạt yêu cầu
+		const anyPassed = history.value.some((a: any) => a.isPassed);
+		if (anyPassed) {
+			isAnyPassed.value = true;
+			emit("completed");
+		}
 	} catch {
-		//
+		// Error handled silently
 	}
 };
 
@@ -505,6 +521,19 @@ const submitAttempt = async () => {
 
 		if (resultData.value.status === "Processing") {
 			pollResult(currentAttempt.value.id);
+		} else if (resultData.value.status === "Completed") {
+			isSubmitting.value = false;
+			const passThreshold = Number(
+				props.config?.passScore || resultData.value.passScore || 50,
+			);
+			const isPassed =
+				resultData.value.isPassed ||
+				Number(resultData.value.totalScore) >= passThreshold;
+
+			if (isPassed) {
+				isAnyPassed.value = true;
+				emit("completed");
+			}
 		}
 	} catch {
 		toast.error("Gặp lỗi khi nộp bài.");
@@ -546,10 +575,17 @@ const pollResult = async (id: number) => {
 				resultData.value = res.data;
 				clearInterval(interval);
 				isSubmitting.value = false;
-				loadHistory();
-				if (res.data.totalScore >= (props.config.passScore || 50)) {
+				const passThreshold = Number(
+					props.config?.passScore || res.data.passScore || 50,
+				);
+				const isPassed =
+					res.data.isPassed || Number(res.data.totalScore) >= passThreshold;
+
+				if (isPassed) {
+					isAnyPassed.value = true;
 					emit("completed");
 				}
+				loadHistory();
 				showResult.value = true;
 			}
 		} catch {

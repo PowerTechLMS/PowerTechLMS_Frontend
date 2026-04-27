@@ -59,6 +59,7 @@
 							<th class="text-center">Trạng thái</th>
 							<th class="text-center">Điểm số</th>
 							<th class="text-center">Ngày nộp</th>
+							<th class="text-center">Vi phạm</th>
 							<th class="text-end pe-4">Thao tác</th>
 						</tr>
 					</thead>
@@ -139,6 +140,15 @@
 							<td class="text-center">
 								{{ formatDate(s.submittedAt || s.startedAt) }}
 							</td>
+							<td class="text-center">
+								<span
+									v-if="s.violationCount > 0"
+									class="badge bg-danger rounded-pill"
+								>
+									{{ s.violationCount }}
+								</span>
+								<span v-else class="text-muted small">0</span>
+							</td>
 							<td class="text-end pe-4">
 								<button
 									@click="viewDetail(s)"
@@ -215,7 +225,11 @@
 									</div>
 									<div
 										class="student-answer bg-white p-3 rounded-3 shadow-sm border border-light markdown-body mb-3"
-										v-html="renderMarkdown(ans.userAnswer || ans.content)"
+										v-html="
+											renderMarkdown(
+												String(ans.userAnswer || ans.content || ''),
+											)
+										"
 									></div>
 
 									<div v-if="isEditing" class="p-3 bg-white rounded-3 border">
@@ -389,8 +403,8 @@ const computedTotalScore = computed(() => {
 	if (!selectedSession.value) return 0;
 	const total = selectedSession.value.answers.reduce(
 		(acc: number, ans: any) => {
-			const score = ans.aiScore || 0;
-			const weight = ans.weight || 0;
+			const score = Number(ans.aiScore) || 0;
+			const weight = Number(ans.weight) || 0;
 			return acc + (score * weight) / 100;
 		},
 		0,

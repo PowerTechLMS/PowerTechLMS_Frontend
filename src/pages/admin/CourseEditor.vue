@@ -997,7 +997,7 @@
 
 														<div
 															v-for="(q, qIdx) in lesson.essayConfig.Questions"
-															:key="qIdx"
+															:key="q.id"
 															class="card mb-3 border shadow-none"
 														>
 															<div
@@ -1010,7 +1010,12 @@
 																	type="button"
 																	class="btn btn-link text-danger p-0 ms-2"
 																	@click="
-																		lesson.essayConfig.Questions.splice(qIdx, 1)
+																		if (q.id > 0)
+																			essayAdminAPI.deleteQuestion(q.id);
+																		lesson.essayConfig.Questions.splice(
+																			qIdx,
+																			1,
+																		);
 																	"
 																>
 																	<i class="fas fa-times-circle"></i>
@@ -1662,6 +1667,7 @@ import {
 	moduleAPI,
 	lessonAPI,
 	quizAPI,
+	essayAdminAPI,
 	userGroupAPI,
 	aiAPI,
 } from "@/services/api";

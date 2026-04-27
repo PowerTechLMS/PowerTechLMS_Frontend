@@ -334,6 +334,7 @@ export const essayAdminAPI = {
 	getAllAttempts: (params) => api.get("/admin/AdminEssay/attempts", { params }),
 	getAttemptDetail: (id) => api.get(`/admin/AdminEssay/attempts/${id}`),
 	updateScore: (id, data) => api.put(`/admin/AdminEssay/attempts/${id}`, data),
+	deleteQuestion: (id) => api.delete(`/admin/AdminEssay/questions/${id}`),
 };
 
 export const adminAiAPI = {
