@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, watch } from "vue";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
+// @ts-ignore
 import { plagiarismAPI, essayAdminAPI } from "@/services/api";
 import { toast } from "vue3-toastify";
 
@@ -23,24 +24,63 @@ const selectedQuestionId = ref<number | null>(null);
 
 const questions = ref<any[]>([]);
 
-const fetchQuestions = async () => {
-	if (props.lessonId === null) return;
+const filteredSessionsB = computed(() => {
+	if (!selectedAttemptA.value) return props.sessions;
+	const sessionA = props.sessions.find((s) => s.id === selectedAttemptA.value);
+	if (!sessionA) return props.sessions;
+	return props.sessions.filter(
+		(s) => s.lessonId === sessionA.lessonId && s.id !== sessionA.id,
+	);
+});
+
+const fetchQuestions = async (lessonId: number) => {
 	try {
-		const res = await essayAdminAPI.getQuestionsByLesson(props.lessonId);
-		questions.value = res.data;
+		const res = await essayAdminAPI.getQuestionsByLesson(lessonId);
+		questions.value = [
+			{ id: 0, content: "--- Toàn bộ bài làm ---" },
+			...res.data,
+		];
+		if (questions.value.length > 0) {
+			selectedQuestionId.value = questions.value[0].id;
+		}
 	} catch {
 		toast.error("Không thể tải danh sách câu hỏi.");
 	}
 };
 
-onMounted(fetchQuestions);
-watch(() => props.lessonId, fetchQuestions);
+watch(selectedAttemptA, (newVal) => {
+	if (!newVal) {
+		selectedAttemptB.value = null;
+		selectedQuestionId.value = null;
+		questions.value = [];
+		return;
+	}
+	const sessionA = props.sessions.find((s) => s.id === newVal);
+	const sessionB = props.sessions.find((s) => s.id === selectedAttemptB.value);
+	if (sessionB && sessionB.lessonId !== sessionA?.lessonId) {
+		selectedAttemptB.value = null;
+		selectedQuestionId.value = null;
+		questions.value = [];
+	}
+});
+
+watch([selectedAttemptA, selectedAttemptB], async ([a, b]) => {
+	if (a && b) {
+		const sessionA = props.sessions.find((s) => s.id === a);
+		if (sessionA) {
+			await fetchQuestions(sessionA.lessonId);
+		}
+	} else {
+		selectedQuestionId.value = null;
+		questions.value = [];
+	}
+});
 
 const runCompare = async () => {
 	if (
 		!selectedAttemptA.value ||
 		!selectedAttemptB.value ||
-		!selectedQuestionId.value
+		selectedQuestionId.value === null
 	) {
 		toast.warning("Vui lòng chọn đủ 2 học viên và 1 câu hỏi để so sánh.");
 		return;
@@ -166,16 +206,28 @@ const renderAiReport = (text: string) => {
 							<label class="form-label small fw-bold text-muted"
 								>HỌC VIÊN B</label
 							>
-							<select v-model="selectedAttemptB" class="form-select">
+							<select
+								v-model="selectedAttemptB"
+								class="form-select"
+								:disabled="!selectedAttemptA"
+							>
 								<option :value="null">-- Chọn học viên B --</option>
-								<option v-for="s in sessions" :key="s.id" :value="s.id">
+								<option
+									v-for="s in filteredSessionsB"
+									:key="s.id"
+									:value="s.id"
+								>
 									{{ s.userFullName }} (#{{ s.id }})
 								</option>
 							</select>
 						</div>
 						<div class="col-md-4">
 							<label class="form-label small fw-bold text-muted">CÂU HỎI</label>
-							<select v-model="selectedQuestionId" class="form-select">
+							<select
+								v-model="selectedQuestionId"
+								class="form-select"
+								:disabled="!selectedAttemptA || !selectedAttemptB"
+							>
 								<option :value="null">-- Chọn câu hỏi --</option>
 								<option v-for="q in questions" :key="q.id" :value="q.id">
 									{{ q.content.substring(0, 60) }}...
