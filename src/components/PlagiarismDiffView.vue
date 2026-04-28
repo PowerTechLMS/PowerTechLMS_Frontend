@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, watch } from "vue";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
-// @ts-ignore
+// @ts-expect-error
 import { plagiarismAPI, essayAdminAPI } from "@/services/api";
 import { toast } from "vue3-toastify";
 
