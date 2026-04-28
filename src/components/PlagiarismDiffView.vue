@@ -536,7 +536,6 @@ const renderAiReport = (text: string) => {
 	border-radius: 12px;
 	overflow: hidden;
 	margin-bottom: 1.5rem;
-	max-height: 600px;
 }
 
 .diff-panel {
