@@ -36,10 +36,7 @@ const filteredSessionsB = computed(() => {
 const fetchQuestions = async (lessonId: number) => {
 	try {
 		const res = await essayAdminAPI.getQuestionsByLesson(lessonId);
-		questions.value = [
-			{ id: 0, content: "--- Toàn bộ bài làm ---" },
-			...res.data,
-		];
+		questions.value = res.data;
 		if (questions.value.length > 0) {
 			selectedQuestionId.value = questions.value[0].id;
 		}
