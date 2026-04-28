@@ -27,6 +27,9 @@ export const useAuthStore = defineStore("auth", () => {
 				"enrollment.approve",
 				"certificate.view",
 				"certificate.manage",
+				"doc.view",
+				"doc.upload",
+				"doc.delete",
 			)
 		);
 	});
