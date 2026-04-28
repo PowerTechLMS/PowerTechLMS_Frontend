@@ -163,7 +163,7 @@ const routes = [
 				component: () => import("@/pages/admin/AdminAiChatbot.vue"),
 				meta: {
 					roles: ["Admin", "Instructor"],
-					permissions: ["course.view"],
+					permissions: ["course.view", "doc.view", "doc.upload", "doc.delete"],
 					title: `Chatbot Quản trị AI – ${APP_NAME}`,
 				},
 			},
