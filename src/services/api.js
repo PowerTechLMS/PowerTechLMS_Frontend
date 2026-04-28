@@ -335,6 +335,8 @@ export const essayAdminAPI = {
 	getAttemptDetail: (id) => api.get(`/admin/AdminEssay/attempts/${id}`),
 	updateScore: (id, data) => api.put(`/admin/AdminEssay/attempts/${id}`, data),
 	deleteQuestion: (id) => api.delete(`/admin/AdminEssay/questions/${id}`),
+	getQuestionsByLesson: (lessonId) =>
+		api.get(`/admin/AdminEssay/lessons/${lessonId}/questions`),
 };
 
 export const adminAiAPI = {
@@ -357,6 +359,12 @@ export const adminAiAPI = {
 export const notificationAPI = {
 	getAll: (params) => api.get("/notifications", { params }),
 	markAsRead: (id) => api.post(`/notifications/${id}/read`),
+};
+
+export const plagiarismAPI = {
+	compare: (data) => api.post("/plagiarism/compare", data),
+	scanLesson: (lessonId, threshold = 40) =>
+		api.get(`/plagiarism/scan/${lessonId}`, { params: { threshold } }),
 };
 
 export default api;

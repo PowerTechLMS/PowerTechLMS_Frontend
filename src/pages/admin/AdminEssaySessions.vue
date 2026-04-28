@@ -16,11 +16,11 @@
 			</div>
 		</div>
 
-		<div class="glass-card shadow-sm border-0 rounded-4 overflow-hidden">
+		<div class="glass-card shadow-sm border-0 rounded-4">
 			<div
-				class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center"
+				class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-3"
 			>
-				<div class="search-box position-relative" style="width: 300px">
+				<div class="search-box position-relative" style="width: 260px">
 					<i
 						class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"
 					></i>
@@ -28,19 +28,27 @@
 						v-model="searchQuery"
 						type="text"
 						class="form-control ps-5 rounded-pill border-light bg-light"
-						placeholder="Tìm tên học viên, bài học..."
+						placeholder="Tìm tên..."
 					/>
 				</div>
-				<div class="filters d-flex gap-2">
+				<div class="filters d-flex gap-2 align-items-center">
 					<select
 						v-model="statusFilter"
 						class="form-select border-light bg-light rounded-pill"
+						style="width: 170px"
 					>
 						<option value="">Tất cả trạng thái</option>
-						<option value="Processing">Đang chấm điểm</option>
-						<option value="Completed">Đã hoàn thành</option>
+						<option value="Processing">Đang chấm</option>
+						<option value="Completed">Đã xong</option>
 						<option value="Failed">Thất bại</option>
 					</select>
+					<button
+						@click="openPlagiarism"
+						class="btn btn-plagiarism rounded-pill shadow-sm fw-bold px-4"
+						title="Kiểm tra đạo văn"
+					>
+						<i class="fas fa-shield-halved me-2 text-white"></i>Kiểm tra đạo văn
+					</button>
 					<button
 						@click="loadSessions"
 						class="btn btn-light rounded-circle shadow-sm"
@@ -214,7 +222,7 @@
 										class="d-flex justify-content-between align-items-center mb-2"
 									>
 										<div class="question-title fw-bold text-warning-dark">
-											Câu {{ idx + 1 }}: {{ ans.questionContent }}
+											Câu {{ Number(idx) + 1 }}: {{ ans.questionContent }}
 										</div>
 										<div class="badge bg-white text-dark border">
 											Tỉ trọng: {{ ans.weight }}%
@@ -366,6 +374,13 @@
 			</div>
 		</div>
 	</div>
+
+	<PlagiarismDiffView
+		v-if="isPlagiarismOpen"
+		:sessions="plagiarismSessions"
+		:lesson-id="plagiarismLessonId"
+		@close="isPlagiarismOpen = false"
+	/>
 </template>
 
 <script setup lang="ts">
@@ -375,6 +390,7 @@ import { toast } from "vue3-toastify";
 import dayjs from "dayjs";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
+import PlagiarismDiffView from "@/components/PlagiarismDiffView.vue";
 
 const sessions = ref<any[]>([]);
 const isLoading = ref(false);
@@ -502,6 +518,20 @@ const renderMarkdown = (text: string) => {
 	return DOMPurify.sanitize(marked.parse(text) as string);
 };
 
+const isPlagiarismOpen = ref(false);
+const plagiarismSessions = ref<any[]>([]);
+const plagiarismLessonId = ref<number | null>(null);
+
+const openPlagiarism = () => {
+	const lessonIds = [...new Set(sessions.value.map((s: any) => s.lessonId))];
+	plagiarismLessonId.value =
+		lessonIds.length === 1
+			? lessonIds[0]
+			: (filteredSessions.value[0]?.lessonId ?? null);
+	plagiarismSessions.value = filteredSessions.value;
+	isPlagiarismOpen.value = true;
+};
+
 onMounted(loadSessions);
 </script>
 
@@ -576,5 +606,35 @@ onMounted(loadSessions);
 .markdown-body {
 	font-size: 14px;
 	line-height: 1.6;
+}
+
+.btn-plagiarism {
+	background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+	color: white;
+	border: none;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	display: flex;
+	align-items: center;
+	white-space: nowrap;
+}
+
+.btn-plagiarism:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+	color: white;
+	filter: brightness(1.1);
+}
+
+.btn-plagiarism:active {
+	transform: translateY(0);
+}
+
+.btn-outline-violet {
+	border-color: #7c3aed;
+	color: #7c3aed;
+}
+.btn-outline-violet:hover {
+	background-color: #7c3aed;
+	color: white;
 }
 </style>
