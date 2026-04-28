@@ -536,8 +536,7 @@ const renderAiReport = (text: string) => {
 	border-radius: 12px;
 	overflow: hidden;
 	margin-bottom: 1.5rem;
-	min-height: 320px;
-	max-height: 420px;
+	max-height: 600px;
 }
 
 .diff-panel {
@@ -610,7 +609,7 @@ const renderAiReport = (text: string) => {
 
 .ai-report-body {
 	padding: 1.5rem;
-	max-height: 400px;
+	max-height: 600px;
 	overflow-y: auto;
 	background: #fdf8ff;
 	font-size: 0.9rem;
